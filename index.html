@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda de Audiencias - JG Illapel</title>
+
+  <!-- FullCalendar v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
+
+  <!-- SheetJS para lectura de Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase Compat SDK v10 -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #1d4ed8;
+      --bg: #f8fafc;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+
+    /* Pantalla Login */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; background: var(--primary);
+    }
+    .login-box {
+      background: #fff; padding: 2rem; border-radius: 10px;
+      width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .login-box h2 { margin-top: 0; color: var(--primary); font-size: 1.3rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
+    }
+    .btn {
+      padding: 0.6rem 1rem; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 600; font-size: 0.88rem; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-dark { background: var(--primary); color: #fff; }
+    .btn-success { background: #15803d; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
+
+    /* App Principal */
+    #app-screen { display: none; flex-direction: column; height: 100vh; }
+    header {
+      background: var(--primary); color: #fff; padding: 0.65rem 1.2rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    }
+    header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+    .toolbar {
+      display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+    }
+    .user-badge {
+      font-size: 0.8rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.6rem; border-radius: 4px;
+    }
+    #calendar-container {
+      flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
+    }
+    #calendar { height: 100%; }
+
+    /* Estilos de Bloques en FullCalendar (estilo Google Calendar) */
+    .fc-timegrid-slot { height: 26px !important; }
+    .fc-event {
+      border-radius: 4px !important; padding: 2px 4px !important;
+      font-size: 0.78rem !important; line-height: 1.2 !important;
+      border-left: 4px solid rgba(0,0,0,0.35) !important;
+      cursor: pointer;
+    }
+    .fc-event-title { font-weight: 600; }
+
+    /* Modales */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      align-items: center; justify-content: center; z-index: 9999;
+    }
+    .modal {
+      background: #fff; border-radius: 8px; width: 95%; max-width: 480px;
+      padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    }
+    .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; }
+    .meta-info { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
+    #login-error { color: #dc2626; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. PANTALLA DE INICIO DE SESIÓN -->
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>Agenda de Audiencias - JG Illapel</h2>
+      <p style="font-size:0.83rem; color:#475569; margin-bottom:1.2rem;">
+        Ingrese con su cuenta institucional autorizada.
+      </p>
+      <form id="login-form">
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="login-email" required placeholder="funcionario@pjud.cl" />
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Ingresar</button>
+        <div id="login-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. APLICACIÓN PRINCIPAL -->
+  <div id="app-screen">
+    <header>
+      <h1>Agenda de Audiencias - JG Illapel (15 min)</h1>
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="abrirModalNuevo()">+ Nueva Audiencia</button>
+        <label class="btn btn-success" style="margin:0;">
+          Importar Excel
+          <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none;" />
+        </label>
+        <button class="btn btn-outline" onclick="descargarPlantillaExcel()">Plantilla Excel</button>
+        <span class="user-badge" id="user-display"></span>
+        <button class="btn btn-danger" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </header>
+
+    <div id="calendar-container">
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL CREAR / EDITAR AUDIENCIA -->
+  <div class="modal-backdrop" id="event-modal">
+    <div class="modal">
+      <h3 id="modal-title">Registrar Audiencia</h3>
+      <input type="hidden" id="ev-id" />
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>RIT / Año *</label>
+          <input type="text" id="ev-rit" placeholder="Ej: 1245-2026" required />
+        </div>
+        <div class="form-group">
+          <label>Día *</label>
+          <input type="date" id="ev-fecha" required />
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Hora Inicio *</label>
+          <input type="time" id="ev-inicio" step="900" required />
+        </div>
+        <div class="form-group">
+          <label>Hora Término *</label>
+          <input type="time" id="ev-fin" step="900" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de Audiencia *</label>
+        <input type="text" id="ev-tipo" list="tipos-sugeridos" placeholder="Ej: Control de Detención, Formalización..." required />
+        <datalist id="tipos-sugeridos">
+          <option value="Control de Detención">
+          <option value="Formalización de la Investigación">
+          <option value="Preparación de Juicio Oral">
+          <option value="Juicio Oral Simplificado">
+          <option value="Procedimiento Abreviado">
+          <option value="Suspensión Condicional del Procedimiento">
+          <option value="Cautela de Garantías">
+          <option value="Revisión de Medidas Cautelares">
+          <option value="Sobreseimiento Definitivo">
+        </datalist>
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Sala / Observación</label>
+          <input type="text" id="ev-sala" placeholder="Ej: Sala 1 / Juez..." />
+        </div>
+        <div class="form-group">
+          <label>Color identificador</label>
+          <select id="ev-color">
+            <option value="#1d4ed8">Azul (Estándar)</option>
+            <option value="#dc2626">Rojo (Urgente / Detenido)</option>
+            <option value="#15803d">Verde (Salida Alternativa / Abreviado)</option>
+            <option value="#b45309">Ámbar (Juicio / Preparación)</option>
+            <option value="#6d28d9">Púrpura (Cautela / Revisión)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="meta-info" id="ev-audit"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btn-delete" style="display:none; margin-right:auto;" onclick="eliminarAudiencia()">Eliminar</button>
+        <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarAudiencia()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. CONFIGURACIÓN DE FIREBASE (Proyecto: agenda-jg-illapel)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwQXdaMIM28DPtZf5zvo3d7naO214zS1M",
+      authDomain: "agenda-jg-illapel.firebaseapp.com",
+      databaseURL: "https://agenda-jg-illapel-default-rtdb.firebaseio.com",
+      projectId: "agenda-jg-illapel",
+      storageBucket: "agenda-jg-illapel.firebasestorage.app",
+      messagingSenderId: "7808348863",
+      appId: "1:7808348863:web:4fcd08b21f746e3ace8c0a",
+      measurementId: "G-FPE9GYYLDN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const agendaRef = db.ref('agenda_audiencias');
+
+    let calendar;
+    let currentUser = null;
+    let eventosCache = {};
+
+    // =========================================================================
+    // 2. AUTENTICACIÓN Y CONTROL DE PRIVILEGIOS
+    // =========================================================================
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const errDiv = document.getElementById('login-error');
+      errDiv.style.display = 'none';
+
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch (err) {
+        errDiv.textContent = "Acceso denegado: Verifique correo y contraseña autorizados.";
+        errDiv.style.display = 'block';
+      }
+    });
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'flex';
+        document.getElementById('user-display').textContent = user.email;
+        inicializarCalendario();
+        escucharBaseDatos();
+      } else {
+        currentUser = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app-screen').style.display = 'none';
+      }
+    });
+
+    function cerrarSesion() {
+      auth.signOut();
+    }
+
+    // =========================================================================
+    // 3. INICIALIZACIÓN DE FULLCALENDAR (ESTILO GOOGLE CALENDAR 15 MIN)
+    // =========================================================================
+    function inicializarCalendario() {
+      if (calendar) return;
+      const calendarEl = document.getElementById('calendar');
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'es',
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'timeGridDay,timeGridWeek,dayGridMonth'
+        },
+        buttonText: {
+          today: 'Hoy',
+          month: 'Mes',
+          week: 'Semana',
+          day: 'Día'
+        },
+        slotDuration: '00:15:00',       // Grilla de 15 minutos
+        slotLabelInterval: '00:30:00',  // Etiqueta cada 30 min para lectura limpia
+        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        slotMinTime: '08:00:00',        // Inicio jornada visible
+        slotMaxTime: '18:00:00',        // Fin jornada visible
+        allDaySlot: false,
+        nowIndicator: true,             // Línea roja de hora actual como Google Calendar
+        slotEventOverlap: false,        // Permite múltiples eventos en el mismo horario lado a lado
+        selectable: true,
+        editable: true,                 // Permite arrastrar y redimensionar bloques
+
+        // Selección de rango con el mouse para crear audiencia rápido
+        select: function(info) {
+          const fecha = info.startStr.slice(0, 10);
+          const inicio = info.startStr.slice(11, 16);
+          const fin = info.endStr.slice(11, 16);
+          abrirModalNuevo(fecha, inicio, fin);
+        },
+
+        // Clic en audiencia existente para editar
+        eventClick: function(info) {
+          abrirModalEditar(info.event.id);
+        },
+
+        // Arrastrar evento a otro horario o día
+        eventDrop: function(info) {
+          actualizarHorarioDesdeDrag(info.event);
+        },
+
+        // Estirar o acortar duración en bloques de 15 min
+        eventResize: function(info) {
+          actualizarHorarioDesdeDrag(info.event);
+        }
+      });
+
+      calendar.render();
+    }
+
+    // =========================================================================
+    // 4. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
+    // =========================================================================
+    function escucharBaseDatos() {
+      agendaRef.on('value', (snapshot) => {
+        eventosCache = snapshot.val() || {};
+        if (!calendar) return;
+
+        calendar.removeAllEvents();
+        Object.entries(eventosCache).forEach(([id, item]) => {
+          calendar.addEvent({
+            id: id,
+            title: `${item.rit} | ${item.tipo}${item.sala ? ' (' + item.sala + ')' : ''}`,
+            start: `${item.fecha}T${item.inicio}:00`,
+            end: `${item.fecha}T${item.fin}:00`,
+            backgroundColor: item.color || '#1d4ed8',
+            borderColor: item.color || '#1d4ed8'
+          });
+        });
+      });
+    }
+
+    function actualizarHorarioDesdeDrag(fcEvent) {
+      const id = fcEvent.id;
+      const actual = eventosCache[id];
+      if (!actual) return;
+
+      const pad = (n) => String(n).padStart(2, '0');
+      const s = fcEvent.start;
+      const e = fcEvent.end || new Date(s.getTime() + 15 * 60000);
+
+      const nuevaFecha = `${s.getFullYear()}-${pad(s.getMonth()+1)}-${pad(s.getDate())}`;
+      const nuevoInicio = `${pad(s.getHours())}:${pad(s.getMinutes())}`;
+      const nuevoFin = `${pad(e.getHours())}:${pad(e.getMinutes())}`;
+
+      agendaRef.child(id).update({
+        fecha: nuevaFecha,
+        inicio: nuevoInicio,
+        fin: nuevoFin,
+        modificadoPor: currentUser.email,
+        modificadoEn: new Date().toISOString()
+      });
+    }
+
+    // =========================================================================
+    // 5. CRUD MODAL (CREAR, EDITAR, ELIMINAR)
+    // =========================================================================
+    function abrirModalNuevo(fecha = '', inicio = '09:00', fin = '09:15') {
+      document.getElementById('modal-title').textContent = 'Registrar Nueva Audiencia';
+      document.getElementById('ev-id').value = '';
+      document.getElementById('ev-rit').value = '';
+      document.getElementById('ev-fecha').value = fecha || new Date().toISOString().slice(0, 10);
+      document.getElementById('ev-inicio').value = inicio;
+      document.getElementById('ev-fin').value = fin;
+      document.getElementById('ev-tipo').value = '';
+      document.getElementById('ev-sala').value = '';
+      document.getElementById('ev-color').value = '#1d4ed8';
+      document.getElementById('ev-audit').textContent = '';
+      document.getElementById('btn-delete').style.display = 'none';
+      document.getElementById('event-modal').style.display = 'flex';
+    }
+
+    function abrirModalEditar(id) {
+      const item = eventosCache[id];
+      if (!item) return;
+
+      document.getElementById('modal-title').textContent = 'Editar Audiencia';
+      document.getElementById('ev-id').value = id;
+      document.getElementById('ev-rit').value = item.rit || '';
+      document.getElementById('ev-fecha').value = item.fecha || '';
+      document.getElementById('ev-inicio').value = item.inicio || '';
+      document.getElementById('ev-fin').value = item.fin || '';
+      document.getElementById('ev-tipo').value = item.tipo || '';
+      document.getElementById('ev-sala').value = item.sala || '';
+      document.getElementById('ev-color').value = item.color || '#1d4ed8';
+
+      const infoAudit = item.modificadoPor
+        ? `Última edición: ${item.modificadoPor} (${new Date(item.modificadoEn).toLocaleString('es-CL')})`
+        : `Registrado por: ${item.creadoPor || 'N/D'}`;
+      document.getElementById('ev-audit').textContent = infoAudit;
+
+      document.getElementById('btn-delete').style.display = 'inline-block';
+      document.getElementById('event-modal').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('event-modal').style.display = 'none';
+    }
+
+    function guardarAudiencia() {
+      const id = document.getElementById('ev-id').value;
+      const rit = document.getElementById('ev-rit').value.trim();
+      const fecha = document.getElementById('ev-fecha').value;
+      const inicio = document.getElementById('ev-inicio').value;
+      const fin = document.getElementById('ev-fin').value;
+      const tipo = document.getElementById('ev-tipo').value.trim();
+      const sala = document.getElementById('ev-sala').value.trim();
+      const color = document.getElementById('ev-color').value;
+
+      if (!rit || !fecha || !inicio || !fin || !tipo) {
+        alert("Complete los campos obligatorios: RIT/Año, Día, Hora inicio, Hora término y Tipo de audiencia.");
+        return;
+      }
+      if (fin <= inicio) {
+        alert("La hora de término debe ser posterior a la hora de inicio.");
+        return;
+      }
+
+      const payload = {
+        rit, fecha, inicio, fin, tipo, sala, color,
+        modificadoPor: currentUser.email,
+        modificadoEn: new Date().toISOString()
+      };
+
+      if (id) {
+        agendaRef.child(id).update(payload);
+      } else {
+        payload.creadoPor = currentUser.email;
+        payload.creadoEn = new Date().toISOString();
+        agendaRef.push(payload);
+      }
+      cerrarModal();
+    }
+
+    function eliminarAudiencia() {
+      const id = document.getElementById('ev-id').value;
+      if (id && confirm("¿Eliminar esta audiencia de la agenda?")) {
+        agendaRef.child(id).remove();
+        cerrarModal();
+      }
+    }
+
+    // =========================================================================
+    // 6. IMPORTACIÓN MASIVA DESDE EXCEL Y PLANTILLA DE EJEMPLO
+    // =========================================================================
+    function descargarPlantillaExcel() {
+      const datos = [
+        { "RIT/Año": "1245-2026", "Día": "25-11-2026", "Hora inicio": "09:00", "Hora término": "09:30", "Tipo audiencia": "Control de Detención", "Sala": "Sala 1" },
+        { "RIT/Año": "890-2026",  "Día": "25-11-2026", "Hora inicio": "09:00", "Hora término": "09:45", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "Sala 2" },
+        { "RIT/Año": "1102-2026", "Día": "25-11-2026", "Hora inicio": "09:15", "Hora término": "09:30", "Tipo audiencia": "Cautela de Garantías", "Sala": "Sala 1" }
+      ];
+      const ws = XLSX.utils.json_to_sheet(datos);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Audiencias");
+      XLSX.writeFile(wb, "Plantilla_Carga_Agenda.xlsx");
+    }
+
+    function normalizarFechaExcel(val) {
+      if (!val) return null;
+      if (typeof val === 'number') {
+        const d = XLSX.SSF.parse_date_code(val);
+        if (!d) return null;
+        return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+      }
+      const str = String(val).trim();
+      const m1 = str.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+      if (m1) return `${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`;
+      const m2 = str.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+      if (m2) return `${m2[1]}-${m2[2].padStart(2,'0')}-${m2[3].padStart(2,'0')}`;
+      return null;
+    }
+
+    function normalizarHoraExcel(val) {
+      if (val === undefined || val === null || val === '') return null;
+      if (typeof val === 'number') {
+        const totalMin = Math.round(val * 24 * 60);
+        const h = Math.floor(totalMin / 60) % 24;
+        const m = totalMin % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      }
+      const m = String(val).trim().match(/^(\d{1,2}):(\d{2})/);
+      if (m) return `${m[1].padStart(2,'0')}:${m[2]}`;
+      return null;
+    }
+
+    function sumar15Min(hhmm) {
+      const [h, m] = hhmm.split(':').map(Number);
+      const total = h * 60 + m + 15;
+      return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+    }
+
+    document.getElementById('excel-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        if (!rows.length) {
+          alert("El archivo Excel está vacío.");
+          return;
+        }
+
+        const existentes = new Set(
+          Object.values(eventosCache).map(ev => `${ev.rit}|${ev.fecha}|${ev.inicio}`)
+        );
+
+        let cargados = 0;
+        let duplicados = 0;
+        let errores = 0;
+
+        rows.forEach((row) => {
+          const getCol = (claves) => {
+            const key = Object.keys(row).find(k =>
+              claves.some(c => k.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(c))
+            );
+            return key ? row[key] : "";
+          };
+
+          const rit = String(getCol(["rit"])).trim();
+          const fecha = normalizarFechaExcel(getCol(["dia", "fecha"]));
+          const inicio = normalizarHoraExcel(getCol(["inicio", "hora inicio"]));
+          let fin = normalizarHoraExcel(getCol(["termino", "fin", "hora termino"]));
+          const tipo = String(getCol(["tipo", "audiencia"])).trim();
+          const sala = String(getCol(["sala", "juez"])).trim();
+
+          if (!rit || !fecha || !inicio || !tipo) {
+            errores++;
+            return;
+          }
+          if (!fin || fin <= inicio) fin = sumar15Min(inicio);
+
+          const huella = `${rit}|${fecha}|${inicio}`;
+          if (existentes.has(huella)) {
+            duplicados++;
+            return;
+          }
+
+          existentes.add(huella);
+          agendaRef.push({
+            rit, fecha, inicio, fin, tipo, sala,
+            color: '#1d4ed8',
+            creadoPor: currentUser.email,
+            creadoEn: new Date().toISOString()
+          });
+          cargados++;
+        });
+
+        alert(`Importación finalizada:
+• Audiencias cargadas: ${cargados}
+• Duplicadas omitidas: ${duplicados}
+• Filas con datos incompletos: ${errores}`);
+        e.target.value = '';
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+</body>
+</html>
