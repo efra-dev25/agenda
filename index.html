@@ -44,13 +44,14 @@
       width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
     }
     .btn {
-      padding: 0.6rem 1rem; border: none; border-radius: 6px; cursor: pointer;
-      font-weight: 600; font-size: 0.88rem; transition: opacity 0.2s;
+      padding: 0.55rem 0.9rem; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 600; font-size: 0.85rem; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 0.3rem;
     }
     .btn:hover { opacity: 0.9; }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-dark { background: var(--primary); color: #fff; }
     .btn-success { background: #15803d; color: #fff; }
+    .btn-warning { background: #b45309; color: #fff; }
     .btn-danger { background: #dc2626; color: #fff; }
     .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
 
@@ -60,12 +61,12 @@
       background: var(--primary); color: #fff; padding: 0.65rem 1.2rem;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
     }
-    header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+    header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
     .toolbar {
-      display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+      display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;
     }
     .user-badge {
-      font-size: 0.8rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.6rem; border-radius: 4px;
+      font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.6rem; border-radius: 4px;
     }
     #calendar-container {
       flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
@@ -84,18 +85,33 @@
 
     /* Modales */
     .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
-      align-items: center; justify-content: center; z-index: 9999;
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+      align-items: center; justify-content: center; z-index: 9999; padding: 1rem;
     }
     .modal {
-      background: #fff; border-radius: 8px; width: 95%; max-width: 480px;
-      padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+      background: #fff; border-radius: 8px; width: 95%; max-width: 500px;
+      padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;
     }
+    .modal.modal-lg { max-width: 780px; }
     .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; flex-wrap: wrap; }
     .meta-info { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
     #login-error { color: #dc2626; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
+
+    /* Estilos Conciliación */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+    .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.65rem; background: #f8fafc; }
+    .kpi-card .num { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
+    .kpi-card .lbl { font-size: 0.75rem; color: #475569; }
+    .diff-section { margin-top: 0.9rem; }
+    .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.92rem; color: var(--primary); }
+    .diff-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 0.8rem; }
+    .diff-table th, .diff-table td { border: 1px solid #cbd5e1; padding: 0.4rem 0.5rem; text-align: left; }
+    .diff-table th { background: #f1f5f9; font-weight: 600; }
+    .badge-new { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
+    .badge-mod { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
+    .badge-del { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
   </style>
 </head>
 <body>
@@ -116,7 +132,7 @@
           <label>Contraseña</label>
           <input type="password" id="login-password" required placeholder="••••••••" />
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;">Ingresar</button>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Ingresar</button>
         <div id="login-error"></div>
       </form>
     </div>
@@ -128,9 +144,13 @@
       <h1>Agenda de Audiencias - JG Illapel (15 min)</h1>
       <div class="toolbar">
         <button class="btn btn-primary" onclick="abrirModalNuevo()">+ Nueva Audiencia</button>
-        <label class="btn btn-success" style="margin:0;">
-          Importar Excel
-          <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none;" />
+        <label class="btn btn-success" style="margin:0;" title="Agrega audiencias nuevas desde Excel sin borrar las existentes">
+          Importar Excel (Agregar)
+          <input type="file" id="excel-input-append" accept=".xlsx,.xls" style="display:none;" />
+        </label>
+        <label class="btn btn-warning" style="margin:0;" title="Compara con el sistema, muestra diferencias y repuebla los días incluidos en el Excel">
+          Repoblar / Conciliar Excel
+          <input type="file" id="excel-input-repopulate" accept=".xlsx,.xls" style="display:none;" />
         </label>
         <button class="btn btn-outline" onclick="descargarPlantillaExcel()">Plantilla Excel</button>
         <span class="user-badge" id="user-display"></span>
@@ -190,7 +210,7 @@
       <div class="row-2">
         <div class="form-group">
           <label>Sala / Observación</label>
-          <input type="text" id="ev-sala" placeholder="Ej: Sala 1 / Juez..." />
+          <input type="text" id="ev-sala" placeholder="Ej: PRIMERA SALA / Imp..." />
         </div>
         <div class="form-group">
           <label>Color identificador</label>
@@ -210,6 +230,23 @@
         <button type="button" class="btn btn-danger" id="btn-delete" style="display:none; margin-right:auto;" onclick="eliminarAudiencia()">Eliminar</button>
         <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="guardarAudiencia()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MODAL DE CONCILIACIÓN Y REPOBLACIÓN -->
+  <div class="modal-backdrop" id="reconcile-modal">
+    <div class="modal modal-lg">
+      <h3>Conciliación de Agenda (Excel vs. Sistema)</h3>
+      <div id="reconcile-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalConciliacion()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-sync" onclick="ejecutarRepoblacion('merge')">
+          Sincronizar (Agregar Nuevas + Actualizar Cambios)
+        </button>
+        <button type="button" class="btn btn-warning" id="btn-confirm-replace" onclick="ejecutarRepoblacion('replace')">
+          Repoblar Todo el Período del Excel (Reemplazar)
+        </button>
       </div>
     </div>
   </div>
@@ -237,6 +274,7 @@
     let calendar;
     let currentUser = null;
     let eventosCache = {};
+    let planConciliacionPendiente = null;
 
     // =========================================================================
     // 2. AUTENTICACIÓN Y CONTROL DE PRIVILEGIOS
@@ -296,19 +334,18 @@
           week: 'Semana',
           day: 'Día'
         },
-        slotDuration: '00:15:00',       // Grilla de 15 minutos
-        slotLabelInterval: '00:30:00',  // Etiqueta cada 30 min para lectura limpia
+        slotDuration: '00:15:00',
+        slotLabelInterval: '00:30:00',
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        slotMinTime: '08:00:00',        // Inicio jornada visible
-        slotMaxTime: '18:00:00',        // Fin jornada visible
+        slotMinTime: '08:00:00',
+        slotMaxTime: '18:00:00',
         allDaySlot: false,
-        nowIndicator: true,             // Línea roja de hora actual como Google Calendar
-        slotEventOverlap: false,        // Permite múltiples eventos en el mismo horario lado a lado
+        nowIndicator: true,
+        slotEventOverlap: false,
         selectable: true,
-        editable: true,                 // Permite arrastrar y redimensionar bloques
+        editable: true,
 
-        // Selección de rango con el mouse para crear audiencia rápido
         select: function(info) {
           const fecha = info.startStr.slice(0, 10);
           const inicio = info.startStr.slice(11, 16);
@@ -316,17 +353,14 @@
           abrirModalNuevo(fecha, inicio, fin);
         },
 
-        // Clic en audiencia existente para editar
         eventClick: function(info) {
           abrirModalEditar(info.event.id);
         },
 
-        // Arrastrar evento a otro horario o día
         eventDrop: function(info) {
           actualizarHorarioDesdeDrag(info.event);
         },
 
-        // Estirar o acortar duración en bloques de 15 min
         eventResize: function(info) {
           actualizarHorarioDesdeDrag(info.event);
         }
@@ -468,7 +502,7 @@
     }
 
     // =========================================================================
-    // 6. IMPORTACIÓN MASIVA DESDE EXCEL (UNIJUD Y PLANTILLA MANUAL)
+    // 6. PARSEO DE EXCEL UNIJUD (FILA 8 ENCABEZADOS, COL M ESTADO = PROGRAMADA)
     // =========================================================================
     function descargarPlantillaExcel() {
       const datos = [
@@ -482,12 +516,12 @@
       XLSX.writeFile(wb, "Plantilla_Carga_Agenda.xlsx");
     }
 
-    function normalizarTextoHeader(str) {
-      return String(str || "")
+    function normTxt(str) {
+      return String(str ?? "")
         .trim()
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .replace(/[̀-ͯ]/g, "");
     }
 
     function normalizarFechaExcel(val) {
@@ -525,7 +559,7 @@
     }
 
     function inferirColorAudiencia(tipo) {
-      const t = normalizarTextoHeader(tipo);
+      const t = normTxt(tipo);
       if (t.includes("detencion") || t.includes("cautelar")) return "#dc2626";
       if (t.includes("sobreseimiento") || t.includes("abreviado") || t.includes("suspension") || t.includes("no perseverar")) return "#15803d";
       if (t.includes("juicio") || t.includes("preparacion")) return "#b45309";
@@ -533,63 +567,168 @@
       return "#1d4ed8";
     }
 
-    document.getElementById('excel-input').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+    function parsearPlanillaUnijud(matriz) {
+      // Buscar fila de encabezados (Fila 8 = índice 7 en Unijud, o Fila 1 = índice 0 en plantilla manual)
+      let headerRowIdx = -1;
+      for (let r = 0; r < Math.min(25, matriz.length); r++) {
+        const fila = (matriz[r] || []).map(normTxt);
+        const tieneRit = fila.some(c => c === "rit" || c === "rit/ano" || c === "rit-ano");
+        const tieneFecha = fila.some(c => c === "fecha_audiencia" || c === "dia" || c === "fecha");
+        const tieneHora = fila.some(c => c === "horario" || c === "hora inicio" || c === "inicio");
+        if (tieneRit && (tieneFecha || tieneHora)) {
+          headerRowIdx = r;
+          break;
+        }
+      }
 
+      if (headerRowIdx === -1) {
+        return { error: "No se encontró la fila de encabezados (HORARIO, RIT, AÑO, AUDIENCIA, FECHA_AUDIENCIA, ESTADO)." };
+      }
+
+      const headersNorm = matriz[headerRowIdx].map(normTxt);
+      const colOf = (exactos, parciales = []) => {
+        let i = headersNorm.findIndex(h => exactos.includes(h));
+        if (i === -1 && parciales.length) {
+          i = headersNorm.findIndex(h => parciales.some(p => h.includes(p)));
+        }
+        return i;
+      };
+
+      const colHorario = colOf(["horario", "hora inicio", "inicio"], ["horario", "hora inicio"]);
+      const colTermino = colOf(["hora termino", "termino", "fin"], ["termino"]);
+      const colRit     = colOf(["rit", "rit/ano", "rit-ano"], ["rit"]);
+      const colAnio    = colOf(["ano", "anio"]);
+      const colFecha   = colOf(["fecha_audiencia", "dia", "fecha"], ["fecha_audiencia", "fecha"]);
+      const colAud     = colOf(["audiencia", "tipo audiencia", "tipo_audiencia"], ["audiencia"]);
+      const colEstado  = colOf(["estado"]); // Columna M (índice 12) en Unijud
+      const colTipoInt = colOf(["tipo"]);
+      const colNomInt  = colOf(["nombre_interviniente", "interviniente"]);
+      const colSala    = colOf(["sala"], ["sala"]);
+      const colJuez    = colOf(["juez"]);
+
+      if (colRit === -1 || colFecha === -1 || colHorario === -1 || colAud === -1) {
+        return { error: "Faltan columnas obligatorias en el encabezado (HORARIO, RIT, FECHA_AUDIENCIA o AUDIENCIA)." };
+      }
+
+      const audienciasMap = new Map();
+      const fechasDetectadas = new Set();
+      let totalFilasDatos = 0;
+      let filasNoProgramadas = 0;
+      let filasInvalidas = 0;
+
+      // Leer estrictamente desde la fila siguiente al encabezado (Fila 9 en adelante en Unijud)
+      for (let r = headerRowIdx + 1; r < matriz.length; r++) {
+        const row = matriz[r];
+        if (!row || row.every(v => v === "" || v === null || v === undefined)) continue;
+        totalFilasDatos++;
+
+        // Filtrar estrictamente ESTADO === "Programada" (Columna M en Unijud)
+        if (colEstado !== -1) {
+          const estadoVal = normTxt(row[colEstado]);
+          if (estadoVal !== "programada") {
+            filasNoProgramadas++;
+            continue;
+          }
+        }
+
+        let ritRaw = String(row[colRit] ?? "").trim().replace(/\.0$/, "");
+        if (colAnio !== -1 && row[colAnio] !== "" && row[colAnio] !== null && !ritRaw.includes("-")) {
+          const anioRaw = String(row[colAnio]).trim().replace(/\.0$/, "");
+          if (anioRaw) ritRaw = `${ritRaw}-${anioRaw}`;
+        }
+
+        const fecha = normalizarFechaExcel(row[colFecha]);
+        const inicio = normalizarHoraExcel(row[colHorario]);
+        let fin = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
+        const tipo = String(row[colAud] ?? "").trim();
+
+        if (!ritRaw || !fecha || !inicio || !tipo) {
+          filasInvalidas++;
+          continue;
+        }
+        if (!fin || fin <= inicio) fin = sumar15Min(inicio);
+
+        fechasDetectadas.add(fecha);
+        const salaVal = colSala !== -1 ? String(row[colSala] ?? "").trim() : "";
+        const juezVal = colJuez !== -1 ? String(row[colJuez] ?? "").trim() : "";
+        const tipoInt = colTipoInt !== -1 ? normTxt(row[colTipoInt]) : "";
+        const nomInt  = colNomInt !== -1 ? String(row[colNomInt] ?? "").trim() : "";
+
+        // Clave única de audiencia (agrupa múltiples intervinientes de la misma audiencia)
+        const clave = `${ritRaw}|${fecha}|${inicio}`;
+        if (!audienciasMap.has(clave)) {
+          audienciasMap.set(clave, {
+            clave,
+            rit: ritRaw,
+            fecha,
+            inicio,
+            fin,
+            tipo,
+            salaBase: salaVal,
+            juezBase: juezVal,
+            denunciados: new Set()
+          });
+        }
+
+        const reg = audienciasMap.get(clave);
+        if (nomInt && (tipoInt.includes("denunciado") || tipoInt.includes("imputado") || tipoInt.includes("requerido"))) {
+          reg.denunciados.add(nomInt);
+        }
+      }
+
+      // Consolidar descripción de sala/imputados para cada audiencia única
+      const listaFinal = [];
+      audienciasMap.forEach((aud) => {
+        const detalles = [];
+        if (aud.salaBase) detalles.push(aud.salaBase);
+        if (aud.juezBase) detalles.push(`Juez: ${aud.juezBase}`);
+        if (aud.denunciados.size > 0) detalles.push(`Imp: ${Array.from(aud.denunciados).join(", ")}`);
+        listaFinal.push({
+          clave: aud.clave,
+          rit: aud.rit,
+          fecha: aud.fecha,
+          inicio: aud.inicio,
+          fin: aud.fin,
+          tipo: aud.tipo,
+          sala: detalles.join(" | "),
+          color: inferirColorAudiencia(aud.tipo)
+        });
+      });
+
+      return {
+        headerRowNum: headerRowIdx + 1,
+        totalFilasDatos,
+        filasNoProgramadas,
+        filasInvalidas,
+        fechasDetectadas: Array.from(fechasDetectadas).sort(),
+        audiencias: listaFinal
+      };
+    }
+
+    function leerArchivoExcel(file, callback) {
       const reader = new FileReader();
       reader.onload = function(evt) {
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-        // Leer como matriz para detectar dinámicamente la fila de encabezados (Fila 8 en Unijud o Fila 1 en plantilla)
         const matriz = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-        if (!matriz.length) {
-          alert("El archivo Excel está vacío.");
-          e.target.value = '';
-          return;
-        }
+        const resultado = parsearPlanillaUnijud(matriz);
+        callback(resultado);
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
-        let headerRowIdx = 0;
-        for (let r = 0; r < Math.min(20, matriz.length); r++) {
-          const filaNorm = matriz[r].map(normalizarTextoHeader);
-          const tieneRit = filaNorm.some(c => c === "rit" || c === "rit/ano" || c === "rit-ano");
-          const tieneHoraOFecha = filaNorm.some(c =>
-            c === "horario" || c === "fecha_audiencia" || c === "hora inicio" || c === "dia" || c === "fecha"
-          );
-          if (tieneRit && tieneHoraOFecha) {
-            headerRowIdx = r;
-            break;
-          }
-        }
+    // =========================================================================
+    // 7. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
+    // =========================================================================
+    document.getElementById('excel-input-append').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-        const headers = matriz[headerRowIdx].map(h => String(h || "").trim());
-        const headersNorm = headers.map(normalizarTextoHeader);
-
-        const idxOf = (candidatosExactos, candidatosParciales = []) => {
-          let i = headersNorm.findIndex(h => candidatosExactos.includes(h));
-          if (i === -1 && candidatosParciales.length) {
-            i = headersNorm.findIndex(h => candidatosParciales.some(p => h.includes(p)));
-          }
-          return i;
-        };
-
-        const colHorario = idxOf(["horario", "hora inicio", "inicio"], ["hora inicio"]);
-        const colTermino = idxOf(["hora termino", "termino", "fin"], ["hora termino"]);
-        const colRit     = idxOf(["rit", "rit/ano", "rit-ano"], ["rit"]);
-        const colAnio    = idxOf(["ano", "anio"]);
-        const colFecha   = idxOf(["fecha_audiencia", "dia", "fecha"], ["fecha_audiencia", "fecha"]);
-        const colAud     = idxOf(["audiencia", "tipo audiencia", "tipo_audiencia"], ["audiencia"]);
-        const colEstado  = idxOf(["estado"]);
-        const colTipoInt = idxOf(["tipo"]); // En Unijud: Denunciado, Víctima, Fiscal, etc.
-        const colNomInt  = idxOf(["nombre_interviniente", "interviniente"]);
-        const colSala    = idxOf(["sala"], ["sala"]);
-        const colJuez    = idxOf(["juez"]);
-
-        if (colRit === -1 || colFecha === -1 || colHorario === -1 || colAud === -1) {
-          alert("No se reconocieron las columnas requeridas (RIT, Fecha, Horario/Hora inicio y Audiencia) en el archivo Excel.");
-          e.target.value = '';
+      leerArchivoExcel(file, (res) => {
+        e.target.value = '';
+        if (res.error) {
+          alert(res.error);
           return;
         }
 
@@ -597,107 +736,248 @@
           Object.values(eventosCache).map(ev => `${ev.rit}|${ev.fecha}|${ev.inicio}`)
         );
 
-        // Agrupar filas por audiencia única dentro del archivo (en Unijud viene 1 fila por cada interviniente)
-        const audienciasLote = new Map();
-        let omitidasNoProgramadas = 0;
-        let filasIncompletas = 0;
+        let cargadas = 0;
+        let duplicadas = 0;
 
-        for (let r = headerRowIdx + 1; r < matriz.length; r++) {
-          const row = matriz[r];
-          if (!row || row.every(v => v === "" || v === null || v === undefined)) continue;
-
-          // Si existe columna ESTADO (Unijud), filtrar solo "Programada"
-          if (colEstado !== -1) {
-            const estadoVal = normalizarTextoHeader(row[colEstado]);
-            if (estadoVal && estadoVal !== "programada") {
-              omitidasNoProgramadas++;
-              continue;
-            }
-          }
-
-          let ritRaw = String(row[colRit] ?? "").trim().replace(/\.0$/, "");
-          if (colAnio !== -1 && row[colAnio] !== "" && row[colAnio] !== null && !ritRaw.includes("-")) {
-            const anioRaw = String(row[colAnio]).trim().replace(/\.0$/, "");
-            if (anioRaw) ritRaw = `${ritRaw}-${anioRaw}`;
-          }
-
-          const fecha = normalizarFechaExcel(row[colFecha]);
-          const inicio = normalizarHoraExcel(row[colHorario]);
-          let fin = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
-          const tipo = String(row[colAud] ?? "").trim();
-
-          if (!ritRaw || !fecha || !inicio || !tipo) {
-            filasIncompletas++;
-            continue;
-          }
-          if (!fin || fin <= inicio) fin = sumar15Min(inicio);
-
-          const salaVal = colSala !== -1 ? String(row[colSala] ?? "").trim() : "";
-          const juezVal = colJuez !== -1 ? String(row[colJuez] ?? "").trim() : "";
-          const tipoInt = colTipoInt !== -1 ? normalizarTextoHeader(row[colTipoInt]) : "";
-          const nomInt  = colNomInt !== -1 ? String(row[colNomInt] ?? "").trim() : "";
-
-          const huella = `${ritRaw}|${fecha}|${inicio}`;
-          if (!audienciasLote.has(huella)) {
-            audienciasLote.set(huella, {
-              rit: ritRaw,
-              fecha,
-              inicio,
-              fin,
-              tipo,
-              sala: salaVal,
-              juez: juezVal,
-              denunciados: new Set()
-            });
-          }
-
-          const registro = audienciasLote.get(huella);
-          if (nomInt && (tipoInt.includes("denunciado") || tipoInt.includes("imputado") || tipoInt.includes("requerido"))) {
-            registro.denunciados.add(nomInt);
-          }
-        }
-
-        let cargados = 0;
-        let duplicados = 0;
-
-        audienciasLote.forEach((aud, huella) => {
-          if (existentes.has(huella)) {
-            duplicados++;
+        res.audiencias.forEach((aud) => {
+          if (existentes.has(aud.clave)) {
+            duplicadas++;
             return;
           }
-          existentes.add(huella);
-
-          const partesDetalle = [];
-          if (aud.sala) partesDetalle.push(aud.sala);
-          if (aud.juez) partesDetalle.push(`Juez: ${aud.juez}`);
-          if (aud.denunciados.size > 0) {
-            partesDetalle.push(`Imp: ${Array.from(aud.denunciados).join(", ")}`);
-          }
-
+          existentes.add(aud.clave);
           agendaRef.push({
             rit: aud.rit,
             fecha: aud.fecha,
             inicio: aud.inicio,
             fin: aud.fin,
             tipo: aud.tipo,
-            sala: partesDetalle.join(" | "),
-            color: inferirColorAudiencia(aud.tipo),
+            sala: aud.sala,
+            color: aud.color,
             creadoPor: currentUser.email,
             creadoEn: new Date().toISOString()
           });
-          cargados++;
+          cargadas++;
         });
 
-        let resumen = `Importación finalizada:\n• Audiencias programadas cargadas: ${cargados}`;
-        if (duplicados > 0) resumen += `\n• Duplicadas ya existentes en agenda: ${duplicados}`;
-        if (omitidasNoProgramadas > 0) resumen += `\n• Filas omitidas por estado distinto a Programada: ${omitidasNoProgramadas}`;
-        if (filasIncompletas > 0) resumen += `\n• Filas con datos incompletos: ${filasIncompletas}`;
-
-        alert(resumen);
-        e.target.value = '';
-      };
-      reader.readAsArrayBuffer(file);
+        alert(
+          `Importación completada (Encabezados leídos en fila ${res.headerRowNum}):
+` +
+          `• Audiencias Programadas nuevas cargadas: ${cargadas}
+` +
+          `• Audiencias ya existentes omitidas: ${duplicadas}
+` +
+          `• Filas omitidas por estado distinto a Programada: ${res.filasNoProgramadas}`
+        );
+      });
     });
+
+    // =========================================================================
+    // 8. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // =========================================================================
+    document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      leerArchivoExcel(file, (res) => {
+        e.target.value = '';
+        if (res.error) {
+          alert(res.error);
+          return;
+        }
+        mostrarModalConciliacion(res);
+      });
+    });
+
+    function mostrarModalConciliacion(res) {
+      const fechasSet = new Set(res.fechasDetectadas);
+      const excelMap = new Map(res.audiencias.map(a => [a.clave, a]));
+
+      // Filtrar registros actualmente en Firebase que corresponden a las mismas fechas del Excel
+      const sistemaEnFechas = Object.entries(eventosCache)
+        .filter(([id, ev]) => fechasSet.has(ev.fecha))
+        .map(([id, ev]) => ({ id, clave: `${ev.rit}|${ev.fecha}|${ev.inicio}`, ...ev }));
+
+      const sistemaMap = new Map(sistemaEnFechas.map(ev => [ev.clave, ev]));
+
+      const nuevasEnExcel = [];
+      const conDiferencias = [];
+      const coincidentes = [];
+      const sobrantesEnSistema = [];
+
+      // 1. Evaluar cada audiencia del Excel frente al Sistema
+      excelMap.forEach((audExcel, clave) => {
+        if (!sistemaMap.has(clave)) {
+          nuevasEnExcel.push(audExcel);
+        } else {
+          const audSis = sistemaMap.get(clave);
+          const diffTipo = normTxt(audExcel.tipo) !== normTxt(audSis.tipo);
+          const diffSala = normTxt(audExcel.sala) !== normTxt(audSis.sala);
+          if (diffTipo || diffSala) {
+            conDiferencias.push({ excel: audExcel, sistema: audSis, diffTipo, diffSala });
+          } else {
+            coincidentes.push({ excel: audExcel, sistema: audSis });
+          }
+        }
+      });
+
+      // 2. Evaluar registros en el Sistema (para esas fechas) que YA NO vienen en el Excel (ej. reprogramadas/eliminadas en Unijud)
+      sistemaEnFechas.forEach((audSis) => {
+        if (!excelMap.has(audSis.clave)) {
+          sobrantesEnSistema.push(audSis);
+        }
+      });
+
+      planConciliacionPendiente = {
+        res,
+        nuevasEnExcel,
+        conDiferencias,
+        coincidentes,
+        sobrantesEnSistema,
+        sistemaEnFechas
+      };
+
+      const totalNoCoincidentes = nuevasEnExcel.length + conDiferencias.length + sobrantesEnSistema.length;
+
+      let html = `
+        <p style="font-size:0.84rem; color:#334155; margin-top:0;">
+          <strong>Período analizado:</strong> ${res.fechasDetectadas.join(", ") || "Sin fechas"}
+          (Encabezados en fila ${res.headerRowNum} | Filas no Programadas descartadas: ${res.filasNoProgramadas})
+        </p>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="num">${res.audiencias.length}</div><div class="lbl">Programadas en Excel</div></div>
+          <div class="kpi-card"><div class="num">${coincidentes.length}</div><div class="lbl">Coincidentes exactas</div></div>
+          <div class="kpi-card"><div class="num" style="color:#15803d;">${nuevasEnExcel.length}</div><div class="lbl">Nuevas en Excel</div></div>
+          <div class="kpi-card"><div class="num" style="color:#b45309;">${conDiferencias.length}</div><div class="lbl">Con cambios (Tipo/Sala)</div></div>
+          <div class="kpi-card"><div class="num" style="color:#dc2626;">${sobrantesEnSistema.length}</div><div class="lbl">En Sistema pero no en Excel</div></div>
+        </div>
+      `;
+
+      if (totalNoCoincidentes === 0) {
+        html += `<p style="background:#dcfce7; color:#166534; padding:0.75rem; border-radius:6px; font-weight:600;">
+          ✔ Conciliación perfecta: Todos los registros del Excel coinciden exactamente con lo ya poblado en el sistema.
+        </p>`;
+      } else {
+        html += `<p style="font-size:0.83rem; font-weight:600; color:#991b1b;">
+          Se detectaron ${totalNoCoincidentes} registros NO coincidentes entre el Excel y el sistema:
+        </p>`;
+
+        if (nuevasEnExcel.length > 0) {
+          html += `<div class="diff-section">
+            <h4>1. En Excel pero NO en Sistema (${nuevasEnExcel.length}) <span class="badge-new">NUEVAS</span></h4>
+            <table class="diff-table">
+              <thead><tr><th>Fecha</th><th>Hora</th><th>RIT/Año</th><th>Audiencia</th><th>Detalle / Sala</th></tr></thead>
+              <tbody>
+                ${nuevasEnExcel.map(a => `<tr><td>${a.fecha}</td><td>${a.inicio}</td><td>${a.rit}</td><td>${a.tipo}</td><td>${a.sala || '-'}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        }
+
+        if (conDiferencias.length > 0) {
+          html += `<div class="diff-section">
+            <h4>2. Mismo RIT/Fecha/Hora pero con diferencias (${conDiferencias.length}) <span class="badge-mod">DIFERENTE</span></h4>
+            <table class="diff-table">
+              <thead><tr><th>Fecha / Hora</th><th>RIT/Año</th><th>En Sistema</th><th>En Excel</th></tr></thead>
+              <tbody>
+                ${conDiferencias.map(d => `
+                  <tr>
+                    <td>${d.excel.fecha} ${d.excel.inicio}</td>
+                    <td>${d.excel.rit}</td>
+                    <td>${d.sistema.tipo}<br><small style="color:#64748b;">${d.sistema.sala || '-'}</small></td>
+                    <td>${d.excel.tipo}<br><small style="color:#64748b;">${d.excel.sala || '-'}</small></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        }
+
+        if (sobrantesEnSistema.length > 0) {
+          html += `<div class="diff-section">
+            <h4>3. En Sistema pero NO en Excel Programada (${sobrantesEnSistema.length}) <span class="badge-del">NO COINCIDENTE / REPROGRAMADA</span></h4>
+            <table class="diff-table">
+              <thead><tr><th>Fecha</th><th>Hora</th><th>RIT/Año</th><th>Audiencia en Sistema</th><th>Detalle / Sala</th></tr></thead>
+              <tbody>
+                ${sobrantesEnSistema.map(s => `<tr><td>${s.fecha}</td><td>${s.inicio}</td><td>${s.rit}</td><td>${s.tipo}</td><td>${s.sala || '-'}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        }
+      }
+
+      document.getElementById('reconcile-body').innerHTML = html;
+      document.getElementById('reconcile-modal').style.display = 'flex';
+    }
+
+    function cerrarModalConciliacion() {
+      document.getElementById('reconcile-modal').style.display = 'none';
+      planConciliacionPendiente = null;
+    }
+
+    function ejecutarRepoblacion(modo) {
+      if (!planConciliacionPendiente) return;
+      const { res, nuevasEnExcel, conDiferencias, sistemaEnFechas } = planConciliacionPendiente;
+
+      if (modo === 'replace') {
+        const msgConfirm =
+          `¿Confirma REPOBLAR todo el período (${res.fechasDetectadas.join(", ")})?
+
+` +
+          `Se eliminarán los ${sistemaEnFechas.length} registros actuales de esas fechas y se cargarán las ${res.audiencias.length} audiencias Programadas del Excel.`;
+        if (!confirm(msgConfirm)) return;
+
+        // 1. Eliminar registros existentes de las fechas del Excel
+        sistemaEnFechas.forEach(ev => {
+          agendaRef.child(ev.id).remove();
+        });
+
+        // 2. Poblar todas las audiencias Programadas del Excel
+        res.audiencias.forEach(aud => {
+          agendaRef.push({
+            rit: aud.rit,
+            fecha: aud.fecha,
+            inicio: aud.inicio,
+            fin: aud.fin,
+            tipo: aud.tipo,
+            sala: aud.sala,
+            color: aud.color,
+            creadoPor: currentUser.email,
+            creadoEn: new Date().toISOString()
+          });
+        });
+
+        cerrarModalConciliacion();
+        alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas para el período.`);
+      } else {
+        // Modo 'merge': agrega las nuevas y actualiza las que tenían diferencias sin borrar agendas manuales
+        nuevasEnExcel.forEach(aud => {
+          agendaRef.push({
+            rit: aud.rit,
+            fecha: aud.fecha,
+            inicio: aud.inicio,
+            fin: aud.fin,
+            tipo: aud.tipo,
+            sala: aud.sala,
+            color: aud.color,
+            creadoPor: currentUser.email,
+            creadoEn: new Date().toISOString()
+          });
+        });
+
+        conDiferencias.forEach(d => {
+          agendaRef.child(d.sistema.id).update({
+            tipo: d.excel.tipo,
+            sala: d.excel.sala,
+            color: d.excel.color,
+            modificadoPor: currentUser.email,
+            modificadoEn: new Date().toISOString()
+          });
+        });
+
+        cerrarModalConciliacion();
+        alert(`Sincronización completada: ${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`);
+      }
+    }
   </script>
 </body>
 </html>
