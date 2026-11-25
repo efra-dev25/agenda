@@ -468,13 +468,13 @@
     }
 
     // =========================================================================
-    // 6. IMPORTACIÓN MASIVA DESDE EXCEL Y PLANTILLA DE EJEMPLO
+    // 6. IMPORTACIÓN MASIVA DESDE EXCEL (UNIJUD Y PLANTILLA MANUAL)
     // =========================================================================
     function descargarPlantillaExcel() {
       const datos = [
-        { "RIT/Año": "1245-2026", "Día": "25-11-2026", "Hora inicio": "09:00", "Hora término": "09:30", "Tipo audiencia": "Control de Detención", "Sala": "Sala 1" },
-        { "RIT/Año": "890-2026",  "Día": "25-11-2026", "Hora inicio": "09:00", "Hora término": "09:45", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "Sala 2" },
-        { "RIT/Año": "1102-2026", "Día": "25-11-2026", "Hora inicio": "09:15", "Hora término": "09:30", "Tipo audiencia": "Cautela de Garantías", "Sala": "Sala 1" }
+        { "RIT/Año": "1245-2026", "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "09:30", "Tipo audiencia": "Control de Detención", "Sala": "PRIMERA SALA" },
+        { "RIT/Año": "890-2026",  "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "09:45", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "PRIMERA SALA" },
+        { "RIT/Año": "1102-2026", "Día": "26-11-2026", "Hora inicio": "09:15", "Hora término": "09:30", "Tipo audiencia": "Cautela de Garantías", "Sala": "PRIMERA SALA" }
       ];
       const ws = XLSX.utils.json_to_sheet(datos);
       const wb = XLSX.utils.book_new();
@@ -482,17 +482,25 @@
       XLSX.writeFile(wb, "Plantilla_Carga_Agenda.xlsx");
     }
 
+    function normalizarTextoHeader(str) {
+      return String(str || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
     function normalizarFechaExcel(val) {
-      if (!val) return null;
+      if (val === undefined || val === null || val === "") return null;
       if (typeof val === 'number') {
         const d = XLSX.SSF.parse_date_code(val);
         if (!d) return null;
         return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
       }
       const str = String(val).trim();
-      const m1 = str.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+      const m1 = str.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
       if (m1) return `${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`;
-      const m2 = str.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+      const m2 = str.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
       if (m2) return `${m2[1]}-${m2[2].padStart(2,'0')}-${m2[3].padStart(2,'0')}`;
       return null;
     }
@@ -516,6 +524,15 @@
       return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
     }
 
+    function inferirColorAudiencia(tipo) {
+      const t = normalizarTextoHeader(tipo);
+      if (t.includes("detencion") || t.includes("cautelar")) return "#dc2626";
+      if (t.includes("sobreseimiento") || t.includes("abreviado") || t.includes("suspension") || t.includes("no perseverar")) return "#15803d";
+      if (t.includes("juicio") || t.includes("preparacion")) return "#b45309";
+      if (t.includes("21.675") || t.includes("supervision") || t.includes("cautela")) return "#6d28d9";
+      return "#1d4ed8";
+    }
+
     document.getElementById('excel-input').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -525,10 +542,54 @@
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-        if (!rows.length) {
+        // Leer como matriz para detectar dinámicamente la fila de encabezados (Fila 8 en Unijud o Fila 1 en plantilla)
+        const matriz = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+        if (!matriz.length) {
           alert("El archivo Excel está vacío.");
+          e.target.value = '';
+          return;
+        }
+
+        let headerRowIdx = 0;
+        for (let r = 0; r < Math.min(20, matriz.length); r++) {
+          const filaNorm = matriz[r].map(normalizarTextoHeader);
+          const tieneRit = filaNorm.some(c => c === "rit" || c === "rit/ano" || c === "rit-ano");
+          const tieneHoraOFecha = filaNorm.some(c =>
+            c === "horario" || c === "fecha_audiencia" || c === "hora inicio" || c === "dia" || c === "fecha"
+          );
+          if (tieneRit && tieneHoraOFecha) {
+            headerRowIdx = r;
+            break;
+          }
+        }
+
+        const headers = matriz[headerRowIdx].map(h => String(h || "").trim());
+        const headersNorm = headers.map(normalizarTextoHeader);
+
+        const idxOf = (candidatosExactos, candidatosParciales = []) => {
+          let i = headersNorm.findIndex(h => candidatosExactos.includes(h));
+          if (i === -1 && candidatosParciales.length) {
+            i = headersNorm.findIndex(h => candidatosParciales.some(p => h.includes(p)));
+          }
+          return i;
+        };
+
+        const colHorario = idxOf(["horario", "hora inicio", "inicio"], ["hora inicio"]);
+        const colTermino = idxOf(["hora termino", "termino", "fin"], ["hora termino"]);
+        const colRit     = idxOf(["rit", "rit/ano", "rit-ano"], ["rit"]);
+        const colAnio    = idxOf(["ano", "anio"]);
+        const colFecha   = idxOf(["fecha_audiencia", "dia", "fecha"], ["fecha_audiencia", "fecha"]);
+        const colAud     = idxOf(["audiencia", "tipo audiencia", "tipo_audiencia"], ["audiencia"]);
+        const colEstado  = idxOf(["estado"]);
+        const colTipoInt = idxOf(["tipo"]); // En Unijud: Denunciado, Víctima, Fiscal, etc.
+        const colNomInt  = idxOf(["nombre_interviniente", "interviniente"]);
+        const colSala    = idxOf(["sala"], ["sala"]);
+        const colJuez    = idxOf(["juez"]);
+
+        if (colRit === -1 || colFecha === -1 || colHorario === -1 || colAud === -1) {
+          alert("No se reconocieron las columnas requeridas (RIT, Fecha, Horario/Hora inicio y Audiencia) en el archivo Excel.");
+          e.target.value = '';
           return;
         }
 
@@ -536,51 +597,103 @@
           Object.values(eventosCache).map(ev => `${ev.rit}|${ev.fecha}|${ev.inicio}`)
         );
 
-        let cargados = 0;
-        let duplicados = 0;
-        let errores = 0;
+        // Agrupar filas por audiencia única dentro del archivo (en Unijud viene 1 fila por cada interviniente)
+        const audienciasLote = new Map();
+        let omitidasNoProgramadas = 0;
+        let filasIncompletas = 0;
 
-        rows.forEach((row) => {
-          const getCol = (claves) => {
-            const key = Object.keys(row).find(k =>
-              claves.some(c => k.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(c))
-            );
-            return key ? row[key] : "";
-          };
+        for (let r = headerRowIdx + 1; r < matriz.length; r++) {
+          const row = matriz[r];
+          if (!row || row.every(v => v === "" || v === null || v === undefined)) continue;
 
-          const rit = String(getCol(["rit"])).trim();
-          const fecha = normalizarFechaExcel(getCol(["dia", "fecha"]));
-          const inicio = normalizarHoraExcel(getCol(["inicio", "hora inicio"]));
-          let fin = normalizarHoraExcel(getCol(["termino", "fin", "hora termino"]));
-          const tipo = String(getCol(["tipo", "audiencia"])).trim();
-          const sala = String(getCol(["sala", "juez"])).trim();
+          // Si existe columna ESTADO (Unijud), filtrar solo "Programada"
+          if (colEstado !== -1) {
+            const estadoVal = normalizarTextoHeader(row[colEstado]);
+            if (estadoVal && estadoVal !== "programada") {
+              omitidasNoProgramadas++;
+              continue;
+            }
+          }
 
-          if (!rit || !fecha || !inicio || !tipo) {
-            errores++;
-            return;
+          let ritRaw = String(row[colRit] ?? "").trim().replace(/\.0$/, "");
+          if (colAnio !== -1 && row[colAnio] !== "" && row[colAnio] !== null && !ritRaw.includes("-")) {
+            const anioRaw = String(row[colAnio]).trim().replace(/\.0$/, "");
+            if (anioRaw) ritRaw = `${ritRaw}-${anioRaw}`;
+          }
+
+          const fecha = normalizarFechaExcel(row[colFecha]);
+          const inicio = normalizarHoraExcel(row[colHorario]);
+          let fin = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
+          const tipo = String(row[colAud] ?? "").trim();
+
+          if (!ritRaw || !fecha || !inicio || !tipo) {
+            filasIncompletas++;
+            continue;
           }
           if (!fin || fin <= inicio) fin = sumar15Min(inicio);
 
-          const huella = `${rit}|${fecha}|${inicio}`;
+          const salaVal = colSala !== -1 ? String(row[colSala] ?? "").trim() : "";
+          const juezVal = colJuez !== -1 ? String(row[colJuez] ?? "").trim() : "";
+          const tipoInt = colTipoInt !== -1 ? normalizarTextoHeader(row[colTipoInt]) : "";
+          const nomInt  = colNomInt !== -1 ? String(row[colNomInt] ?? "").trim() : "";
+
+          const huella = `${ritRaw}|${fecha}|${inicio}`;
+          if (!audienciasLote.has(huella)) {
+            audienciasLote.set(huella, {
+              rit: ritRaw,
+              fecha,
+              inicio,
+              fin,
+              tipo,
+              sala: salaVal,
+              juez: juezVal,
+              denunciados: new Set()
+            });
+          }
+
+          const registro = audienciasLote.get(huella);
+          if (nomInt && (tipoInt.includes("denunciado") || tipoInt.includes("imputado") || tipoInt.includes("requerido"))) {
+            registro.denunciados.add(nomInt);
+          }
+        }
+
+        let cargados = 0;
+        let duplicados = 0;
+
+        audienciasLote.forEach((aud, huella) => {
           if (existentes.has(huella)) {
             duplicados++;
             return;
           }
-
           existentes.add(huella);
+
+          const partesDetalle = [];
+          if (aud.sala) partesDetalle.push(aud.sala);
+          if (aud.juez) partesDetalle.push(`Juez: ${aud.juez}`);
+          if (aud.denunciados.size > 0) {
+            partesDetalle.push(`Imp: ${Array.from(aud.denunciados).join(", ")}`);
+          }
+
           agendaRef.push({
-            rit, fecha, inicio, fin, tipo, sala,
-            color: '#1d4ed8',
+            rit: aud.rit,
+            fecha: aud.fecha,
+            inicio: aud.inicio,
+            fin: aud.fin,
+            tipo: aud.tipo,
+            sala: partesDetalle.join(" | "),
+            color: inferirColorAudiencia(aud.tipo),
             creadoPor: currentUser.email,
             creadoEn: new Date().toISOString()
           });
           cargados++;
         });
 
-        alert(`Importación finalizada:
-• Audiencias cargadas: ${cargados}
-• Duplicadas omitidas: ${duplicados}
-• Filas con datos incompletos: ${errores}`);
+        let resumen = `Importación finalizada:\n• Audiencias programadas cargadas: ${cargados}`;
+        if (duplicados > 0) resumen += `\n• Duplicadas ya existentes en agenda: ${duplicados}`;
+        if (omitidasNoProgramadas > 0) resumen += `\n• Filas omitidas por estado distinto a Programada: ${omitidasNoProgramadas}`;
+        if (filasIncompletas > 0) resumen += `\n• Filas con datos incompletos: ${filasIncompletas}`;
+
+        alert(resumen);
         e.target.value = '';
       };
       reader.readAsArrayBuffer(file);
