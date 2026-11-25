@@ -109,18 +109,22 @@
       display: none !important;
     }
 
-    /* Etiqueta de rango horario en tarjetas extendidas (> 15 min) */
+    /* Etiqueta de rango horario en tarjetas extendidas (> 15 min): visible solo al pasar el cursor */
     .ev-extended-badge {
-      display: inline-block;
+      display: none;
       margin-top: 3px;
       padding: 1px 5px;
       border-radius: 3px;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.28);
       color: #ffffff;
       font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.2px;
       width: fit-content;
+    }
+    .fc-timegrid-event:hover .ev-extended-badge,
+    .fc-timegrid-event:focus-within .ev-extended-badge {
+      display: inline-block;
     }
 
     /* Vista Mensual */
