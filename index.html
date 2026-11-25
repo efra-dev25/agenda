@@ -12,6 +12,10 @@
   <!-- SheetJS para lectura de Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <!-- jsPDF + AutoTable para exportación directa a PDF 8.5 x 13" (Oficio) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
   <!-- Firebase Compat SDK v10 -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -69,41 +73,54 @@
     .user-badge {
       font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.6rem; border-radius: 4px;
     }
-    #print-banner {
-      display: none;
-      padding: 0.4rem 0.8rem;
-      border-bottom: 2px solid #0f172a;
-      margin-bottom: 0.5rem;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-    }
     #calendar-container {
       flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
     }
     #calendar { height: 100%; }
 
-    /* Estilos de Bloques en FullCalendar (visualización limpia sin hora en diaria, semanal y mensual) */
-    .fc-timegrid-slot { height: 26px !important; }
-    .fc-event {
-      border-radius: 4px !important; padding: 2px 5px !important;
-      font-size: 0.78rem !important; line-height: 1.25 !important;
-      border-left: 4px solid rgba(0,0,0,0.35) !important;
+    /* Bloques en FullCalendar: altura proporcional exacta a duración y colores visibles en vista mensual */
+    .fc-timegrid-slot { height: 28px !important; }
+    .fc-timegrid-event-harness {
+      margin-right: 2px !important;
+    }
+    .fc-timegrid-event {
+      border-radius: 4px !important;
+      padding: 2px 5px !important;
+      font-size: 0.76rem !important;
+      line-height: 1.2 !important;
+      border: 1px solid rgba(255,255,255,0.65) !important;
+      border-left: 4px solid rgba(0,0,0,0.45) !important;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.22);
       cursor: pointer;
+      overflow: hidden;
+    }
+    .fc-timegrid-event .fc-event-main {
+      padding: 1px 2px !important;
+      overflow: hidden;
     }
     .fc-event-time,
     .fc-daygrid-event-dot {
       display: none !important;
     }
+
+    /* Vista Mensual: forzar bloques sólidos coloreados según tipo de audiencia */
     .fc-daygrid-event {
-      color: #fff !important;
+      background-color: var(--ev-bg, #1d4ed8) !important;
+      border: 1px solid var(--ev-bg, #1d4ed8) !important;
+      border-left: 4px solid rgba(0,0,0,0.4) !important;
+      color: #ffffff !important;
+      border-radius: 4px !important;
       padding: 2px 5px !important;
-      margin-bottom: 2px !important;
+      margin: 1px 2px !important;
       white-space: normal !important;
+      cursor: pointer;
     }
+    .fc-daygrid-event .fc-event-main,
     .fc-daygrid-event .fc-event-title {
-      color: #fff !important;
+      color: #ffffff !important;
       font-weight: 600 !important;
+      font-size: 0.74rem !important;
+      line-height: 1.2 !important;
       white-space: normal !important;
     }
     .fc-event-title { font-weight: 600; }
@@ -156,6 +173,7 @@
       background: #fff; border-radius: 8px; width: 95%; max-width: 520px;
       padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;
     }
+    .modal.modal-sm { max-width: 410px; }
     .modal.modal-lg { max-width: 780px; }
     .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
@@ -182,18 +200,14 @@
     .badge-mod { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
     .badge-del { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
 
-    /* Estilos de Impresión */
-    @media print {
-      @page { size: landscape; margin: 10mm; }
-      body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      header, .fc-header-toolbar, .modal-backdrop { display: none !important; }
-      #app-screen { height: auto !important; display: block !important; }
-      #print-banner { display: flex !important; }
-      #calendar-container { padding: 0 !important; overflow: visible !important; height: auto !important; }
-      #calendar, .fc-view-harness, .fc-scroller { height: auto !important; overflow: visible !important; }
-      .fc-timegrid-slot { height: 22px !important; }
-      .fc-event { font-size: 0.72rem !important; }
+    /* Leyenda de colores discreta */
+    .legend-bar {
+      display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap;
+      padding: 0.35rem 1.2rem; background: #f1f5f9; border-bottom: 1px solid #cbd5e1;
+      font-size: 0.75rem; color: #334155;
     }
+    .legend-item { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .legend-dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
   </style>
 </head>
 <body>
@@ -234,16 +248,20 @@
           Repoblar / Conciliar Excel
           <input type="file" id="excel-input-repopulate" accept=".xlsx,.xls" style="display:none;" />
         </label>
-        <button class="btn btn-info" onclick="imprimirVistaActual()">🖨️ Imprimir Vista</button>
+        <button class="btn btn-info" onclick="abrirModalPdf()">📄 Imprimir en PDF</button>
         <button class="btn btn-outline" onclick="descargarPlantillaExcel()">Plantilla Excel</button>
         <span class="user-badge" id="user-display"></span>
         <button class="btn btn-danger" onclick="cerrarSesion()">Salir</button>
       </div>
     </header>
 
-    <div id="print-banner">
-      <strong>Juzgado de Garantía de Illapel — Agenda de Audiencias Programadas</strong>
-      <span id="print-period-label"></span>
+    <div class="legend-bar">
+      <strong>Clasificación:</strong>
+      <span class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span> Control Detención / Cautelares</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#b45309;"></span> Juicio Oral / Preparación</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado / Sobreseimiento</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Supervisión</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras Audiencias</span>
     </div>
 
     <div id="calendar-container">
@@ -296,7 +314,7 @@
 
       <div class="form-group">
         <label>Tipo de Audiencia *</label>
-        <input type="text" id="ev-tipo" list="tipos-sugeridos" placeholder="Ej: Control de Detención, Formalización..." required />
+        <input type="text" id="ev-tipo" list="tipos-sugeridos" placeholder="Ej: Control de Detención, Formalización..." required oninput="autoseleccionarColorModal()" />
         <datalist id="tipos-sugeridos">
           <option value="Control de Detención">
           <option value="Formalización de la Investigación">
@@ -318,11 +336,11 @@
         <div class="form-group">
           <label>Color identificador</label>
           <select id="ev-color">
-            <option value="#1d4ed8">Azul (Estándar)</option>
-            <option value="#dc2626">Rojo (Urgente / Detenido)</option>
+            <option value="#1d4ed8">Azul (Formalización / Estándar)</option>
+            <option value="#dc2626">Rojo (Control Detención / Cautelares)</option>
             <option value="#15803d">Verde (Salida Alternativa / Abreviado)</option>
-            <option value="#b45309">Ámbar (Juicio / Preparación)</option>
-            <option value="#6d28d9">Púrpura (Cautela / Revisión)</option>
+            <option value="#b45309">Ámbar (Juicio Oral / Preparación)</option>
+            <option value="#6d28d9">Púrpura (Cautela / Supervisión)</option>
           </select>
         </div>
       </div>
@@ -337,7 +355,38 @@
     </div>
   </div>
 
-  <!-- 5. MODAL DE CONCILIACIÓN Y REPOBLACIÓN -->
+  <!-- 5. MODAL EXPORTAR / IMPRIMIR EN PDF (TAMAÑO OFICIO 8.5 x 13") -->
+  <div class="modal-backdrop" id="pdf-modal">
+    <div class="modal modal-sm">
+      <h3>Imprimir Agenda en PDF (8,5" x 13")</h3>
+      <p style="font-size:0.83rem; color:#475569; margin-top:0;">
+        Genera el reporte PDF tamaño Oficio chileno (8,5 x 13 pulgadas) correspondiente al período actualmente visible en el calendario (<strong id="pdf-period-preview"></strong>).
+      </p>
+
+      <div class="form-group">
+        <label>Orientación de página *</label>
+        <select id="pdf-orientation">
+          <option value="landscape">Horizontal (Landscape — 13" × 8,5")</option>
+          <option value="portrait">Vertical (Portrait — 8,5" × 13")</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Formato de contenido en PDF</label>
+        <select id="pdf-mode">
+          <option value="grid">Grilla horaria visual (con bloques extendidos por duración)</option>
+          <option value="list">Nómina tabular detallada por día (incluye horarios y sala)</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalPdf()">Cancelar</button>
+        <button type="button" class="btn btn-info" onclick="generarPdfOficio()">Generar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MODAL DE CONCILIACIÓN Y REPOBLACIÓN -->
   <div class="modal-backdrop" id="reconcile-modal">
     <div class="modal modal-lg">
       <h3>Conciliación de Agenda (Excel vs. Sistema)</h3>
@@ -418,8 +467,32 @@
     }
 
     // =========================================================================
-    // FORMATEADOR DE RIT ESTÁNDAR (Ej: RIT O-23-2026) Y AUDIENCIA
+    // FORMATEADOR DE RIT ESTÁNDAR, COLORES Y CÁLCULO DE DURACIÓN VISUAL
     // =========================================================================
+    function normTxt(str) {
+      return String(str ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "");
+    }
+
+    function inferirColorAudiencia(tipo) {
+      const t = normTxt(tipo);
+      if (t.includes("detencion") || t.includes("cautelar") || t.includes("prision")) return "#dc2626";
+      if (t.includes("sobreseimiento") || t.includes("abreviado") || t.includes("suspension") || t.includes("no perseverar") || t.includes("acuerdo reparatorio")) return "#15803d";
+      if (t.includes("juicio") || t.includes("preparacion")) return "#b45309";
+      if (t.includes("21.675") || t.includes("supervision") || t.includes("cautela") || t.includes("revision")) return "#6d28d9";
+      return "#1d4ed8";
+    }
+
+    function resolverColorEvento(item) {
+      if (item && item.color && item.color !== "#1d4ed8") {
+        return item.color;
+      }
+      return inferirColorAudiencia(item ? item.tipo : "");
+    }
+
     function formatearRitVisual(ritRaw, tipoCausa = "") {
       let clean = String(ritRaw || "").trim().toUpperCase().replace(/^RIT\s*/i, "");
       if (!clean) return "";
@@ -453,6 +526,32 @@
       return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
     }
 
+    function aMinutos(hhmm) {
+      const [h, m] = String(hhmm || "00:00").split(":").map(Number);
+      return (h || 0) * 60 + (m || 0);
+    }
+
+    function deMinutos(totalMin) {
+      const h = Math.floor(totalMin / 60) % 24;
+      const m = totalMin % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function calcularFinEfectivo(item) {
+      const iniMin = aMinutos(item.inicio);
+      let finMin = aMinutos(item.fin);
+      if (!item.fin || finMin <= iniMin) {
+        // Si no tiene hora de término explícita, estima duración según tipo de audiencia
+        const t = normTxt(item.tipo);
+        let dur = 15;
+        if (t.includes("juicio oral simplificado")) dur = 60;
+        else if (t.includes("preparacion")) dur = 45;
+        else if (t.includes("abreviado") || t.includes("formalizacion") || t.includes("control de detencion")) dur = 30;
+        finMin = iniMin + dur;
+      }
+      return deMinutos(finMin);
+    }
+
     // =========================================================================
     // 3. INICIALIZACIÓN DE FULLCALENDAR (ESTILO GOOGLE CALENDAR 15 MIN)
     // =========================================================================
@@ -482,7 +581,8 @@
         slotMinTime: '08:00:00',
         slotMaxTime: '18:00:00',
         nowIndicator: true,
-        slotEventOverlap: false,
+        slotEventOverlap: false,       // Posiciona lado a lado eventos superpuestos mostrando claramente su extensión vertical
+        eventMinHeight: 24,            // Cada tramo de 15 min mide ~28px, extendiéndose hacia abajo proporcionalmente
         selectable: true,
         editable: true,
 
@@ -521,6 +621,15 @@
           };
         },
 
+        // Aplica color explícito en vista mensual y vistas horarias
+        eventDidMount: function(info) {
+          const bg = info.event.backgroundColor || '#1d4ed8';
+          info.el.style.setProperty('--ev-bg', bg);
+          info.el.style.backgroundColor = bg;
+          info.el.style.borderColor = bg;
+          info.el.style.color = '#ffffff';
+        },
+
         // Renderizado limpio estricto del contenido de cada bloque (sin horas en ninguna vista)
         eventContent: function(arg) {
           return {
@@ -552,7 +661,6 @@
     }
 
     function actualizarContadoresVisuales() {
-      // Actualiza badges en vista diaria/semanal
       document.querySelectorAll('[data-day-count]').forEach((el) => {
         const iso = el.getAttribute('data-day-count');
         const total = conteoPorFecha[iso] || 0;
@@ -561,7 +669,6 @@
         else el.classList.remove('has-events');
       });
 
-      // Actualiza badges en vista mensual
       document.querySelectorAll('[data-month-count]').forEach((el) => {
         const iso = el.getAttribute('data-month-count');
         const total = conteoPorFecha[iso] || 0;
@@ -572,14 +679,6 @@
           el.style.display = 'none';
         }
       });
-    }
-
-    function imprimirVistaActual() {
-      if (!calendar) return;
-      const tituloVista = calendar.view.title || "";
-      const hoy = new Date().toLocaleString('es-CL');
-      document.getElementById('print-period-label').textContent = `${tituloVista} | Impreso: ${hoy}`;
-      window.print();
     }
 
     // =========================================================================
@@ -600,13 +699,16 @@
 
         calendar.removeAllEvents();
         Object.entries(eventosCache).forEach(([id, item]) => {
+          const colorEv = resolverColorEvento(item);
+          const finEv = calcularFinEfectivo(item);
           calendar.addEvent({
             id: id,
             title: formatearTextoBloque(item.rit, item.tipo, item.tipoCausa),
             start: `${item.fecha}T${item.inicio}:00`,
-            end: `${item.fecha}T${item.fin}:00`,
-            backgroundColor: item.color || '#1d4ed8',
-            borderColor: item.color || '#1d4ed8'
+            end: `${item.fecha}T${finEv}:00`,
+            backgroundColor: colorEv,
+            borderColor: colorEv,
+            textColor: '#ffffff'
           });
         });
 
@@ -644,6 +746,9 @@
       if (!item) return;
 
       const ritEtiqueta = formatearRitVisual(item.rit, item.tipoCausa);
+      const finEfectivo = calcularFinEfectivo(item);
+      const durMin = Math.max(15, aMinutos(finEfectivo) - aMinutos(item.inicio));
+
       document.getElementById('det-id').value = id;
       document.getElementById('det-title').textContent = `${ritEtiqueta}`;
 
@@ -651,7 +756,7 @@
         ["Causa:", ritEtiqueta],
         ["Tipo de Audiencia:", item.tipo || "-"],
         ["Fecha:", item.fecha ? item.fecha.split("-").reverse().join("-") : "-"],
-        ["Horario:", `${item.inicio || "-"} a ${item.fin || "-"} hrs`],
+        ["Horario:", `${item.inicio || "-"} a ${finEfectivo} hrs (${durMin} min)`],
         ["Sala / Detalle:", item.sala || "No especificada"]
       ];
       if (item.tipoCausa) filas.push(["Tipo Causa:", item.tipoCausa]);
@@ -688,6 +793,11 @@
       }
     }
 
+    function autoseleccionarColorModal() {
+      const tipo = document.getElementById('ev-tipo').value;
+      document.getElementById('ev-color').value = inferirColorAudiencia(tipo);
+    }
+
     function abrirModalNuevo(fecha = '', inicio = '09:00', fin = '09:15') {
       document.getElementById('modal-title').textContent = 'Registrar Nueva Audiencia';
       document.getElementById('ev-id').value = '';
@@ -712,10 +822,10 @@
       document.getElementById('ev-rit').value = formatearRitVisual(item.rit, item.tipoCausa).replace(/^RIT\s*/i, "");
       document.getElementById('ev-fecha').value = item.fecha || '';
       document.getElementById('ev-inicio').value = item.inicio || '';
-      document.getElementById('ev-fin').value = item.fin || '';
+      document.getElementById('ev-fin').value = calcularFinEfectivo(item);
       document.getElementById('ev-tipo').value = item.tipo || '';
       document.getElementById('ev-sala').value = item.sala || '';
-      document.getElementById('ev-color').value = item.color || '#1d4ed8';
+      document.getElementById('ev-color').value = resolverColorEvento(item);
 
       const infoAudit = item.modificadoPor
         ? `Última edición: ${item.modificadoPor} (${new Date(item.modificadoEn).toLocaleString('es-CL')})`
@@ -776,26 +886,256 @@
     }
 
     // =========================================================================
-    // 6. PARSEO DE EXCEL UNIJUD (FILA 8 ENCABEZADOS, COL M ESTADO = PROGRAMADA)
+    // 6. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
+    // =========================================================================
+    function abrirModalPdf() {
+      if (!calendar) return;
+      document.getElementById('pdf-period-preview').textContent = calendar.view.title || "";
+      document.getElementById('pdf-modal').style.display = 'flex';
+    }
+
+    function cerrarModalPdf() {
+      document.getElementById('pdf-modal').style.display = 'none';
+    }
+
+    function hexToRgb(hex) {
+      const clean = String(hex || "#1d4ed8").replace("#", "");
+      const num = parseInt(clean, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+
+    function generarPdfOficio() {
+      if (!calendar || !window.jspdf) return;
+      const orientation = document.getElementById('pdf-orientation').value; // 'portrait' o 'landscape'
+      const mode = document.getElementById('pdf-mode').value;               // 'grid' o 'list'
+
+      const { jsPDF } = window.jspdf;
+      // Tamaño exacto 8.5 x 13 pulgadas = 612 x 936 puntos PDF
+      const doc = new jsPDF({
+        orientation: orientation,
+        unit: 'pt',
+        format: [612, 936]
+      });
+
+      const view = calendar.view;
+      const startISO = fechaLocalISO(view.activeStart);
+      const endISO   = fechaLocalISO(view.activeEnd); // exclusivo
+
+      // Filtrar eventos visibles en el rango activo del calendario
+      const eventosRango = Object.values(eventosCache)
+        .filter(ev => ev && ev.fecha >= startISO && ev.fecha < endISO)
+        .sort((a, b) => (a.fecha + a.inicio).localeCompare(b.fecha + b.inicio));
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 28;
+      const tituloPeriodo = view.title || `${startISO} a ${endISO}`;
+
+      // Encabezado institucional
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin, margin, pageW - margin * 2, 34, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text("JUZGADO DE GARANTÍA DE ILLAPEL — AGENDA DE AUDIENCIAS", margin + 10, margin + 15);
+      doc.setFontSize(8.5);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Período: ${tituloPeriodo}   |   Total audiencias programadas: ${eventosRango.length}`, margin + 10, margin + 27);
+
+      const startY = margin + 44;
+
+      if (mode === 'list') {
+        // MODO NÓMINA TABULAR DETALLADA
+        const bodyRows = eventosRango.map(ev => {
+          const finEf = calcularFinEfectivo(ev);
+          return [
+            ev.fecha.split("-").reverse().join("-"),
+            `${ev.inicio} - ${finEf}`,
+            formatearRitVisual(ev.rit, ev.tipoCausa),
+            ev.tipo,
+            ev.sala || "-"
+          ];
+        });
+
+        doc.autoTable({
+          startY,
+          margin: { left: margin, right: margin, bottom: 30 },
+          head: [["Fecha", "Horario", "Causa (RIT)", "Tipo de Audiencia", "Sala / Detalle"]],
+          body: bodyRows.length ? bodyRows : [["-", "-", "-", "Sin audiencias programadas en este período", "-"]],
+          styles: { fontSize: 8, cellPadding: 4, lineColor: [203, 213, 225], lineWidth: 0.4 },
+          headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
+          columnStyles: {
+            0: { cellWidth: 62 },
+            1: { cellWidth: 72 },
+            2: { cellWidth: 85, fontStyle: 'bold' },
+            4: { cellWidth: orientation === 'landscape' ? 280 : 150 }
+          },
+          didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 2 && eventosRango[data.row.index]) {
+              const rgb = hexToRgb(resolverColorEvento(eventosRango[data.row.index]));
+              data.cell.styles.textColor = rgb;
+            }
+          }
+        });
+      } else {
+        // MODO GRILLA HORARIA VISUAL CON BLOQUES EXTENDIDOS SEGÚN DURACIÓN
+        const diasCols = [];
+        const cursor = new Date(view.activeStart.getTime());
+        while (fechaLocalISO(cursor) < endISO) {
+          const iso = fechaLocalISO(cursor);
+          const diaSem = cursor.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' });
+          const cant = conteoPorFecha[iso] || 0;
+          diasCols.push({ iso, label: `${diaSem.toUpperCase()} (${cant} aud.)` });
+          cursor.setDate(cursor.getDate() + 1);
+          if (diasCols.length >= 31) break;
+        }
+
+        // Si es vista mensual (más de 7 días), imprimir resumen calendario por día con colores
+        if (diasCols.length > 7) {
+          const rowsMes = diasCols.map(d => {
+            const evsDia = eventosRango.filter(e => e.fecha === d.iso);
+            const resumen = evsDia.length
+              ? evsDia.map(e => formatearTextoBloque(e.rit, e.tipo, e.tipoCausa)).join("
+")
+              : "Sin audiencias programadas";
+            return [d.label, resumen];
+          });
+
+          doc.autoTable({
+            startY,
+            margin: { left: margin, right: margin, bottom: 30 },
+            head: [["Día / Total", "Audiencias Programadas"]],
+            body: rowsMes,
+            styles: { fontSize: 7.5, cellPadding: 3.5, lineColor: [203, 213, 225], lineWidth: 0.4 },
+            headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
+            columnStyles: { 0: { cellWidth: 115, fontStyle: 'bold' } }
+          });
+        } else {
+          // Vista Diaria (1 col) o Semanal (7 cols): dibujar grilla de 08:00 a 18:00 (40 tramos de 15 min)
+          const startMin = 8 * 60;
+          const endMin = 18 * 60;
+          const totalSlots = (endMin - startMin) / 15; // 40 slots
+          const timeColW = 38;
+          const gridX = margin + timeColW;
+          const gridW = pageW - margin * 2 - timeColW;
+          const colW = gridW / diasCols.length;
+          const headerH = 22;
+          const gridY = startY + headerH;
+          const gridH = pageH - gridY - 28;
+          const slotH = gridH / totalSlots;
+
+          // Cabeceras de días
+          diasCols.forEach((col, idx) => {
+            const x = gridX + idx * colW;
+            doc.setFillColor(241, 245, 249);
+            doc.setDrawColor(203, 213, 225);
+            doc.rect(x, startY, colW, headerH, 'FD');
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(7.5);
+            doc.setFont(undefined, 'bold');
+            doc.text(col.label, x + colW / 2, startY + 14, { align: 'center' });
+          });
+
+          // Líneas horarias cada 15 min
+          for (let s = 0; s <= totalSlots; s++) {
+            const y = gridY + s * slotH;
+            const isHour = s % 4 === 0;
+            const isHalf = s % 2 === 0;
+            doc.setDrawColor(isHour ? 148 : 226, isHour ? 163 : 232, isHour ? 184 : 240);
+            doc.setLineWidth(isHour ? 0.6 : 0.3);
+            doc.line(gridX, y, gridX + gridW, y);
+
+            if (isHalf && s < totalSlots) {
+              doc.setTextColor(71, 85, 105);
+              doc.setFontSize(6.5);
+              doc.setFont(undefined, isHour ? 'bold' : 'normal');
+              doc.text(deMinutos(startMin + s * 15), margin + timeColW - 4, y + 7, { align: 'right' });
+            }
+          }
+
+          // Bordes verticales y bloques proporcionales por columna
+          diasCols.forEach((col, dIdx) => {
+            const colX = gridX + dIdx * colW;
+            doc.setDrawColor(203, 213, 225);
+            doc.setLineWidth(0.5);
+            doc.rect(colX, gridY, colW, gridH, 'S');
+
+            const evsCol = eventosRango
+              .filter(e => e.fecha === col.iso)
+              .map(e => {
+                const sM = Math.max(startMin, aMinutos(e.inicio));
+                const eM = Math.min(endMin, Math.max(sM + 15, aMinutos(calcularFinEfectivo(e))));
+                return { ...e, sM, eM };
+              })
+              .sort((a, b) => a.sM - b.sM || (b.eM - b.sM) - (a.eM - a.sM));
+
+            // Asignar carriles laterales si hay superposición horaria
+            const lanes = [];
+            evsCol.forEach(ev => {
+              let laneIdx = lanes.findIndex(endLane => endLane <= ev.sM);
+              if (laneIdx === -1) {
+                laneIdx = lanes.length;
+                lanes.push(ev.eM);
+              } else {
+                lanes[laneIdx] = ev.eM;
+              }
+              ev.lane = laneIdx;
+            });
+            const totalLanes = Math.max(1, lanes.length);
+
+            evsCol.forEach(ev => {
+              const subW = (colW - 2) / totalLanes;
+              const bx = colX + 1 + ev.lane * subW;
+              const by = gridY + ((ev.sM - startMin) / 15) * slotH + 0.5;
+              const bh = Math.max(slotH - 1, ((ev.eM - ev.sM) / 15) * slotH - 1);
+
+              const rgb = hexToRgb(resolverColorEvento(ev));
+              doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+              doc.setDrawColor(255, 255, 255);
+              doc.setLineWidth(0.5);
+              doc.roundedRect(bx, by, subW - 1, bh, 2, 2, 'FD');
+
+              doc.setTextColor(255, 255, 255);
+              doc.setFontSize(6.2);
+              doc.setFont(undefined, 'bold');
+              const etiqueta = formatearTextoBloque(ev.rit, ev.tipo, ev.tipoCausa);
+              const lines = doc.splitTextToSize(etiqueta, Math.max(18, subW - 5));
+              const maxLines = Math.max(1, Math.floor((bh - 3) / 7.2));
+              doc.text(lines.slice(0, maxLines), bx + 2.5, by + 7.5);
+            });
+          });
+        }
+      }
+
+      // Pie de página con número de página y fecha de emisión
+      const totalPages = doc.internal.getNumberOfPages();
+      const fechaImpresion = new Date().toLocaleString('es-CL');
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Emitido: ${fechaImpresion} — Formato Oficio 8,5" x 13"`, margin, pageH - 12);
+        doc.text(`Página ${p} de ${totalPages}`, pageW - margin, pageH - 12, { align: 'right' });
+      }
+
+      const nombreArchivo = `Agenda_JG_Illapel_${startISO}_${orientation === 'landscape' ? 'Horizontal' : 'Vertical'}.pdf`;
+      doc.save(nombreArchivo);
+      cerrarModalPdf();
+    }
+
+    // =========================================================================
+    // 7. PARSEO DE EXCEL UNIJUD (FILA 8 ENCABEZADOS, COL M ESTADO = PROGRAMADA)
     // =========================================================================
     function descargarPlantillaExcel() {
       const datos = [
         { "RIT/Año": "O-23-2026",   "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "09:30", "Tipo audiencia": "Control de Detención", "Sala": "PRIMERA SALA" },
-        { "RIT/Año": "O-890-2026",  "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "09:45", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "PRIMERA SALA" },
+        { "RIT/Año": "O-890-2026",  "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "10:00", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "PRIMERA SALA" },
         { "RIT/Año": "O-1102-2026", "Día": "26-11-2026", "Hora inicio": "09:15", "Hora término": "09:30", "Tipo audiencia": "Cautela de Garantías", "Sala": "PRIMERA SALA" }
       ];
       const ws = XLSX.utils.json_to_sheet(datos);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Audiencias");
       XLSX.writeFile(wb, "Plantilla_Carga_Agenda.xlsx");
-    }
-
-    function normTxt(str) {
-      return String(str ?? "")
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "");
     }
 
     function normalizarFechaExcel(val) {
@@ -824,21 +1164,6 @@
       const m = String(val).trim().match(/^(\d{1,2}):(\d{2})/);
       if (m) return `${m[1].padStart(2,'0')}:${m[2]}`;
       return null;
-    }
-
-    function sumar15Min(hhmm) {
-      const [h, m] = hhmm.split(':').map(Number);
-      const total = h * 60 + m + 15;
-      return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
-    }
-
-    function inferirColorAudiencia(tipo) {
-      const t = normTxt(tipo);
-      if (t.includes("detencion") || t.includes("cautelar")) return "#dc2626";
-      if (t.includes("sobreseimiento") || t.includes("abreviado") || t.includes("suspension") || t.includes("no perseverar")) return "#15803d";
-      if (t.includes("juicio") || t.includes("preparacion")) return "#b45309";
-      if (t.includes("21.675") || t.includes("supervision") || t.includes("cautela")) return "#6d28d9";
-      return "#1d4ed8";
     }
 
     function parsearPlanillaUnijud(matriz) {
@@ -915,14 +1240,15 @@
 
         const fecha = normalizarFechaExcel(row[colFecha]);
         const inicio = normalizarHoraExcel(row[colHorario]);
-        let fin = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
+        const finRaw = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
         const tipo = String(row[colAud] ?? "").trim();
 
         if (!ritConLetra || !fecha || !inicio || !tipo) {
           filasInvalidas++;
           continue;
         }
-        if (!fin || fin <= inicio) fin = sumar15Min(inicio);
+
+        const fin = calcularFinEfectivo({ inicio, fin: finRaw, tipo });
 
         fechasDetectadas.add(fecha);
         const rucVal  = colRuc !== -1 ? String(row[colRuc] ?? "").trim() : "";
@@ -1004,7 +1330,7 @@
     }
 
     // =========================================================================
-    // 7. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
+    // 8. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
     // =========================================================================
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -1060,7 +1386,7 @@
     });
 
     // =========================================================================
-    // 8. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // 9. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
     // =========================================================================
     document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
       const file = e.target.files[0];
