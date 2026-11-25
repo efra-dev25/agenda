@@ -79,7 +79,7 @@
     }
     #calendar { height: 100%; }
 
-    /* Bloques en FullCalendar */
+    /* Bloques en FullCalendar: cada slot de 15 min mide 28px exactos */
     .fc-timegrid-slot { height: 28px !important; }
     .fc-timegrid-event-harness {
       margin-right: 2px !important;
@@ -89,19 +89,38 @@
       padding: 2px 5px !important;
       font-size: 0.76rem !important;
       line-height: 1.2 !important;
-      border: 1px solid rgba(255,255,255,0.65) !important;
+      border: 1px solid rgba(255,255,255,0.75) !important;
       border-left: 4px solid rgba(0,0,0,0.45) !important;
       box-shadow: 0 1px 3px rgba(15,23,42,0.22);
       cursor: pointer;
       overflow: hidden;
+      height: 100% !important;
     }
     .fc-timegrid-event .fc-event-main {
       padding: 1px 2px !important;
       overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .fc-event-time,
     .fc-daygrid-event-dot {
       display: none !important;
+    }
+
+    /* Etiqueta de rango horario en tarjetas extendidas (> 15 min) */
+    .ev-extended-badge {
+      display: inline-block;
+      margin-top: 3px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.25);
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      width: fit-content;
     }
 
     /* Vista Mensual */
@@ -583,18 +602,44 @@
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     }
 
+    // Extrae cualquier hora de término escrita explícitamente en textos (ej: "09:00 a 10:30" o "Término: 10:15")
+    function extraerHoraTerminoDesdeTexto(texto, inicioMin) {
+      const s = String(texto || "");
+      const mRango = s.match(/(\d{1,2}:\d{2})\s*(?:-|a|hasta|al)\s*(\d{1,2}:\d{2})/i);
+      if (mRango) {
+        const finM = aMinutos(mRango[2]);
+        if (finM > inicioMin) return deMinutos(finM);
+      }
+      const mTerm = s.match(/(?:termino|término|fin|hasta)\s*[:\-]?\s*(\d{1,2}:\d{2})/i);
+      if (mTerm) {
+        const finM = aMinutos(mTerm[1]);
+        if (finM > inicioMin) return deMinutos(finM);
+      }
+      return null;
+    }
+
+    // Calcula la hora de término efectiva:
+    // 1) Usa item.fin explícito si es posterior a item.inicio
+    // 2) Si no existe, busca rango horario en sala/tipo/observaciones
+    // 3) Si tampoco existe, estima duración según naturaleza procesal de la audiencia
     function calcularFinEfectivo(item) {
       const iniMin = aMinutos(item.inicio);
-      let finMin = aMinutos(item.fin);
-      if (!item.fin || finMin <= iniMin) {
-        const t = normTxt(item.tipo);
-        let dur = 15;
-        if (t.includes("juicio oral simplificado")) dur = 60;
-        else if (t.includes("preparacion")) dur = 45;
-        else if (t.includes("abreviado") || t.includes("formalizacion") || t.includes("control de detencion")) dur = 30;
-        finMin = iniMin + dur;
+      const finExplicit = item.fin ? normalizarHoraExcel(item.fin) : null;
+      const finMin = finExplicit ? aMinutos(finExplicit) : 0;
+
+      if (finExplicit && finMin > iniMin) {
+        return deMinutos(finMin);
       }
-      return deMinutos(finMin);
+
+      const desdeTexto = extraerHoraTerminoDesdeTexto(`${item.sala || ""} ${item.tipo || ""}`, iniMin);
+      if (desdeTexto) return desdeTexto;
+
+      const t = normTxt(item.tipo);
+      let dur = 15;
+      if (t.includes("juicio oral simplificado") || t.includes("juicio oral")) dur = 60;
+      else if (t.includes("preparacion")) dur = 45;
+      else if (t.includes("abreviado") || t.includes("formalizacion") || t.includes("control de detencion")) dur = 30;
+      return deMinutos(iniMin + dur);
     }
 
     // =========================================================================
@@ -670,9 +715,23 @@
           info.el.style.backgroundColor = bg;
           info.el.style.borderColor = bg;
           info.el.style.color = '#ffffff';
+
+          const props = info.event.extendedProps || {};
+          if (props.duracionMin > 15 && info.view.type.startsWith('timeGrid')) {
+            const slots = props.duracionMin / 15;
+            info.el.style.minHeight = `${Math.max(26, Math.round(slots * 28) - 2)}px`;
+          }
         },
 
         eventContent: function(arg) {
+          const props = arg.event.extendedProps || {};
+          const isTimeGrid = arg.view.type.startsWith('timeGrid');
+          if (isTimeGrid && props.duracionMin > 15) {
+            return {
+              html: `<div class="fc-event-title">${arg.event.title}</div>
+                     <div class="ev-extended-badge">⏱ ${props.inicioHora} – ${props.finHora} (${props.duracionMin} min)</div>`
+            };
+          }
           return {
             html: `<div class="fc-event-title">${arg.event.title}</div>`
           };
@@ -741,15 +800,23 @@
         calendar.removeAllEvents();
         Object.entries(eventosCache).forEach(([id, item]) => {
           const colorEv = resolverColorEvento(item);
-          const finEv = calcularFinEfectivo(item);
+          const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
+          const finEv = calcularFinEfectivo({ ...item, inicio: inicioNorm });
+          const durMin = Math.max(15, aMinutos(finEv) - aMinutos(inicioNorm));
+
           calendar.addEvent({
             id: id,
             title: formatearTextoBloque(item.rit, item.tipo, item.tipoCausa),
-            start: `${item.fecha}T${item.inicio}:00`,
+            start: `${item.fecha}T${inicioNorm}:00`,
             end: `${item.fecha}T${finEv}:00`,
             backgroundColor: colorEv,
             borderColor: colorEv,
-            textColor: '#ffffff'
+            textColor: '#ffffff',
+            extendedProps: {
+              inicioHora: inicioNorm,
+              finHora: finEv,
+              duracionMin: durMin
+            }
           });
         });
 
@@ -787,8 +854,9 @@
       if (!item) return;
 
       const ritEtiqueta = formatearRitVisual(item.rit, item.tipoCausa);
-      const finEfectivo = calcularFinEfectivo(item);
-      const durMin = Math.max(15, aMinutos(finEfectivo) - aMinutos(item.inicio));
+      const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
+      const finEfectivo = calcularFinEfectivo({ ...item, inicio: inicioNorm });
+      const durMin = Math.max(15, aMinutos(finEfectivo) - aMinutos(inicioNorm));
 
       document.getElementById('det-id').value = id;
       document.getElementById('det-title').textContent = `${ritEtiqueta}`;
@@ -797,7 +865,7 @@
         ["Causa:", ritEtiqueta],
         ["Tipo de Audiencia:", item.tipo || "-"],
         ["Fecha:", item.fecha ? item.fecha.split("-").reverse().join("-") : "-"],
-        ["Horario:", `${item.inicio || "-"} a ${finEfectivo} hrs (${durMin} min)`],
+        ["Horario:", `${inicioNorm || "-"} a ${finEfectivo} hrs (${durMin} min)`],
         ["Sala / Detalle:", item.sala || "No especificada"]
       ];
       if (item.tipoCausa) filas.push(["Tipo Causa:", item.tipoCausa]);
@@ -858,12 +926,13 @@
       const item = eventosCache[id];
       if (!item) return;
 
+      const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
       document.getElementById('modal-title').textContent = 'Editar Audiencia';
       document.getElementById('ev-id').value = id;
       document.getElementById('ev-rit').value = formatearRitVisual(item.rit, item.tipoCausa).replace(/^RIT\s*/i, "");
       document.getElementById('ev-fecha').value = item.fecha || '';
-      document.getElementById('ev-inicio').value = item.inicio || '';
-      document.getElementById('ev-fin').value = calcularFinEfectivo(item);
+      document.getElementById('ev-inicio').value = inicioNorm || '';
+      document.getElementById('ev-fin').value = calcularFinEfectivo({ ...item, inicio: inicioNorm });
       document.getElementById('ev-tipo').value = item.tipo || '';
       document.getElementById('ev-sala').value = item.sala || '';
       document.getElementById('ev-color').value = resolverColorEvento(item);
@@ -1152,7 +1221,7 @@
     }
 
     // =========================================================================
-    // 7. PARSEO DE EXCEL UNIJUD
+    // 7. PARSEO DE EXCEL UNIJUD (SOPORTA HORARIOS CON RANGO "09:00 - 10:30" Y COLUMNA TÉRMINO)
     // =========================================================================
     function descargarPlantillaExcel() {
       const datos = [
@@ -1189,9 +1258,26 @@
         const m = totalMin % 60;
         return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
       }
-      const m = String(val).trim().match(/^(\d{1,2}):(\d{2})/);
+      const m = String(val).trim().match(/(\d{1,2}):(\d{2})/);
       if (m) return `${m[1].padStart(2,'0')}:${m[2]}`;
       return null;
+    }
+
+    // Parsea celdas de horario que pueden venir como "09:00", número Excel, o rango "09:00 - 10:15" / "09:00 a 10:15"
+    function parsearCeldaHorarioExcel(val) {
+      if (val === undefined || val === null || val === '') return { inicio: null, fin: null };
+      if (typeof val === 'number') {
+        return { inicio: normalizarHoraExcel(val), fin: null };
+      }
+      const str = String(val).trim();
+      const mRango = str.match(/(\d{1,2}:\d{2})\s*(?:-|a|hasta|al)\s*(\d{1,2}:\d{2})/i);
+      if (mRango) {
+        return {
+          inicio: normalizarHoraExcel(mRango[1]),
+          fin: normalizarHoraExcel(mRango[2])
+        };
+      }
+      return { inicio: normalizarHoraExcel(str), fin: null };
     }
 
     function parsearPlanillaUnijud(matriz) {
@@ -1221,7 +1307,8 @@
       };
 
       const colHorario   = colOf(["horario", "hora inicio", "inicio"], ["horario", "hora inicio"]);
-      const colTermino   = colOf(["hora termino", "termino", "fin"], ["termino"]);
+      const colTermino   = colOf(["hora termino", "hora_termino", "termino", "fin", "hora fin"], ["termino", "hora fin"]);
+      const colDuracion  = colOf(["duracion", "minutos", "tiempo"], ["duracion"]);
       const colRuc       = colOf(["idf_rolunico", "ruc"]);
       const colTipoCausa = colOf(["tipo_causa", "tipo causa"]);
       const colRit       = colOf(["rit", "rit/ano", "rit-ano"], ["rit"]);
@@ -1267,8 +1354,19 @@
         const ritConLetra = formatearRitVisual(ritRaw, tipoCausaVal).replace(/^RIT\s*/i, "");
 
         const fecha = normalizarFechaExcel(row[colFecha]);
-        const inicio = normalizarHoraExcel(row[colHorario]);
-        const finRaw = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
+        const horarioParsed = parsearCeldaHorarioExcel(row[colHorario]);
+        const inicio = horarioParsed.inicio;
+        const finCol = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
+        let finRaw = finCol || horarioParsed.fin;
+
+        // Si existe columna de duración en minutos y aún no hay hora de término explícita
+        if (!finRaw && colDuracion !== -1 && inicio) {
+          const durVal = parseInt(String(row[colDuracion] ?? "").replace(/\D/g, ""), 10);
+          if (durVal > 0) {
+            finRaw = deMinutos(aMinutos(inicio) + durVal);
+          }
+        }
+
         const tipo = String(row[colAud] ?? "").trim();
 
         if (!ritConLetra || !fecha || !inicio || !tipo) {
@@ -1302,6 +1400,12 @@
             denunciados: new Set(),
             todosIntervinientes: new Set()
           });
+        } else {
+          // Si otra fila de la misma audiencia trae un término mayor, conservar el rango más amplio
+          const regExist = audienciasMap.get(clave);
+          if (aMinutos(fin) > aMinutos(regExist.fin)) {
+            regExist.fin = fin;
+          }
         }
 
         const reg = audienciasMap.get(clave);
@@ -1447,10 +1551,12 @@
           nuevasEnExcel.push(audExcel);
         } else {
           const audSis = sistemaMap.get(clave);
+          const finSisEf = calcularFinEfectivo(audSis);
           const diffTipo = normTxt(audExcel.tipo) !== normTxt(audSis.tipo);
           const diffSala = normTxt(audExcel.sala) !== normTxt(audSis.sala);
-          if (diffTipo || diffSala) {
-            conDiferencias.push({ excel: audExcel, sistema: audSis, diffTipo, diffSala });
+          const diffFin  = audExcel.fin !== finSisEf;
+          if (diffTipo || diffSala || diffFin) {
+            conDiferencias.push({ excel: audExcel, sistema: audSis, diffTipo, diffSala, diffFin });
           } else {
             coincidentes.push({ excel: audExcel, sistema: audSis });
           }
@@ -1483,7 +1589,7 @@
           <div class="kpi-card"><div class="num">${res.audiencias.length}</div><div class="lbl">Programadas en Excel</div></div>
           <div class="kpi-card"><div class="num">${coincidentes.length}</div><div class="lbl">Coincidentes exactas</div></div>
           <div class="kpi-card"><div class="num" style="color:#15803d;">${nuevasEnExcel.length}</div><div class="lbl">Nuevas en Excel</div></div>
-          <div class="kpi-card"><div class="num" style="color:#b45309;">${conDiferencias.length}</div><div class="lbl">Con cambios (Tipo/Sala)</div></div>
+          <div class="kpi-card"><div class="num" style="color:#b45309;">${conDiferencias.length}</div><div class="lbl">Con cambios (Tipo/Horario/Sala)</div></div>
           <div class="kpi-card"><div class="num" style="color:#dc2626;">${sobrantesEnSistema.length}</div><div class="lbl">En Sistema pero no en Excel</div></div>
         </div>
       `;
@@ -1501,9 +1607,9 @@
           html += `<div class="diff-section">
             <h4>1. En Excel pero NO en Sistema (${nuevasEnExcel.length}) <span class="badge-new">NUEVAS</span></h4>
             <table class="diff-table">
-              <thead><tr><th>Fecha</th><th>Hora</th><th>RIT</th><th>Audiencia</th><th>Detalle / Sala</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Horario</th><th>RIT</th><th>Audiencia</th><th>Detalle / Sala</th></tr></thead>
               <tbody>
-                ${nuevasEnExcel.map(a => `<tr><td>${a.fecha}</td><td>${a.inicio}</td><td>${formatearRitVisual(a.rit, a.tipoCausa)}</td><td>${a.tipo}</td><td>${a.sala || '-'}</td></tr>`).join('')}
+                ${nuevasEnExcel.map(a => `<tr><td>${a.fecha}</td><td>${a.inicio} - ${a.fin}</td><td>${formatearRitVisual(a.rit, a.tipoCausa)}</td><td>${a.tipo}</td><td>${a.sala || '-'}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>`;
@@ -1519,8 +1625,8 @@
                   <tr>
                     <td>${d.excel.fecha} ${d.excel.inicio}</td>
                     <td>${formatearRitVisual(d.excel.rit, d.excel.tipoCausa)}</td>
-                    <td>${d.sistema.tipo}<br><small style="color:#64748b;">${d.sistema.sala || '-'}</small></td>
-                    <td>${d.excel.tipo}<br><small style="color:#64748b;">${d.excel.sala || '-'}</small></td>
+                    <td>${d.sistema.tipo} (${d.sistema.inicio}-${calcularFinEfectivo(d.sistema)})<br><small style="color:#64748b;">${d.sistema.sala || '-'}</small></td>
+                    <td>${d.excel.tipo} (${d.excel.inicio}-${d.excel.fin})<br><small style="color:#64748b;">${d.excel.sala || '-'}</small></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1532,9 +1638,9 @@
           html += `<div class="diff-section">
             <h4>3. En Sistema pero NO en Excel Programada (${sobrantesEnSistema.length}) <span class="badge-del">NO COINCIDENTE / REPROGRAMADA</span></h4>
             <table class="diff-table">
-              <thead><tr><th>Fecha</th><th>Hora</th><th>RIT</th><th>Audiencia en Sistema</th><th>Detalle / Sala</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Horario</th><th>RIT</th><th>Audiencia en Sistema</th><th>Detalle / Sala</th></tr></thead>
               <tbody>
-                ${sobrantesEnSistema.map(s => `<tr><td>${s.fecha}</td><td>${s.inicio}</td><td>${formatearRitVisual(s.rit, s.tipoCausa)}</td><td>${s.tipo}</td><td>${s.sala || '-'}</td></tr>`).join('')}
+                ${sobrantesEnSistema.map(s => `<tr><td>${s.fecha}</td><td>${s.inicio} - ${calcularFinEfectivo(s)}</td><td>${formatearRitVisual(s.rit, s.tipoCausa)}</td><td>${s.tipo}</td><td>${s.sala || '-'}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>`;
@@ -1606,6 +1712,7 @@
             rit: d.excel.rit,
             ruc: d.excel.ruc || d.sistema.ruc || "",
             tipoCausa: d.excel.tipoCausa || d.sistema.tipoCausa || "",
+            fin: d.excel.fin,
             tipo: d.excel.tipo,
             sala: d.excel.sala,
             intervinientes: d.excel.intervinientes || d.sistema.intervinientes || "",
