@@ -777,6 +777,19 @@
       border-left-style: solid !important;
       opacity: 0.88;
     }
+    .fc-event.is-receso-block {
+      background-color: #eab308 !important;
+      border-color: #ca8a04 !important;
+      border-left: 4px solid #fef08a !important;
+      color: #18181b !important;
+      font-weight: 700 !important;
+      cursor: default !important;
+    }
+    .fc-event.is-receso-block .fc-event-title,
+    .fc-event.is-receso-block .fc-event-main {
+      color: #18181b !important;
+      font-weight: 700 !important;
+    }
 
     .ev-extended-badge {
       display: none;
@@ -1253,6 +1266,7 @@
             <div class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado</div>
             <div class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Sup.</div>
             <div class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#eab308;"></span> Receso Institucional (Lun–Jue 10:45–11:00)</div>
             <div class="legend-item"><span class="legend-dot dashed"></span> Bloqueo Jefatura (Google — Flexible)</div>
             <div class="legend-item"><span class="legend-dot" style="background:#f28b82;"></span> Día Feriado Legal</div>
           </div>
@@ -2495,6 +2509,7 @@
 
       renderizarMiniCalendario();
       if (calendar) {
+        renderizarEventosCalendario();
         aplicarEstilosFeriadosDOM();
         calendar.render();
       }
@@ -2612,6 +2627,100 @@
       return item && item.tipoRegistro === 'bloqueo_jefatura';
     }
 
+    function esRecesoPredefinido(item) {
+      return item && item.tipoRegistro === 'receso_predefinido';
+    }
+
+    function esDiaLunesAJueves(isoDate) {
+      if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return false;
+      const [y, m, d] = isoDate.split("-").map(Number);
+      const dow = new Date(y, m - 1, d).getDay(); // 1=Lun, 2=Mar, 3=Mié, 4=Jue
+      return dow >= 1 && dow <= 4;
+    }
+
+    function esEventoRecesoGoogle(gev) {
+      if (!gev) return false;
+      const tituloNorm = normTxt(gev.title).replace(/\*/g, "").trim();
+      if (!tituloNorm.includes("receso")) return false;
+      const esLunJue = esDiaLunesAJueves(gev.fecha);
+      const iniM = aMinutos(gev.inicio);
+      const finM = aMinutos(gev.fin);
+      const coincideFranja = (iniM === 10 * 60 + 45 && finM === 11 * 60) || (iniM >= 10 * 60 + 40 && finM <= 11 * 60 + 5);
+      return esLunJue && coincideFranja;
+    }
+
+    function generarEventosRecesoParaVista() {
+      if (!calendar || !calendar.view) return [];
+      const start = new Date(calendar.view.activeStart.getTime());
+      const end = new Date(calendar.view.activeEnd.getTime());
+      const lista = [];
+      const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      while (cursor < end) {
+        const dow = cursor.getDay();
+        const iso = fechaLocalISO(cursor);
+        // Lunes (1) a Jueves (4), excluyendo feriados legales
+        if (dow >= 1 && dow <= 4 && !feriadosChileMap[iso]) {
+          lista.push({
+            id: `receso_${iso}`,
+            title: "** RECESO **, 10:45",
+            start: `${iso}T10:45:00`,
+            end: `${iso}T11:00:00`,
+            editable: false,
+            startEditable: false,
+            durationEditable: false,
+            backgroundColor: "#eab308",
+            borderColor: "#ca8a04",
+            textColor: "#18181b",
+            extendedProps: {
+              inicioHora: "10:45",
+              finHora: "11:00",
+              duracionMin: 15,
+              esBloqueo: false,
+              esReceso: true,
+              fechaISO: iso
+            }
+          });
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return lista;
+    }
+
+    function renderizarEventosCalendario() {
+      if (!calendar) return;
+      calendar.removeAllEvents();
+
+      // 1. Eventos predefinidos de Receso (Lunes a Jueves 10:45 a 11:00)
+      generarEventosRecesoParaVista().forEach(evRec => {
+        calendar.addEvent(evRec);
+      });
+
+      // 2. Eventos almacenados en Firebase (Audiencias y Bloqueos Jefatura)
+      Object.entries(eventosCache).forEach(([id, item]) => {
+        const colorEv = resolverColorEvento(item);
+        const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
+        const finEv = calcularFinEfectivo({ ...item, inicio: inicioNorm });
+        const durMin = Math.max(15, aMinutos(finEv) - aMinutos(inicioNorm));
+
+        calendar.addEvent({
+          id: id,
+          title: formatearTextoBloque(item),
+          start: `${item.fecha}T${inicioNorm}:00`,
+          end: `${item.fecha}T${finEv}:00`,
+          backgroundColor: colorEv,
+          borderColor: colorEv,
+          textColor: '#ffffff',
+          extendedProps: {
+            inicioHora: inicioNorm,
+            finHora: finEv,
+            duracionMin: durMin,
+            esBloqueo: esBloqueoJefatura(item),
+            esReceso: false
+          }
+        });
+      });
+    }
+
     function inferirColorAudiencia(tipo) {
       const t = normTxt(tipo);
       if (t.includes("detencion") || t.includes("cautelar") || t.includes("prision")) return "#dc2626";
@@ -2647,6 +2756,9 @@
     }
 
     function formatearTextoBloque(item) {
+      if (esRecesoPredefinido(item)) {
+        return "** RECESO **, 10:45";
+      }
       if (esBloqueoJefatura(item)) {
         return `📌 ${item.tipo || item.rit || "Reserva Jefatura"}`;
       }
@@ -2777,6 +2889,7 @@
           cargarFeriadosChile(info.start.getFullYear());
           cargarFeriadosChile(info.end.getFullYear());
           actualizarBarraSuperiorDesdeCalendario(info);
+          renderizarEventosCalendario();
           setTimeout(aplicarEstilosFeriadosDOM, 0);
         },
 
@@ -2848,13 +2961,22 @@
         },
 
         eventDidMount: function(info) {
+          const props = info.event.extendedProps || {};
+          if (props.esReceso) {
+            info.el.classList.add('is-receso-block');
+            info.el.style.setProperty('--ev-bg', '#eab308');
+            info.el.style.backgroundColor = '#eab308';
+            info.el.style.borderColor = '#ca8a04';
+            info.el.style.color = '#18181b';
+            return;
+          }
+
           const bg = info.event.backgroundColor || '#1d4ed8';
           info.el.style.setProperty('--ev-bg', bg);
           info.el.style.backgroundColor = bg;
           info.el.style.borderColor = bg;
           info.el.style.color = '#ffffff';
 
-          const props = info.event.extendedProps || {};
           if (props.esBloqueo) {
             info.el.classList.add('is-jefatura-block');
           }
@@ -2887,6 +3009,11 @@
         },
 
         eventClick: function(info) {
+          const props = info.event.extendedProps || {};
+          if (props.esReceso) {
+            abrirModalDetalleReceso(props.fechaISO);
+            return;
+          }
           abrirModalDetalle(info.event.id);
         },
 
@@ -2990,30 +3117,7 @@
 
         if (!calendar) return;
 
-        calendar.removeAllEvents();
-        Object.entries(eventosCache).forEach(([id, item]) => {
-          const colorEv = resolverColorEvento(item);
-          const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
-          const finEv = calcularFinEfectivo({ ...item, inicio: inicioNorm });
-          const durMin = Math.max(15, aMinutos(finEv) - aMinutos(inicioNorm));
-
-          calendar.addEvent({
-            id: id,
-            title: formatearTextoBloque(item),
-            start: `${item.fecha}T${inicioNorm}:00`,
-            end: `${item.fecha}T${finEv}:00`,
-            backgroundColor: colorEv,
-            borderColor: colorEv,
-            textColor: '#ffffff',
-            extendedProps: {
-              inicioHora: inicioNorm,
-              finHora: finEv,
-              duracionMin: durMin,
-              esBloqueo: esBloqueoJefatura(item)
-            }
-          });
-        });
-
+        renderizarEventosCalendario();
         actualizarContadoresVisuales();
       });
     }
@@ -3088,9 +3192,36 @@
       }
     }
 
+    function abrirModalDetalleReceso(iso) {
+      document.getElementById('det-id').value = '';
+      document.getElementById('det-title').textContent = '** RECESO **, 10:45';
+      document.getElementById('btn-agendar-encima').style.display = 'none';
+      const delBtn = document.querySelector('#detail-modal .btn-danger');
+      const editBtn = document.querySelector('#detail-modal .btn-primary');
+      if (delBtn) delBtn.style.display = 'none';
+      if (editBtn) editBtn.style.display = 'none';
+
+      const filas = [
+        ["Categoría:", "Bloque Predefinido Institucional (Plantilla Base)"],
+        ["Horario:", "10:45 a 11:00 hrs (15 min)"],
+        ["Días vigentes:", "Lunes a Jueves (excluye días feriados)"],
+        ["Fecha seleccionada:", formatearFechaCL(iso || fechaSeleccionadaISO)],
+        ["Comportamiento:", "Inherente a la programación base; omitido automáticamente como propuesta de bloqueo durante la sincronización con Google Calendar."]
+      ];
+      document.getElementById('det-content').innerHTML = filas
+        .map(([lbl, val]) => `<div class="detail-lbl">${lbl}</div><div class="detail-val">${val}</div>`)
+        .join("");
+      document.getElementById('det-audit').textContent = "Configuración estructural de plantilla base — JG Illapel";
+      document.getElementById('detail-modal').style.display = 'flex';
+    }
+
     function abrirModalDetalle(id) {
       const item = eventosCache[id];
       if (!item) return;
+      const delBtn = document.querySelector('#detail-modal .btn-danger');
+      const editBtn = document.querySelector('#detail-modal .btn-primary');
+      if (delBtn) delBtn.style.display = 'inline-flex';
+      if (editBtn) editBtn.style.display = 'inline-flex';
 
       const esBloq = esBloqueoJefatura(item);
       const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
@@ -3360,11 +3491,32 @@
       const startISO = fechaLocalISO(view.activeStart);
       const endISO   = fechaLocalISO(view.activeEnd);
 
-      const eventosRango = Object.values(eventosCache)
-        .filter(ev => ev && ev.fecha >= startISO && ev.fecha < endISO)
-        .sort((a, b) => (a.fecha + a.inicio).localeCompare(b.fecha + b.inicio));
+      const recesosPdf = [];
+      const curPdf = new Date(view.activeStart.getTime());
+      while (fechaLocalISO(curPdf) < endISO) {
+        const dowPdf = curPdf.getDay();
+        const isoPdf = fechaLocalISO(curPdf);
+        if (dowPdf >= 1 && dowPdf <= 4 && !feriadosChileMap[isoPdf]) {
+          recesosPdf.push({
+            rit: "RECESO",
+            fecha: isoPdf,
+            inicio: "10:45",
+            fin: "11:00",
+            tipo: "** RECESO **, 10:45",
+            sala: "Receso institucional predefinido (Lun–Jue)",
+            color: "#eab308",
+            tipoRegistro: "receso_predefinido"
+          });
+        }
+        curPdf.setDate(curPdf.getDate() + 1);
+      }
 
-      const totalAud = eventosRango.filter(e => !esBloqueoJefatura(e)).length;
+      const eventosRango = [
+        ...Object.values(eventosCache).filter(ev => ev && ev.fecha >= startISO && ev.fecha < endISO),
+        ...recesosPdf
+      ].sort((a, b) => (a.fecha + a.inicio).localeCompare(b.fecha + b.inicio));
+
+      const totalAud = eventosRango.filter(e => !esBloqueoJefatura(e) && !esRecesoPredefinido(e)).length;
 
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
@@ -3387,7 +3539,9 @@
         const bodyRows = eventosRango.map(ev => {
           const finEf = calcularFinEfectivo(ev);
           const feriadoTxt = feriadosChileMap[ev.fecha] ? ` [Feriado: ${feriadosChileMap[ev.fecha]}]` : '';
-          const colRef = esBloqueoJefatura(ev) ? "[JEFATURA]" : formatearRitVisual(ev.rit, ev.tipoCausa);
+          const colRef = esRecesoPredefinido(ev)
+            ? "[RECESO]"
+            : (esBloqueoJefatura(ev) ? "[JEFATURA]" : formatearRitVisual(ev.rit, ev.tipoCausa));
           return [
             formatearFechaCL(ev.fecha) + feriadoTxt,
             `${ev.inicio} - ${finEf}`,
@@ -4218,6 +4372,12 @@
       let descartadosSilenciosos = 0;
 
       googleEvents.forEach(gev => {
+        // Omitir silenciosamente el evento institucional "Receso" (Lunes a Jueves 10:45-11:00)
+        if (esEventoRecesoGoogle(gev)) {
+          descartadosSilenciosos++;
+          return;
+        }
+
         const parsed = extraerRitYTipoDesdeTituloGoogle(gev.title);
 
         if (parsed.tieneCausa) {
