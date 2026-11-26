@@ -906,6 +906,55 @@
     #login-error { color: #f28b82; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
     #login-status { color: var(--gcal-accent); font-size: 0.82rem; margin-top: 0.6rem; display: none; }
 
+    /* Barra de progreso de operaciones masivas (Excel / Firebase) */
+    .sync-progress-box {
+      display: none;
+      margin-top: 0.95rem;
+      padding: 0.85rem 1rem;
+      background: #131314;
+      border: 1px solid var(--gcal-border);
+      border-radius: 10px;
+    }
+    .sync-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 0.45rem;
+      color: var(--gcal-text);
+      gap: 0.5rem;
+    }
+    .sync-progress-pct {
+      font-weight: 700;
+      color: var(--gcal-accent);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .sync-progress-track {
+      width: 100%;
+      height: 12px;
+      background: #282a2c;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #3c4043;
+    }
+    .sync-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #1a73e8, #34a853);
+      border-radius: 999px;
+      transition: width 0.16s ease, background 0.2s ease;
+    }
+    .sync-progress-fill.is-error {
+      background: #ea4335;
+    }
+    .sync-progress-detail {
+      margin-top: 0.45rem;
+      font-size: 0.76rem;
+      color: var(--gcal-text-muted);
+      line-height: 1.35;
+    }
+
     /* Aviso no bloqueante de franja de Jefatura en modal Crear/Editar */
     .soft-conflict-banner {
       display: none;
@@ -1411,14 +1460,44 @@
     <div class="modal modal-lg">
       <h3>Conciliación de Agenda (Excel Unijud vs. Sistema)</h3>
       <div id="reconcile-body"></div>
+      <div class="sync-progress-box" id="reconcile-progress-box">
+        <div class="sync-progress-header">
+          <span id="reconcile-progress-stage">Preparando operación...</span>
+          <span class="sync-progress-pct" id="reconcile-progress-pct">0%</span>
+        </div>
+        <div class="sync-progress-track">
+          <div class="sync-progress-fill" id="reconcile-progress-fill"></div>
+        </div>
+        <div class="sync-progress-detail" id="reconcile-progress-detail">Iniciando escritura por lotes en Firebase...</div>
+      </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="cerrarModalConciliacion()">Cancelar</button>
+        <button type="button" class="btn btn-outline" id="btn-cancel-reconcile" onclick="cerrarModalConciliacion()">Cancelar</button>
         <button type="button" class="btn btn-primary" id="btn-confirm-sync" onclick="ejecutarRepoblacion('merge')">
           Sincronizar (Agregar Nuevas + Actualizar Cambios)
         </button>
         <button type="button" class="btn btn-warning" id="btn-confirm-replace" onclick="ejecutarRepoblacion('replace')">
           Repoblar Todo el Período del Excel (Reemplazar)
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PROGRESO PARA IMPORTACIÓN DIRECTA DE EXCEL -->
+  <div class="modal-backdrop" id="import-progress-modal">
+    <div class="modal modal-sm">
+      <h3>Importando Planilla Excel Unijud</h3>
+      <div class="sync-progress-box" id="import-progress-box" style="display:block; margin-top:0.4rem;">
+        <div class="sync-progress-header">
+          <span id="import-progress-stage">Leyendo archivo...</span>
+          <span class="sync-progress-pct" id="import-progress-pct">0%</span>
+        </div>
+        <div class="sync-progress-track">
+          <div class="sync-progress-fill" id="import-progress-fill"></div>
+        </div>
+        <div class="sync-progress-detail" id="import-progress-detail">Aguarde un instante mientras se procesan las audiencias...</div>
+      </div>
+      <div class="modal-actions" id="import-progress-actions" style="display:none;">
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('import-progress-modal').style.display='none'">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1642,6 +1721,8 @@
 
     let feriadosChileMap = {};
     let aniosFeriadosCargados = new Set();
+    let operacionMasivaEnCurso = false;
+    let renderDebounceTimer = null;
 
     function emailKey(email) {
       return String(email || "").trim().toLowerCase().replace(/\./g, ",");
@@ -3115,10 +3196,13 @@
           if (!snap.val()) actualizarEtiquetaUltimaCarga(null);
         });
 
-        if (!calendar) return;
+        if (!calendar || operacionMasivaEnCurso) return;
 
-        renderizarEventosCalendario();
-        actualizarContadoresVisuales();
+        clearTimeout(renderDebounceTimer);
+        renderDebounceTimer = setTimeout(() => {
+          renderizarEventosCalendario();
+          actualizarContadoresVisuales();
+        }, 60);
       });
     }
 
@@ -3949,6 +4033,52 @@
     }
 
     // =========================================================================
+    // UTILIDADES DE PROGRESO Y ESCRITURA POR LOTES (ANTI-BLOQUEO NAVEGADOR)
+    // =========================================================================
+    function cederHiloUI() {
+      return new Promise(resolve => setTimeout(resolve, 16));
+    }
+
+    function actualizarBarraProgreso(prefix, pct, etapa, detalle, esError = false) {
+      const box = document.getElementById(`${prefix}-progress-box`);
+      const stageEl = document.getElementById(`${prefix}-progress-stage`);
+      const pctEl = document.getElementById(`${prefix}-progress-pct`);
+      const fillEl = document.getElementById(`${prefix}-progress-fill`);
+      const detailEl = document.getElementById(`${prefix}-progress-detail`);
+      if (!box) return;
+
+      box.style.display = 'block';
+      const pctClamped = Math.max(0, Math.min(100, Math.round(pct)));
+      if (stageEl) stageEl.textContent = etapa;
+      if (pctEl) pctEl.textContent = `${pctClamped}%`;
+      if (fillEl) {
+        fillEl.style.width = `${pctClamped}%`;
+        fillEl.classList.toggle('is-error', Boolean(esError));
+      }
+      if (detailEl) {
+        detailEl.textContent = detalle;
+        detailEl.style.color = esError ? '#f28b82' : '#9aa0a6';
+      }
+    }
+
+    async function ejecutarUpdatesEnLotes(updatesObj, onProgress, tamanoLote = 150) {
+      const entries = Object.entries(updatesObj);
+      const total = entries.length;
+      if (total === 0) return;
+
+      let procesados = 0;
+      for (let i = 0; i < total; i += tamanoLote) {
+        const lote = Object.fromEntries(entries.slice(i, i + tamanoLote));
+        await agendaRef.update(lote);
+        procesados += Object.keys(lote).length;
+        if (onProgress) {
+          onProgress(procesados, total);
+        }
+        await cederHiloUI();
+      }
+    }
+
+    // =========================================================================
     // 11. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
     // =========================================================================
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
@@ -3956,68 +4086,113 @@
       if (!file) return;
       cerrarSidebarMovil();
 
-      leerArchivoExcel(file, (res, nombreArchivo) => {
-        e.target.value = '';
-        if (res.error) {
-          alert(res.error);
-          return;
-        }
+      const modalImp = document.getElementById('import-progress-modal');
+      const actionsImp = document.getElementById('import-progress-actions');
+      actionsImp.style.display = 'none';
+      actualizarBarraProgreso('import', 5, 'Leyendo archivo Excel...', `Analizando "${file.name}"...`, false);
+      modalImp.style.display = 'flex';
 
-        const existentes = new Set(
-          Object.values(eventosCache)
-            .filter(ev => !esBloqueoJefatura(ev))
-            .map(ev => `${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`)
-        );
-
-        let cargadas = 0;
-        let duplicadas = 0;
-
-        res.audiencias.forEach((aud) => {
-          if (existentes.has(aud.clave)) {
-            duplicadas++;
+      setTimeout(() => {
+        leerArchivoExcel(file, async (res, nombreArchivo) => {
+          e.target.value = '';
+          if (res.error) {
+            actualizarBarraProgreso('import', 100, 'Error al leer planilla', res.error, true);
+            actionsImp.style.display = 'flex';
             return;
           }
-          existentes.add(aud.clave);
-          agendaRef.push({
-            rit: aud.rit,
-            ruc: aud.ruc || "",
-            tipoCausa: aud.tipoCausa || "",
-            fecha: aud.fecha,
-            inicio: aud.inicio,
-            fin: aud.fin,
-            tipo: aud.tipo,
-            sala: aud.sala,
-            intervinientes: aud.intervinientes || "",
-            color: aud.color,
-            tipoRegistro: 'audiencia',
-            creadoPor: currentUser.email,
-            creadoEn: new Date().toISOString()
-          });
-          cargadas++;
+
+          operacionMasivaEnCurso = true;
+          try {
+            actualizarBarraProgreso('import', 20, 'Cotejando duplicados...', `Evaluando ${res.audiencias.length} audiencias Programadas...`, false);
+            await cederHiloUI();
+
+            const existentes = new Set(
+              Object.values(eventosCache)
+                .filter(ev => !esBloqueoJefatura(ev))
+                .map(ev => `${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`)
+            );
+
+            const updates = {};
+            let cargadas = 0;
+            let duplicadas = 0;
+
+            res.audiencias.forEach((aud) => {
+              if (existentes.has(aud.clave)) {
+                duplicadas++;
+                return;
+              }
+              existentes.add(aud.clave);
+              const newKey = agendaRef.push().key;
+              updates[newKey] = {
+                rit: aud.rit,
+                ruc: aud.ruc || "",
+                tipoCausa: aud.tipoCausa || "",
+                fecha: aud.fecha,
+                inicio: aud.inicio,
+                fin: aud.fin,
+                tipo: aud.tipo,
+                sala: aud.sala,
+                intervinientes: aud.intervinientes || "",
+                color: aud.color,
+                tipoRegistro: 'audiencia',
+                creadoPor: currentUser.email,
+                creadoEn: new Date().toISOString()
+              };
+              cargadas++;
+            });
+
+            if (cargadas > 0) {
+              await ejecutarUpdatesEnLotes(updates, (proc, tot) => {
+                const pct = 25 + (proc / tot) * 65;
+                actualizarBarraProgreso('import', pct, 'Guardando audiencias en Firebase...', `Escribiendo lote: ${proc} de ${tot} audiencias nuevas...`, false);
+              });
+            }
+
+            actualizarBarraProgreso('import', 94, 'Registrando auditoría y metadatos...', 'Actualizando bitácora y vista del calendario...', false);
+            registrarUltimaCargaExcel(res.fechasDetectadas, "Importar Excel");
+
+            const fDesde = res.fechasDetectadas[0] || "-";
+            const fHasta = res.fechasDetectadas[res.fechasDetectadas.length - 1] || "-";
+            registrarLogAuditoria(
+              "IMPORTACION_EXCEL",
+              `${cargadas} causas`,
+              fDesde,
+              "-",
+              `Archivo "${nombreArchivo}" (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}): ${cargadas} nuevas cargadas, ${duplicadas} duplicadas omitidas.`
+            );
+
+            operacionMasivaEnCurso = false;
+            if (calendar) {
+              renderizarEventosCalendario();
+              actualizarContadoresVisuales();
+            }
+
+            actualizarBarraProgreso(
+              'import',
+              100,
+              '✔ Importación completada correctamente',
+              `Nuevas cargadas: ${cargadas} | Duplicadas omitidas: ${duplicadas} | No programadas omitidas: ${res.filasNoProgramadas}.`,
+              false
+            );
+            actionsImp.style.display = 'flex';
+          } catch (err) {
+            operacionMasivaEnCurso = false;
+            if (calendar) {
+              renderizarEventosCalendario();
+              actualizarContadoresVisuales();
+            }
+            console.error("Error en importación Excel:", err);
+            actualizarBarraProgreso(
+              'import',
+              100,
+              '✖ Proceso interrumpido por error',
+              `Detalle: ${err && err.message ? err.message : String(err)}`,
+              true
+            );
+            actionsImp.style.display = 'flex';
+          }
         });
-
-        registrarUltimaCargaExcel(res.fechasDetectadas, "Importar Excel");
-
-        const fDesde = res.fechasDetectadas[0] || "-";
-        const fHasta = res.fechasDetectadas[res.fechasDetectadas.length - 1] || "-";
-        registrarLogAuditoria(
-          "IMPORTACION_EXCEL",
-          `${cargadas} causas`,
-          fDesde,
-          "-",
-          `Archivo "${nombreArchivo}" (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}): ${cargadas} nuevas cargadas, ${duplicadas} duplicadas omitidas.`
-        );
-
-        alert(
-          `Importación completada (Encabezados leídos en fila ${res.headerRowNum}):
-` +
-          `• Audiencias Programadas nuevas cargadas: ${cargadas}
-` +
-          `• Audiencias ya existentes omitidas: ${duplicadas}
-` +
-          `• Filas omitidas por estado distinto a Programada: ${res.filasNoProgramadas}`
-        );
-      });
+      }, 30);
     });
 
     // =========================================================================
@@ -4156,16 +4331,29 @@
       }
 
       document.getElementById('reconcile-body').innerHTML = html;
+      const progBox = document.getElementById('reconcile-progress-box');
+      if (progBox) progBox.style.display = 'none';
+      setBotonesConciliacionHabilitados(true);
       document.getElementById('reconcile-modal').style.display = 'flex';
     }
 
+    function setBotonesConciliacionHabilitados(habilitado) {
+      const bCancel = document.getElementById('btn-cancel-reconcile');
+      const bSync = document.getElementById('btn-confirm-sync');
+      const bRep = document.getElementById('btn-confirm-replace');
+      if (bCancel) bCancel.disabled = !habilitado;
+      if (bSync) bSync.disabled = !habilitado;
+      if (bRep) bRep.disabled = !habilitado;
+    }
+
     function cerrarModalConciliacion() {
+      if (operacionMasivaEnCurso) return;
       document.getElementById('reconcile-modal').style.display = 'none';
       planConciliacionPendiente = null;
     }
 
-    function ejecutarRepoblacion(modo) {
-      if (!planConciliacionPendiente) return;
+    async function ejecutarRepoblacion(modo) {
+      if (!planConciliacionPendiente || operacionMasivaEnCurso) return;
       const { res, nombreArchivo, nuevasEnExcel, conDiferencias, sistemaEnFechas } = planConciliacionPendiente;
       const fDesde = res.fechasDetectadas[0] || "-";
       const fHasta = res.fechasDetectadas[res.fechasDetectadas.length - 1] || "-";
@@ -4178,84 +4366,190 @@
           `Se reemplazarán las ${sistemaEnFechas.length} audiencias actuales por las ${res.audiencias.length} audiencias Programadas del Excel (los bloqueos de Jefatura se mantendrán).`;
         if (!confirm(msgConfirm)) return;
 
-        sistemaEnFechas.forEach(ev => {
-          agendaRef.child(ev.id).remove();
-        });
+        operacionMasivaEnCurso = true;
+        setBotonesConciliacionHabilitados(false);
+        actualizarBarraProgreso('reconcile', 5, 'Preparando repoblación...', 'Suspendiendo redibujado temporal para evitar congelamiento...', false);
+        await cederHiloUI();
 
-        res.audiencias.forEach(aud => {
-          agendaRef.push({
-            rit: aud.rit,
-            ruc: aud.ruc || "",
-            tipoCausa: aud.tipoCausa || "",
-            fecha: aud.fecha,
-            inicio: aud.inicio,
-            fin: aud.fin,
-            tipo: aud.tipo,
-            sala: aud.sala,
-            intervinientes: aud.intervinientes || "",
-            color: aud.color,
-            tipoRegistro: 'audiencia',
-            creadoPor: currentUser.email,
-            creadoEn: new Date().toISOString()
+        try {
+          // 1. Eliminación por lotes de registros antiguos del período
+          const deleteUpdates = {};
+          sistemaEnFechas.forEach(ev => {
+            deleteUpdates[ev.id] = null;
           });
-        });
 
-        registrarUltimaCargaExcel(res.fechasDetectadas, "Repoblar Excel");
-        registrarLogAuditoria(
-          "CONCILIACION_EXCEL",
-          `${res.audiencias.length} causas`,
-          fDesde,
-          "-",
-          `Repoblación total (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": reemplazados ${sistemaEnFechas.length} registros por ${res.audiencias.length}.`
-        );
+          if (sistemaEnFechas.length > 0) {
+            await ejecutarUpdatesEnLotes(deleteUpdates, (proc, tot) => {
+              const pct = 8 + (proc / tot) * 37;
+              actualizarBarraProgreso('reconcile', pct, 'Paso 1/3: Limpiando registros anteriores...', `Eliminados ${proc} de ${tot} registros previos del período...`, false);
+            });
+          } else {
+            actualizarBarraProgreso('reconcile', 45, 'Paso 1/3: Sin registros previos que eliminar', 'Avanzando a inserción de audiencias del Excel...', false);
+            await cederHiloUI();
+          }
 
-        cerrarModalConciliacion();
-        alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas.`);
+          // 2. Inserción por lotes de audiencias nuevas
+          const insertUpdates = {};
+          res.audiencias.forEach(aud => {
+            const newKey = agendaRef.push().key;
+            insertUpdates[newKey] = {
+              rit: aud.rit,
+              ruc: aud.ruc || "",
+              tipoCausa: aud.tipoCausa || "",
+              fecha: aud.fecha,
+              inicio: aud.inicio,
+              fin: aud.fin,
+              tipo: aud.tipo,
+              sala: aud.sala,
+              intervinientes: aud.intervinientes || "",
+              color: aud.color,
+              tipoRegistro: 'audiencia',
+              creadoPor: currentUser.email,
+              creadoEn: new Date().toISOString()
+            };
+          });
+
+          if (res.audiencias.length > 0) {
+            await ejecutarUpdatesEnLotes(insertUpdates, (proc, tot) => {
+              const pct = 45 + (proc / tot) * 45;
+              actualizarBarraProgreso('reconcile', pct, 'Paso 2/3: Poblando nuevas audiencias...', `Cargadas ${proc} de ${tot} audiencias Programadas...`, false);
+            });
+          }
+
+          // 3. Metadatos, bitácora y refresco único de FullCalendar
+          actualizarBarraProgreso('reconcile', 94, 'Paso 3/3: Actualizando bitácora y vista...', 'Renderizando calendario consolidado...', false);
+          registrarUltimaCargaExcel(res.fechasDetectadas, "Repoblar Excel");
+          registrarLogAuditoria(
+            "CONCILIACION_EXCEL",
+            `${res.audiencias.length} causas`,
+            fDesde,
+            "-",
+            `Repoblación total (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": reemplazados ${sistemaEnFechas.length} registros por ${res.audiencias.length}.`
+          );
+
+          operacionMasivaEnCurso = false;
+          if (calendar) {
+            renderizarEventosCalendario();
+            actualizarContadoresVisuales();
+          }
+
+          actualizarBarraProgreso(
+            'reconcile',
+            100,
+            '✔ Repoblación completada exitosamente',
+            `Se reemplazaron ${sistemaEnFechas.length} registros por ${res.audiencias.length} audiencias Programadas.`,
+            false
+          );
+          setBotonesConciliacionHabilitados(true);
+          await new Promise(r => setTimeout(r, 900));
+          cerrarModalConciliacion();
+        } catch (err) {
+          operacionMasivaEnCurso = false;
+          setBotonesConciliacionHabilitados(true);
+          if (calendar) {
+            renderizarEventosCalendario();
+            actualizarContadoresVisuales();
+          }
+          console.error("Error al repoblar período:", err);
+          actualizarBarraProgreso(
+            'reconcile',
+            100,
+            '✖ Error: La repoblación se interrumpió',
+            `Detalle técnico: ${err && err.message ? err.message : String(err)}`,
+            true
+          );
+        }
       } else {
-        nuevasEnExcel.forEach(aud => {
-          agendaRef.push({
-            rit: aud.rit,
-            ruc: aud.ruc || "",
-            tipoCausa: aud.tipoCausa || "",
-            fecha: aud.fecha,
-            inicio: aud.inicio,
-            fin: aud.fin,
-            tipo: aud.tipo,
-            sala: aud.sala,
-            intervinientes: aud.intervinientes || "",
-            color: aud.color,
-            tipoRegistro: 'audiencia',
-            creadoPor: currentUser.email,
-            creadoEn: new Date().toISOString()
+        operacionMasivaEnCurso = true;
+        setBotonesConciliacionHabilitados(false);
+        actualizarBarraProgreso('reconcile', 10, 'Iniciando sincronización parcial...', 'Preparando altas y modificaciones por lotes...', false);
+        await cederHiloUI();
+
+        try {
+          const syncUpdates = {};
+
+          nuevasEnExcel.forEach(aud => {
+            const newKey = agendaRef.push().key;
+            syncUpdates[newKey] = {
+              rit: aud.rit,
+              ruc: aud.ruc || "",
+              tipoCausa: aud.tipoCausa || "",
+              fecha: aud.fecha,
+              inicio: aud.inicio,
+              fin: aud.fin,
+              tipo: aud.tipo,
+              sala: aud.sala,
+              intervinientes: aud.intervinientes || "",
+              color: aud.color,
+              tipoRegistro: 'audiencia',
+              creadoPor: currentUser.email,
+              creadoEn: new Date().toISOString()
+            };
           });
-        });
 
-        conDiferencias.forEach(d => {
-          agendaRef.child(d.sistema.id).update({
-            rit: d.excel.rit,
-            ruc: d.excel.ruc || d.sistema.ruc || "",
-            tipoCausa: d.excel.tipoCausa || d.sistema.tipoCausa || "",
-            fin: d.excel.fin,
-            tipo: d.excel.tipo,
-            sala: d.excel.sala,
-            intervinientes: d.excel.intervinientes || d.sistema.intervinientes || "",
-            color: d.excel.color,
-            modificadoPor: currentUser.email,
-            modificadoEn: new Date().toISOString()
+          conDiferencias.forEach(d => {
+            syncUpdates[`${d.sistema.id}/rit`] = d.excel.rit;
+            syncUpdates[`${d.sistema.id}/ruc`] = d.excel.ruc || d.sistema.ruc || "";
+            syncUpdates[`${d.sistema.id}/tipoCausa`] = d.excel.tipoCausa || d.sistema.tipoCausa || "";
+            syncUpdates[`${d.sistema.id}/fin`] = d.excel.fin;
+            syncUpdates[`${d.sistema.id}/tipo`] = d.excel.tipo;
+            syncUpdates[`${d.sistema.id}/sala`] = d.excel.sala;
+            syncUpdates[`${d.sistema.id}/intervinientes`] = d.excel.intervinientes || d.sistema.intervinientes || "";
+            syncUpdates[`${d.sistema.id}/color`] = d.excel.color;
+            syncUpdates[`${d.sistema.id}/modificadoPor`] = currentUser.email;
+            syncUpdates[`${d.sistema.id}/modificadoEn`] = new Date().toISOString();
           });
-        });
 
-        registrarUltimaCargaExcel(res.fechasDetectadas, "Conciliar Excel");
-        registrarLogAuditoria(
-          "CONCILIACION_EXCEL",
-          `${nuevasEnExcel.length + conDiferencias.length} causas`,
-          fDesde,
-          "-",
-          `Sincronización parcial (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": ${nuevasEnExcel.length} nuevas y ${conDiferencias.length} actualizadas.`
-        );
+          const totalOps = nuevasEnExcel.length + conDiferencias.length;
+          if (totalOps > 0) {
+            await ejecutarUpdatesEnLotes(syncUpdates, (proc, tot) => {
+              const pct = 15 + (proc / tot) * 75;
+              actualizarBarraProgreso('reconcile', pct, 'Sincronizando cambios en Firebase...', `Procesadas ${proc} de ${tot} operaciones...`, false);
+            }, 300);
+          }
 
-        cerrarModalConciliacion();
-        alert(`Sincronización completada: ${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`);
+          actualizarBarraProgreso('reconcile', 94, 'Actualizando bitácora y vista...', 'Renderizando calendario actualizado...', false);
+          registrarUltimaCargaExcel(res.fechasDetectadas, "Conciliar Excel");
+          registrarLogAuditoria(
+            "CONCILIACION_EXCEL",
+            `${totalOps} causas`,
+            fDesde,
+            "-",
+            `Sincronización parcial (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": ${nuevasEnExcel.length} nuevas y ${conDiferencias.length} actualizadas.`
+          );
+
+          operacionMasivaEnCurso = false;
+          if (calendar) {
+            renderizarEventosCalendario();
+            actualizarContadoresVisuales();
+          }
+
+          actualizarBarraProgreso(
+            'reconcile',
+            100,
+            '✔ Sincronización completada',
+            `${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`,
+            false
+          );
+          setBotonesConciliacionHabilitados(true);
+          await new Promise(r => setTimeout(r, 900));
+          cerrarModalConciliacion();
+        } catch (err) {
+          operacionMasivaEnCurso = false;
+          setBotonesConciliacionHabilitados(true);
+          if (calendar) {
+            renderizarEventosCalendario();
+            actualizarContadoresVisuales();
+          }
+          console.error("Error en sincronización parcial:", err);
+          actualizarBarraProgreso(
+            'reconcile',
+            100,
+            '✖ Error: La sincronización se interrumpió',
+            `Detalle técnico: ${err && err.message ? err.message : String(err)}`,
+            true
+          );
+        }
       }
     }
 
