@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Agenda de Audiencias - JG Illapel</title>
 
   <!-- FullCalendar v6 -->
@@ -36,38 +38,74 @@
       --gcal-accent-text: #062e6f;
     }
 
-    * { box-sizing: border-box; font-family: 'Google Sans', 'Segoe UI', Roboto, system-ui, sans-serif; }
-    body { margin: 0; background: var(--gcal-bg); color: var(--gcal-text); overflow: hidden; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Google Sans', 'Segoe UI', Roboto, system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--gcal-bg);
+      color: var(--gcal-text);
+      overflow: hidden;
+    }
 
     /* =====================================================================
        1. PANTALLA LOGIN
     ===================================================================== */
     #login-screen {
-      display: flex; align-items: center; justify-content: center;
-      height: 100vh; background: var(--gcal-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 1rem;
+      background: var(--gcal-bg);
     }
     .login-box {
-      background: var(--gcal-surface); padding: 2rem; border-radius: 16px;
-      width: 100%; max-width: 390px; border: 1px solid var(--gcal-border);
+      background: var(--gcal-surface);
+      padding: 1.75rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 390px;
+      border: 1px solid var(--gcal-border);
       box-shadow: 0 12px 32px rgba(0,0,0,0.55);
     }
-    .login-box h2 { margin-top: 0; color: var(--gcal-text); font-size: 1.3rem; font-weight: 500; }
-    .form-group { margin-bottom: 1rem; }
+    .login-box h2 { margin-top: 0; color: var(--gcal-text); font-size: 1.25rem; font-weight: 500; }
+    .form-group { margin-bottom: 0.95rem; }
     .form-group label { display: block; font-size: 0.82rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--gcal-text-muted); }
     .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 0.58rem 0.7rem; border: 1px solid var(--gcal-border);
-      border-radius: 8px; font-size: 0.9rem; background: #131314; color: var(--gcal-text);
+      width: 100%;
+      padding: 0.62rem 0.72rem;
+      border: 1px solid var(--gcal-border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: #131314;
+      color: var(--gcal-text);
     }
     .form-group input:focus, .form-group select:focus {
-      outline: none; border-color: var(--gcal-accent);
+      outline: none;
+      border-color: var(--gcal-accent);
     }
 
     /* Botones generales */
     .btn {
-      padding: 0.5rem 0.9rem; border: none; border-radius: 20px; cursor: pointer;
-      font-weight: 500; font-size: 0.83rem; transition: background 0.18s, opacity 0.18s;
-      display: inline-flex; align-items: center; gap: 0.35rem; color: var(--gcal-text);
+      padding: 0.52rem 0.95rem;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.83rem;
+      min-height: 36px;
+      transition: background 0.18s, opacity 0.18s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      color: var(--gcal-text);
       background: var(--gcal-surface-hover);
+      white-space: nowrap;
     }
     .btn:hover { background: var(--gcal-surface-active); }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -92,141 +130,189 @@
     #app-screen {
       display: none;
       flex-direction: column;
-      height: 100vh;
+      height: 100dvh;
       background: var(--gcal-bg);
     }
 
-    /* Barra Superior (Topbar Google Calendar) */
     .gcal-topbar {
-      height: 64px;
-      padding: 0 16px;
+      min-height: 62px;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       background: var(--gcal-bg);
-      border-bottom: 1px solid transparent;
       flex-shrink: 0;
+      z-index: 30;
     }
 
     .gcal-top-left {
       display: flex;
       align-items: center;
-      gap: 14px;
-      min-width: 240px;
+      gap: 10px;
+      min-width: 215px;
     }
 
     .icon-circle-btn {
-      width: 40px; height: 40px; border-radius: 50%; border: none;
-      background: transparent; color: var(--gcal-text); cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.15rem; transition: background 0.15s;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gcal-text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      transition: background 0.15s;
     }
     .icon-circle-btn:hover { background: var(--gcal-surface-hover); }
 
     .gcal-brand {
-      display: flex; align-items: center; gap: 10px; user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
     }
     .gcal-logo-box {
-      width: 36px; height: 36px; border-radius: 8px; background: #1a73e8;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-      position: relative; overflow: hidden;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #1a73e8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .gcal-logo-box::before {
-      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: #174ea6;
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 8px;
+      background: #174ea6;
     }
     .gcal-logo-day {
-      font-size: 0.95rem; margin-top: 5px; line-height: 1;
+      font-size: 0.92rem;
+      margin-top: 5px;
+      line-height: 1;
     }
     .gcal-brand-title {
-      font-size: 1.22rem; font-weight: 400; color: var(--gcal-text); letter-spacing: -0.2px;
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--gcal-text);
+      letter-spacing: -0.2px;
       white-space: nowrap;
     }
     .gcal-brand-sub {
-      font-size: 0.72rem; color: var(--gcal-text-muted); display: block; line-height: 1.1;
+      font-size: 0.7rem;
+      color: var(--gcal-text-muted);
+      display: block;
+      line-height: 1.1;
     }
 
-    /* Centro de Topbar: Hoy, < >, Fecha actual y Semana N */
     .gcal-top-center {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex: 1;
+      min-width: 0;
     }
 
     .gcal-pill-btn {
       height: 36px;
-      padding: 0 18px;
+      padding: 0 14px;
       border-radius: 18px;
       border: 1px solid var(--gcal-border);
       background: transparent;
       color: var(--gcal-text);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: background 0.15s;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .gcal-pill-btn:hover { background: var(--gcal-surface-hover); }
 
     .gcal-nav-arrows {
-      display: flex; align-items: center; gap: 2px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
     }
     .gcal-nav-arrows button {
-      width: 32px; height: 32px; border-radius: 50%; border: none;
-      background: transparent; color: var(--gcal-text); cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; font-size: 1rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gcal-text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
     }
     .gcal-nav-arrows button:hover { background: var(--gcal-surface-hover); }
 
     .gcal-current-title {
-      font-size: 1.32rem;
+      font-size: 1.24rem;
       font-weight: 400;
       color: var(--gcal-text);
-      margin: 0 4px;
+      margin: 0 2px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       text-transform: capitalize;
     }
 
     .gcal-week-chip {
       background: var(--gcal-surface-hover);
       color: var(--gcal-text-muted);
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       font-weight: 500;
-      padding: 3px 9px;
+      padding: 3px 8px;
       border-radius: 6px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    /* Derecha de Topbar: Herramientas, Dropdown de Vistas y Usuario */
     .gcal-top-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
-    /* Dropdown unificado de Vistas (Día / Semana laboral / Semana / Mes) */
     .view-dropdown-wrap {
       position: relative;
     }
     .view-dropdown-trigger {
       height: 36px;
-      padding: 0 14px 0 16px;
+      padding: 0 12px 0 14px;
       border-radius: 18px;
       border: 1px solid var(--gcal-border);
       background: transparent;
       color: var(--gcal-text);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: background 0.15s;
+      white-space: nowrap;
     }
     .view-dropdown-trigger:hover { background: var(--gcal-surface-hover); }
 
@@ -235,7 +321,7 @@
       position: absolute;
       right: 0;
       top: 42px;
-      width: 215px;
+      width: 220px;
       background: #282a2c;
       border: 1px solid var(--gcal-border);
       border-radius: 10px;
@@ -247,7 +333,7 @@
 
     .view-option {
       width: 100%;
-      padding: 9px 16px;
+      padding: 10px 16px;
       border: none;
       background: transparent;
       color: var(--gcal-text);
@@ -271,13 +357,29 @@
     }
 
     .user-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--gcal-surface); border: 1px solid var(--gcal-border);
-      padding: 4px 10px; border-radius: 18px; font-size: 0.78rem; color: var(--gcal-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gcal-surface);
+      border: 1px solid var(--gcal-border);
+      padding: 4px 10px;
+      border-radius: 18px;
+      font-size: 0.76rem;
+      color: var(--gcal-text);
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .admin-pill {
-      background: #7c3aed; color: #fff; font-size: 0.65rem; font-weight: 700;
-      padding: 1px 6px; border-radius: 10px; text-transform: uppercase;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      flex-shrink: 0;
     }
 
     /* =====================================================================
@@ -287,19 +389,31 @@
       display: flex;
       flex: 1;
       overflow: hidden;
-      padding: 0 12px 12px 0;
+      padding: 0 10px 10px 0;
+      position: relative;
     }
 
-    /* Sidebar Izquierdo (256px) */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 900;
+    }
+    .sidebar-backdrop.open {
+      display: block;
+    }
+
     .gcal-sidebar {
-      width: 256px;
+      width: 262px;
       flex-shrink: 0;
-      padding: 4px 14px 14px 14px;
+      padding: 4px 14px 16px 14px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       overflow-y: auto;
-      transition: width 0.2s, padding 0.2s, opacity 0.2s;
+      background: var(--gcal-bg);
+      transition: width 0.2s, padding 0.2s, opacity 0.2s, transform 0.22s ease;
     }
     .gcal-sidebar.collapsed {
       width: 0;
@@ -308,11 +422,10 @@
       overflow: hidden;
     }
 
-    /* Botón "+ Crear" estilo FAB redondeado Google Calendar */
     .gcal-create-btn {
       width: fit-content;
-      height: 52px;
-      padding: 0 22px 0 16px;
+      height: 48px;
+      padding: 0 20px 0 15px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.08);
       background: #2b2d30;
@@ -339,30 +452,39 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* Mini Calendario Mensual con número de semana */
+    /* Mini Calendario Mensual */
     .mini-cal-card {
-      padding: 4px 2px;
+      padding: 2px 2px;
       user-select: none;
     }
     .mini-cal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 4px 8px 6px;
+      padding: 0 4px 6px 6px;
     }
     .mini-cal-title {
-      font-size: 0.86rem;
+      font-size: 0.85rem;
       font-weight: 500;
       color: var(--gcal-text);
       text-transform: capitalize;
     }
     .mini-cal-nav {
-      display: flex; gap: 2px;
+      display: flex;
+      gap: 2px;
     }
     .mini-cal-nav button {
-      width: 24px; height: 24px; border-radius: 50%; border: none;
-      background: transparent; color: var(--gcal-text-muted); cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gcal-text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
     }
     .mini-cal-nav button:hover { background: var(--gcal-surface-hover); color: var(--gcal-text); }
 
@@ -377,14 +499,14 @@
       font-size: 0.68rem;
       color: var(--gcal-text-muted);
       font-weight: 500;
-      padding-bottom: 4px;
+      padding-bottom: 3px;
     }
     .mini-cal-wk {
-      font-size: 0.66rem;
+      font-size: 0.65rem;
       color: var(--gcal-text-muted);
       background: rgba(255,255,255,0.04);
       border-radius: 4px;
-      padding: 4px 0;
+      padding: 3px 0;
       font-weight: 500;
     }
     .mini-cal-day {
@@ -429,16 +551,16 @@
       background: #062e6f;
     }
 
-    /* Sección Acciones Excel y Gestión en Sidebar */
+    /* Secciones Sidebar */
     .sidebar-section {
       border-top: 1px solid var(--gcal-grid-line);
-      padding-top: 12px;
+      padding-top: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
     .sidebar-section-title {
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       font-weight: 600;
       color: var(--gcal-text);
       display: flex;
@@ -448,7 +570,7 @@
     }
     .sidebar-action-btn {
       width: 100%;
-      padding: 8px 12px;
+      padding: 8px 11px;
       border-radius: 10px;
       border: 1px solid var(--gcal-border);
       background: var(--gcal-surface);
@@ -463,6 +585,14 @@
       transition: background 0.15s;
     }
     .sidebar-action-btn:hover { background: var(--gcal-surface-hover); }
+    .sidebar-action-btn.gcal-sync-btn {
+      border-color: rgba(138, 180, 248, 0.45);
+      background: rgba(26, 115, 232, 0.14);
+      color: #a8c7fa;
+    }
+    .sidebar-action-btn.gcal-sync-btn:hover {
+      background: rgba(26, 115, 232, 0.25);
+    }
     .last-import-tag {
       font-size: 0.7rem;
       color: var(--gcal-text-muted);
@@ -470,18 +600,17 @@
       line-height: 1.3;
     }
 
-    /* Leyenda de Clasificación en Sidebar ("Mis calendarios / Categorías") */
     .legend-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       padding: 0 4px;
     }
     .legend-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: var(--gcal-text);
     }
     .legend-dot {
@@ -490,15 +619,20 @@
       border-radius: 3px;
       flex-shrink: 0;
     }
+    .legend-dot.dashed {
+      background: rgba(148, 163, 184, 0.28);
+      border: 1.5px dashed #cbd5e1;
+    }
 
     /* =====================================================================
-       4. CONTENEDOR PRINCIPAL DEL CALENDARIO (TARJETA REDONDEADA OSCURA)
+       4. CONTENEDOR PRINCIPAL DEL CALENDARIO
     ===================================================================== */
     #calendar-container {
       flex: 1;
+      min-width: 0;
       background: var(--gcal-surface);
-      border-radius: 22px;
-      padding: 10px 14px 12px 10px;
+      border-radius: 20px;
+      padding: 8px 10px 10px 8px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -506,10 +640,8 @@
     }
     #calendar { height: 100%; }
 
-    /* Ocultar toolbar nativa de FullCalendar (reemplazada por la barra superior Google Calendar) */
     .fc .fc-toolbar { display: none !important; }
 
-    /* Tema oscuro Google Calendar para FullCalendar */
     .fc {
       --fc-border-color: var(--gcal-grid-line);
       --fc-page-bg-color: var(--gcal-surface);
@@ -524,7 +656,6 @@
       border-color: var(--gcal-grid-line) !important;
     }
 
-    /* Encabezados de días estilo Google Calendar (DIA arriba, número grande abajo) */
     .fc-col-header-cell {
       padding: 6px 0 8px 0 !important;
       background: var(--gcal-surface);
@@ -543,13 +674,13 @@
       text-transform: uppercase;
     }
     .gcal-col-num {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 400;
       color: var(--gcal-text);
       line-height: 1;
@@ -565,9 +696,9 @@
       display: inline-block;
       background: #2b2d30;
       color: var(--gcal-text-muted);
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 600;
-      padding: 1px 8px;
+      padding: 1px 7px;
       border-radius: 10px;
       line-height: 1.3;
     }
@@ -582,17 +713,16 @@
       background: rgba(242, 139, 130, 0.18);
       color: #f28b82;
       border: 1px solid rgba(242, 139, 130, 0.45);
-      font-size: 0.65rem;
+      font-size: 0.63rem;
       font-weight: 600;
       padding: 1px 6px;
       border-radius: 6px;
-      max-width: 155px;
+      max-width: 145px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Sombreado de feriados en vista oscura */
     .fc-col-header-cell.is-holiday-col {
       background-color: rgba(242, 139, 130, 0.08) !important;
     }
@@ -601,7 +731,6 @@
       background-color: rgba(242, 139, 130, 0.07) !important;
     }
 
-    /* Eje horario izquierdo (08:00, 09:00...) */
     .fc-timegrid-slot { height: 28px !important; }
     .fc-timegrid-slot-label-cushion {
       font-size: 0.68rem !important;
@@ -638,7 +767,16 @@
     .fc-event-time,
     .fc-daygrid-event-dot { display: none !important; }
 
-    /* Etiqueta de duración extendida (>15 min) visible al pasar el cursor */
+    /* Estilo especial para Bloques / Reservas de Jefatura (Google Calendar):
+       Borde discontinuo + transparencia sutil para distinguir que son flexibles y se puede agendar encima */
+    .fc-event.is-jefatura-block {
+      border-style: dashed !important;
+      border-width: 1.5px !important;
+      border-left-width: 4px !important;
+      border-left-style: solid !important;
+      opacity: 0.88;
+    }
+
     .ev-extended-badge {
       display: none;
       margin-top: 3px;
@@ -676,80 +814,95 @@
       white-space: normal !important;
     }
     .month-day-top {
-      display: flex; justify-content: space-between; align-items: center;
-      width: 100%; padding: 2px 4px 0 4px; gap: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 2px 4px 0 4px;
+      gap: 3px;
     }
     .month-count-pill {
-      font-size: 0.66rem; font-weight: 600;
-      background: rgba(138, 180, 248, 0.2); color: var(--gcal-accent);
-      padding: 0 6px; border-radius: 8px; white-space: nowrap;
+      font-size: 0.66rem;
+      font-weight: 600;
+      background: rgba(138, 180, 248, 0.2);
+      color: var(--gcal-accent);
+      padding: 0 6px;
+      border-radius: 8px;
+      white-space: nowrap;
     }
     .month-holiday-banner {
-      margin: 2px 4px 1px 4px; padding: 1px 5px; border-radius: 4px;
-      background: rgba(242, 139, 130, 0.18); color: #f28b82;
+      margin: 2px 4px 1px 4px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(242, 139, 130, 0.18);
+      color: #f28b82;
       border: 1px solid rgba(242, 139, 130, 0.4);
-      font-size: 0.65rem; font-weight: 600;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.65rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Botón flotante (+) exclusivo en móvil cuando el sidebar está cerrado */
+    .mobile-fab-create {
+      display: none;
     }
 
     /* =====================================================================
-       5. MODALES (ESTILO OSCURO COHERENTE)
+       5. MODALES
     ===================================================================== */
     .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72);
-      align-items: center; justify-content: center; z-index: 9999; padding: 1rem;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.74);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 0.75rem;
     }
     .modal {
-      background: #1e1f20; color: var(--gcal-text); border: 1px solid var(--gcal-border);
-      border-radius: 16px; width: 95%; max-width: 520px;
-      padding: 1.4rem; box-shadow: 0 18px 40px rgba(0,0,0,0.65); max-height: 90vh; overflow-y: auto;
+      background: #1e1f20;
+      color: var(--gcal-text);
+      border: 1px solid var(--gcal-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 1.25rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+      max-height: 92dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .modal.modal-sm { max-width: 420px; }
-    .modal.modal-lg { max-width: 840px; }
-    .modal.modal-xl { max-width: 1000px; }
+    .modal.modal-lg { max-width: 860px; }
+    .modal.modal-xl { max-width: 1040px; }
     .modal h3 {
-      margin-top: 0; color: var(--gcal-text); font-weight: 500;
-      border-bottom: 1px solid var(--gcal-grid-line); padding-bottom: 0.6rem;
+      margin-top: 0;
+      font-size: 1.08rem;
+      color: var(--gcal-text);
+      font-weight: 500;
+      border-bottom: 1px solid var(--gcal-grid-line);
+      padding-bottom: 0.6rem;
     }
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.55rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.15rem; flex-wrap: wrap; }
     .meta-info { font-size: 0.75rem; color: var(--gcal-text-muted); margin-top: 0.5rem; }
     #login-error { color: #f28b82; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
     #login-status { color: var(--gcal-accent); font-size: 0.82rem; margin-top: 0.6rem; display: none; }
 
-    /* Buscador Global de Audiencias */
-    .search-input-wrap {
-      display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;
-    }
-    .search-input-wrap input {
-      flex: 1; padding: 0.68rem 0.9rem; border: 1px solid var(--gcal-border);
-      border-radius: 12px; font-size: 0.95rem; background: #131314; color: var(--gcal-text);
-    }
-    .search-input-wrap input:focus {
-      outline: none; border-color: var(--gcal-accent);
-    }
-    .search-results-list {
-      max-height: 410px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.45rem;
-    }
-    .search-result-card {
-      background: #131314; border: 1px solid var(--gcal-grid-line); border-left-width: 4px;
-      border-radius: 10px; padding: 0.65rem 0.85rem; cursor: pointer;
-      transition: background 0.14s, border-color 0.14s;
-    }
-    .search-result-card:hover {
-      background: #282a2c; border-color: var(--gcal-border);
-    }
-    .search-result-top {
-      display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;
-    }
-    .search-result-rit {
-      font-weight: 600; font-size: 0.88rem; color: var(--gcal-text);
-    }
-    .search-result-date {
-      font-size: 0.76rem; color: var(--gcal-accent); font-weight: 500; white-space: nowrap;
-    }
-    .search-result-sub {
-      font-size: 0.78rem; color: var(--gcal-text-muted); line-height: 1.35;
+    /* Aviso no bloqueante de franja de Jefatura en modal Crear/Editar */
+    .soft-conflict-banner {
+      display: none;
+      background: rgba(253, 214, 99, 0.14);
+      border: 1px solid rgba(253, 214, 99, 0.45);
+      color: #fde293;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.35;
     }
 
     /* Vista Detalle */
@@ -758,13 +911,13 @@
     .detail-val { color: var(--gcal-text); word-break: break-word; }
 
     /* KPIs, Tablas y Auditoría */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
-    .kpi-card { border: 1px solid var(--gcal-grid-line); border-radius: 10px; padding: 0.7rem; background: #131314; }
-    .kpi-card .num { font-size: 1.35rem; font-weight: 600; color: var(--gcal-text); }
-    .kpi-card .lbl { font-size: 0.74rem; color: var(--gcal-text-muted); }
-    .diff-section { margin-top: 0.9rem; }
-    .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.9rem; color: var(--gcal-text); }
-    .diff-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; margin-bottom: 0.8rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 0.55rem; margin-bottom: 0.9rem; }
+    .kpi-card { border: 1px solid var(--gcal-grid-line); border-radius: 10px; padding: 0.65rem; background: #131314; }
+    .kpi-card .num { font-size: 1.3rem; font-weight: 600; color: var(--gcal-text); }
+    .kpi-card .lbl { font-size: 0.73rem; color: var(--gcal-text-muted); }
+    .diff-section { margin-top: 0.9rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.88rem; color: var(--gcal-text); }
+    .diff-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; margin-bottom: 0.8rem; min-width: 520px; }
     .diff-table th, .diff-table td { border: 1px solid var(--gcal-grid-line); padding: 0.42rem 0.55rem; text-align: left; vertical-align: top; }
     .diff-table th { background: #282a2c; color: var(--gcal-text); font-weight: 600; position: sticky; top: 0; }
     .badge-new { background: rgba(129, 201, 149, 0.18); color: #81c995; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
@@ -772,12 +925,17 @@
     .badge-del { background: rgba(242, 139, 130, 0.18); color: #f28b82; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
     .badge-imp { background: rgba(138, 180, 248, 0.18); color: #8ab4f8; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
 
+    .color-swatch-pill {
+      display: inline-block; width: 11px; height: 11px; border-radius: 3px;
+      vertical-align: middle; margin-right: 5px; border: 1px solid rgba(255,255,255,0.3);
+    }
+
     .admin-tabs {
-      display: flex; gap: 0.4rem; border-bottom: 1px solid var(--gcal-grid-line); margin-bottom: 1rem; flex-wrap: wrap;
+      display: flex; gap: 0.35rem; border-bottom: 1px solid var(--gcal-grid-line); margin-bottom: 0.9rem; flex-wrap: wrap;
     }
     .admin-tab {
-      padding: 0.5rem 0.95rem; border: none; background: transparent; color: var(--gcal-text-muted);
-      font-weight: 500; font-size: 0.84rem; border-radius: 8px 8px 0 0; cursor: pointer;
+      padding: 0.5rem 0.85rem; border: none; background: transparent; color: var(--gcal-text-muted);
+      font-weight: 500; font-size: 0.82rem; border-radius: 8px 8px 0 0; cursor: pointer;
     }
     .admin-tab.active {
       background: rgba(138, 180, 248, 0.16); color: var(--gcal-accent); border-bottom: 2px solid var(--gcal-accent);
@@ -788,20 +946,159 @@
       display: flex; gap: 0.55rem; align-items: flex-end; flex-wrap: wrap;
       background: #131314; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--gcal-grid-line); margin-bottom: 0.9rem;
     }
-    .filter-bar .fg { display: flex; flex-direction: column; gap: 0.25rem; }
+    .filter-bar .fg { display: flex; flex-direction: column; gap: 0.25rem; flex: 1 1 140px; }
     .filter-bar .fg label { font-size: 0.74rem; font-weight: 500; color: var(--gcal-text-muted); }
     .filter-bar .fg input, .filter-bar .fg select {
-      padding: 0.42rem 0.6rem; border: 1px solid var(--gcal-border); border-radius: 8px;
-      font-size: 0.82rem; background: #1e1f20; color: var(--gcal-text);
+      padding: 0.45rem 0.6rem; border: 1px solid var(--gcal-border); border-radius: 8px;
+      font-size: 0.84rem; background: #1e1f20; color: var(--gcal-text);
     }
     .purge-box {
       border: 1px solid rgba(242, 139, 130, 0.45); background: rgba(242, 139, 130, 0.06); border-radius: 12px; padding: 1rem;
     }
     .purge-box h4 { margin-top: 0; color: #f28b82; }
     .admin-list-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.5rem 0.75rem; border: 1px solid var(--gcal-grid-line); border-radius: 8px; margin-bottom: 0.45rem; background: #131314;
+      display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+      padding: 0.55rem 0.75rem; border: 1px solid var(--gcal-grid-line); border-radius: 8px; margin-bottom: 0.45rem; background: #131314;
       font-size: 0.84rem;
+    }
+
+    /* =====================================================================
+       6. DISEÑO RESPONSIVO (IPAD / TABLET <= 1024px Y MÓVIL <= 680px)
+    ===================================================================== */
+    @media (max-width: 1024px) {
+      .gcal-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 285px;
+        max-width: 84vw;
+        z-index: 1000;
+        padding: 14px 14px 20px 14px;
+        border-right: 1px solid var(--gcal-border);
+        box-shadow: 8px 0 28px rgba(0, 0, 0, 0.65);
+        transform: translateX(0);
+        opacity: 1;
+      }
+      .gcal-sidebar.collapsed {
+        width: 285px;
+        padding: 14px 14px 20px 14px;
+        opacity: 1;
+        transform: translateX(-105%);
+        pointer-events: none;
+      }
+      .gcal-workspace {
+        padding: 0 8px 8px 8px;
+      }
+      .gcal-top-left {
+        min-width: auto;
+      }
+      .gcal-brand-sub {
+        display: none;
+      }
+      .user-pill {
+        max-width: 135px;
+      }
+      .mobile-fab-create {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: #2b2d30;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+        font-size: 1.8rem;
+        cursor: pointer;
+        z-index: 800;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .gcal-topbar {
+        flex-wrap: wrap;
+        padding: 6px 10px;
+        gap: 6px;
+      }
+      .gcal-top-left {
+        order: 1;
+        gap: 6px;
+      }
+      .gcal-brand-title {
+        font-size: 1.02rem;
+      }
+      .gcal-top-right {
+        order: 2;
+        margin-left: auto;
+        gap: 4px;
+      }
+      .gcal-top-center {
+        order: 3;
+        flex-basis: 100%;
+        justify-content: space-between;
+        padding-top: 2px;
+        border-top: 1px solid var(--gcal-grid-line);
+      }
+      .gcal-current-title {
+        font-size: 1.02rem;
+      }
+      .gcal-week-chip {
+        display: none;
+      }
+      .user-pill {
+        display: none;
+      }
+      .btn-text-hide-mobile {
+        display: none;
+      }
+      .gcal-pill-btn {
+        padding: 0 11px;
+        height: 34px;
+        font-size: 0.8rem;
+      }
+      .view-dropdown-trigger {
+        padding: 0 10px;
+        height: 34px;
+        font-size: 0.8rem;
+      }
+      #calendar-container {
+        border-radius: 14px;
+        padding: 6px 6px 8px 4px;
+      }
+      .gcal-col-num {
+        width: 30px;
+        height: 30px;
+        font-size: 1.08rem;
+      }
+      .fc-timegrid-slot {
+        height: 32px !important;
+      }
+      .row-2 {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+      }
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+      }
+      .detail-lbl {
+        margin-top: 0.45rem;
+        font-size: 0.78rem;
+      }
+      .modal {
+        padding: 1rem;
+        border-radius: 14px;
+      }
+      .modal-actions {
+        justify-content: stretch;
+      }
+      .modal-actions .btn {
+        flex: 1 1 auto;
+      }
     }
   </style>
 </head>
@@ -830,9 +1127,8 @@
     </div>
   </div>
 
-  <!-- 2. APLICACIÓN PRINCIPAL (ESTILO GOOGLE CALENDAR) -->
+  <!-- 2. APLICACIÓN PRINCIPAL (ESTILO GOOGLE CALENDAR + RESPONSIVA) -->
   <div id="app-screen">
-    <!-- BARRA SUPERIOR -->
     <header class="gcal-topbar">
       <div class="gcal-top-left">
         <button type="button" class="icon-circle-btn" onclick="toggleSidebar()" title="Mostrar u ocultar menú lateral">
@@ -840,7 +1136,7 @@
         </button>
         <div class="gcal-brand">
           <div class="gcal-logo-box">
-            <span class="gcal-logo-day" id="gcal-logo-day-num">25</span>
+            <span class="gcal-logo-day" id="gcal-logo-day-num">26</span>
           </div>
           <div>
             <span class="gcal-brand-title">Agenda JG Illapel</span>
@@ -860,19 +1156,14 @@
       </div>
 
       <div class="gcal-top-right">
-        <button type="button" class="gcal-pill-btn" onclick="abrirModalBusqueda()" title="Buscar por RIT, interviniente, tipo de audiencia o sala (Atajo: /)">
-          🔍 Buscar
-        </button>
-
         <button type="button" class="gcal-pill-btn" onclick="abrirModalPdf()" title="Exportar agenda actual a PDF tamaño Oficio">
-          🖨️ Imprimir PDF
+          <span>🖨️</span><span class="btn-text-hide-mobile">Imprimir PDF</span>
         </button>
 
-        <button type="button" class="btn btn-purple" id="btn-auditoria-admin" style="display:none;" onclick="abrirModalAuditoria()" title="Panel de Auditoría, Depuración y Privilegios">
-          🛡️ Auditoría
+        <button type="button" class="btn btn-purple" id="btn-auditoria-admin" style="display:none;" onclick="abrirModalAuditoria()" title="Panel de Auditoría, Depuración, Privilegios e Integración Google">
+          <span>🛡️</span><span class="btn-text-hide-mobile">Auditoría</span>
         </button>
 
-        <!-- BOTÓN ÚNICO DESPLEGABLE DE VISTAS (DÍA / SEMANA LABORAL / SEMANA / MES) -->
         <div class="view-dropdown-wrap" id="view-dropdown-wrap">
           <button type="button" class="view-dropdown-trigger" id="view-dropdown-btn" onclick="toggleMenuVistas(event)">
             <span id="current-view-label">Semana laboral</span>
@@ -895,15 +1186,16 @@
         </div>
 
         <div class="user-pill" id="user-display"></div>
-        <button type="button" class="btn btn-danger" style="padding:0.42rem 0.75rem;" onclick="cerrarSesion()">Salir</button>
+        <button type="button" class="btn btn-danger" style="padding:0.42rem 0.72rem;" onclick="cerrarSesion()">Salir</button>
       </div>
     </header>
 
-    <!-- ÁREA DE TRABAJO: SIDEBAR IZQUIERDO + GRILLA CALENDARIO -->
     <div class="gcal-workspace">
+      <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="cerrarSidebarMovil()"></div>
+
       <aside class="gcal-sidebar" id="gcal-sidebar">
         <!-- Botón Crear (+ Nueva Audiencia) -->
-        <button type="button" class="gcal-create-btn" onclick="abrirModalNuevo()">
+        <button type="button" class="gcal-create-btn" onclick="cerrarSidebarMovil(); abrirModalNuevo();">
           <span class="gcal-plus-icon">+</span>
           <span>Crear audiencia</span>
         </button>
@@ -938,10 +1230,21 @@
           </label>
         </div>
 
-        <!-- Clasificación Visual (Estilo "Mis calendarios") -->
+        <!-- Sincronización Unidireccional de Lectura desde Google Calendar -->
         <div class="sidebar-section">
           <div class="sidebar-section-title">
-            <span>Clasificación de audiencias</span>
+            <span>Google Calendar (Solo lectura)</span>
+          </div>
+          <button type="button" class="sidebar-action-btn gcal-sync-btn" onclick="cerrarSidebarMovil(); abrirConciliacionGoogle();" title="Importar y cotejar bloques horarios desde Google Calendar hacia esta Agenda Web">
+            <span>📅 Importar desde Google Calendar</span>
+          </button>
+          <div class="last-import-tag" id="last-gcal-sync-info">Solo lectura: Calendario Compartido JG Illapel</div>
+        </div>
+
+        <!-- Clasificación Visual -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">
+            <span>Clasificación de eventos</span>
           </div>
           <div class="legend-list">
             <div class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span> Control Detención / Cautelares</div>
@@ -949,84 +1252,72 @@
             <div class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado</div>
             <div class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Sup.</div>
             <div class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras</div>
+            <div class="legend-item"><span class="legend-dot dashed"></span> Bloqueo Jefatura (Google — Flexible)</div>
             <div class="legend-item"><span class="legend-dot" style="background:#f28b82;"></span> Día Feriado Legal</div>
           </div>
         </div>
       </aside>
 
-      <!-- Contenedor Principal FullCalendar -->
       <main id="calendar-container">
         <div id="calendar"></div>
       </main>
+
+      <!-- Botón flotante (+) para móvil/tablet -->
+      <button type="button" class="mobile-fab-create" onclick="abrirModalNuevo()" title="Crear audiencia">
+        <span class="gcal-plus-icon">+</span>
+      </button>
     </div>
   </div>
 
-  <!-- MODAL BÚSQUEDA GLOBAL DE TEXTO -->
-  <div class="modal-backdrop" id="search-modal" onclick="if(event.target===this) cerrarModalBusqueda()">
-    <div class="modal modal-lg">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--gcal-grid-line); padding-bottom:0.6rem; margin-bottom:0.9rem;">
-        <h3 style="margin:0; border:none; padding:0;">Buscar Audiencias</h3>
-        <span id="search-count-badge" style="font-size:0.78rem; color:var(--gcal-text-muted);"></span>
-      </div>
-
-      <div class="search-input-wrap">
-        <input type="text" id="global-search-input" placeholder="Escriba RIT (ej. 23-2026), RUC, imputado, interviniente, tipo de audiencia o sala..." oninput="ejecutarBusquedaTexto()" />
-        <button type="button" class="btn btn-outline" onclick="limpiarBusquedaTexto()">Limpiar</button>
-      </div>
-
-      <div class="search-results-list" id="search-results-list"></div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="cerrarModalBusqueda()">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. MODAL DETALLE DE AUDIENCIA -->
+  <!-- 3. MODAL DETALLE DE AUDIENCIA / BLOQUEO -->
   <div class="modal-backdrop" id="detail-modal">
     <div class="modal">
-      <h3 id="det-title">Detalle de Audiencia</h3>
+      <h3 id="det-title">Detalle</h3>
       <input type="hidden" id="det-id" />
       <div class="detail-grid" id="det-content"></div>
       <div class="meta-info" id="det-audit" style="margin-top:0.9rem; padding-top:0.5rem; border-top:1px solid #2c2d30;"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" style="margin-right:auto;" onclick="eliminarDesdeDetalle()">Eliminar</button>
+        <button type="button" class="btn btn-success" id="btn-agendar-encima" style="display:none;" onclick="agendarEncimaDesdeBloqueo()">+ Agendar audiencia aquí</button>
         <button type="button" class="btn btn-outline" onclick="cerrarModalDetalle()">Cerrar</button>
         <button type="button" class="btn btn-primary" onclick="pasarAEdicion()">Editar</button>
       </div>
     </div>
   </div>
 
-  <!-- 4. MODAL CREAR / EDITAR AUDIENCIA -->
+  <!-- 4. MODAL CREAR / EDITAR AUDIENCIA O BLOQUEO -->
   <div class="modal-backdrop" id="event-modal">
     <div class="modal">
       <h3 id="modal-title">Registrar Audiencia</h3>
       <input type="hidden" id="ev-id" />
+      <input type="hidden" id="ev-kind" value="audiencia" />
+
+      <div class="soft-conflict-banner" id="ev-soft-warning"></div>
 
       <div class="row-2">
         <div class="form-group">
-          <label>RIT / Año *</label>
+          <label id="lbl-ev-rit">RIT / Año *</label>
           <input type="text" id="ev-rit" placeholder="Ej: O-23-2026" required />
         </div>
         <div class="form-group">
           <label>Día *</label>
-          <input type="date" id="ev-fecha" required />
+          <input type="date" id="ev-fecha" required onchange="verificarCruceBloqueoJefatura()" />
         </div>
       </div>
 
       <div class="row-2">
         <div class="form-group">
           <label>Hora Inicio *</label>
-          <input type="time" id="ev-inicio" step="900" required />
+          <input type="time" id="ev-inicio" step="900" required onchange="verificarCruceBloqueoJefatura()" />
         </div>
         <div class="form-group">
           <label>Hora Término *</label>
-          <input type="time" id="ev-fin" step="900" required />
+          <input type="time" id="ev-fin" step="900" required onchange="verificarCruceBloqueoJefatura()" />
         </div>
       </div>
 
       <div class="form-group">
-        <label>Tipo de Audiencia *</label>
+        <label id="lbl-ev-tipo">Tipo de Audiencia *</label>
         <input type="text" id="ev-tipo" list="tipos-sugeridos" placeholder="Ej: Control de Detención, Formalización..." required oninput="autoseleccionarColorModal()" />
         <datalist id="tipos-sugeridos">
           <option value="Control de Detención">
@@ -1054,6 +1345,7 @@
             <option value="#15803d">Verde (Salida Alternativa / Abreviado)</option>
             <option value="#b45309">Ámbar (Juicio Oral / Preparación)</option>
             <option value="#6d28d9">Púrpura (Cautela / Supervisión)</option>
+            <option value="#475569">Grafito (Bloqueo Jefatura)</option>
           </select>
         </div>
       </div>
@@ -1099,10 +1391,10 @@
     </div>
   </div>
 
-  <!-- 6. MODAL DE CONCILIACIÓN Y REPOBLACIÓN -->
+  <!-- 6. MODAL DE CONCILIACIÓN Y REPOBLACIÓN EXCEL UNIJUD -->
   <div class="modal-backdrop" id="reconcile-modal">
     <div class="modal modal-lg">
-      <h3>Conciliación de Agenda (Excel vs. Sistema)</h3>
+      <h3>Conciliación de Agenda (Excel Unijud vs. Sistema)</h3>
       <div id="reconcile-body"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" onclick="cerrarModalConciliacion()">Cancelar</button>
@@ -1116,7 +1408,21 @@
     </div>
   </div>
 
-  <!-- 7. MODAL ADMINISTRATIVO: AUDITORÍA, DEPURACIÓN DE BD Y PRIVILEGIOS -->
+  <!-- 7. MODAL DE IMPORTACIÓN Y COTEJO UNIDIRECCIONAL DESDE GOOGLE CALENDAR -->
+  <div class="modal-backdrop" id="gcal-sync-modal">
+    <div class="modal modal-xl">
+      <h3>Importar desde Google Calendar (Solo lectura → Agenda Web)</h3>
+      <div id="gcal-sync-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalGoogleSync()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn-apply-gcal-sync" style="display:none;" onclick="aplicarConciliacionGoogle()">
+          Incorporar Seleccionados a Agenda Web
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. MODAL ADMINISTRATIVO: AUDITORÍA, DEPURACIÓN, PRIVILEGIOS E INTEGRACIÓN GOOGLE -->
   <div class="modal-backdrop" id="audit-modal">
     <div class="modal modal-xl">
       <h3>Panel de Auditoría y Administración — JG Illapel</h3>
@@ -1129,7 +1435,10 @@
           2. Depuración de Base de Datos
         </button>
         <button type="button" class="admin-tab" data-tab="tab-roles" onclick="cambiarTabAdmin('tab-roles')">
-          3. Control de Privilegios (Administradores)
+          3. Control de Privilegios
+        </button>
+        <button type="button" class="admin-tab" data-tab="tab-gcal-cfg" onclick="cambiarTabAdmin('tab-gcal-cfg')">
+          4. Integración Google Calendar
         </button>
       </div>
 
@@ -1168,7 +1477,8 @@
               <option value="EDICION">Edición / Arrastre</option>
               <option value="ELIMINACION">Eliminación</option>
               <option value="IMPORTACION_EXCEL">Importación Excel</option>
-              <option value="CONCILIACION_EXCEL">Conciliación / Repoblación</option>
+              <option value="CONCILIACION_EXCEL">Conciliación Excel</option>
+              <option value="SYNC_GOOGLE">Importación Google Calendar</option>
               <option value="DEPURACION_BD">Depuración de BD</option>
             </select>
           </div>
@@ -1177,14 +1487,14 @@
 
         <div class="kpi-grid" id="audit-kpis"></div>
 
-        <div style="max-height: 360px; overflow-y: auto; border: 1px solid #2c2d30; border-radius: 8px;">
+        <div style="max-height: 360px; overflow: auto; border: 1px solid #2c2d30; border-radius: 8px;">
           <table class="diff-table" style="margin-bottom:0;">
             <thead>
               <tr>
                 <th style="width:130px;">Fecha / Hora Acción</th>
                 <th style="width:165px;">Funcionario</th>
-                <th style="width:125px;">Operación</th>
-                <th style="width:100px;">Causa (RIT)</th>
+                <th style="width:135px;">Operación</th>
+                <th style="width:100px;">Causa / Ref.</th>
                 <th style="width:115px;">Fecha / Hora Aud.</th>
                 <th>Detalle / Resumen del Cambio</th>
               </tr>
@@ -1199,12 +1509,12 @@
         <div class="purge-box">
           <h4>Depuración Histórica de Audiencias</h4>
           <p style="font-size:0.84rem; color:#e3e3e3; margin-top:0;">
-            Esta herramienta elimina definitivamente de Firebase las audiencias cuya <strong>fecha de realización sea anterior</strong> a la fecha de corte indicada, conservando únicamente las audiencias presentes y futuras para optimizar el tráfico y almacenamiento gratuito.
+            Elimina definitivamente de Firebase los registros cuya <strong>fecha de realización sea anterior</strong> a la fecha de corte indicada, conservando únicamente los registros presentes y futuros.
           </p>
 
           <div class="row-2" style="max-width:520px; margin-bottom:0.8rem;">
             <div class="form-group" style="margin-bottom:0;">
-              <label>Conservar audiencias desde el día (inclusive) *</label>
+              <label>Conservar registros desde el día (inclusive) *</label>
               <input type="date" id="purge-cutoff-date" onchange="previsualizarDepuracion()" />
             </div>
             <div class="form-group" style="margin-bottom:0;">
@@ -1227,7 +1537,7 @@
       <!-- SUBPANEL 3: CONTROL DE PRIVILEGIOS -->
       <div id="tab-roles" class="admin-panel">
         <p style="font-size:0.84rem; color:#e3e3e3; margin-top:0;">
-          Solo los correos electrónicos autorizados en esta lista pueden visualizar el botón <strong>Auditoría</strong>, consultar la bitácora de movimientos y ejecutar depuraciones de base de datos. Los demás usuarios mantienen acceso operativo normal a la agenda.
+          Solo los correos electrónicos autorizados en esta lista pueden visualizar el botón <strong>Auditoría</strong>, consultar la bitácora, ejecutar depuraciones de base de datos y configurar el puente con Google Calendar.
         </p>
 
         <div class="filter-bar">
@@ -1241,6 +1551,35 @@
         <div id="admin-users-list"></div>
       </div>
 
+      <!-- SUBPANEL 4: CONFIGURACIÓN DEL PUENTE GOOGLE APPS SCRIPT -->
+      <div id="tab-gcal-cfg" class="admin-panel">
+        <p style="font-size:0.84rem; color:#e3e3e3; margin-top:0;">
+          Configure aquí la URL de implementación de <strong>Google Apps Script</strong> y el token opcional para habilitar la lectura unidireccional desde el calendario compartido de Jefatura (<strong>Google Calendar → Agenda Web</strong>, sin escribir en Google Calendar).
+        </p>
+
+        <div class="form-group">
+          <label>URL de Aplicación Web de Google Apps Script (termina en <code>/exec</code>) *</label>
+          <input type="url" id="cfg-gcal-url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
+        </div>
+
+        <div class="row-2">
+          <div class="form-group">
+            <label>Token de Seguridad (Opcional, si lo exige el script)</label>
+            <input type="text" id="cfg-gcal-token" placeholder="Opcional" />
+          </div>
+          <div class="form-group">
+            <label>Etiqueta descriptiva del calendario vinculado</label>
+            <input type="text" id="cfg-gcal-label" placeholder="Calendario Compartido JG Illapel" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
+          <button type="button" class="btn btn-primary" onclick="guardarConfigGoogle()">Guardar Configuración</button>
+          <button type="button" class="btn btn-info" onclick="probarConexionGoogle()">Probar Conexión</button>
+          <span id="cfg-gcal-status" style="font-size:0.82rem; color:#9aa0a6;"></span>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" onclick="cerrarModalAuditoria()">Cerrar Panel</button>
       </div>
@@ -1249,7 +1588,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN DE FIREBASE (Proyecto: agenda-jg-illapel)
+    // 1. CONFIGURACIÓN DE FIREBASE Y PUENTE GOOGLE APPS SCRIPT
     // =========================================================================
     const firebaseConfig = {
       apiKey: "AIzaSyDwQXdaMIM28DPtZf5zvo3d7naO214zS1M",
@@ -1262,12 +1601,15 @@
       measurementId: "G-FPE9GYYLDN"
     };
 
+    const DEFAULT_GCAL_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyM4ZU5dWX_uulLxHu7Phe02Cl9EJlluTWPKA5VAaQnfHhf3vDTA4m-gq7_pZxqOlQM/exec";
+
     let auth = null;
     let db = null;
     let agendaRef = null;
     let metaCargaRef = null;
     let auditLogsRef = null;
     let adminRolesRef = null;
+    let gcalConfigRef = null;
 
     let calendar = null;
     let currentUser = null;
@@ -1277,12 +1619,12 @@
     let auditLogsCache = [];
     let conteoPorFecha = {};
     let planConciliacionPendiente = null;
+    let gcalConfigCache = { url: DEFAULT_GCAL_SCRIPT_URL, token: "", label: "Calendario Compartido JG Illapel" };
+    let planGoogleSyncPendiente = null;
 
-    // Estado del Mini Calendario Izquierdo y Vista Actual
     let miniCalFechaBase = new Date();
     let fechaSeleccionadaISO = fechaLocalISO(new Date());
 
-    // Registro de feriados de Chile (mapa YYYY-MM-DD -> nombre del feriado)
     let feriadosChileMap = {};
     let aniosFeriadosCargados = new Set();
 
@@ -1292,6 +1634,14 @@
 
     function keyToEmail(key) {
       return String(key || "").replace(/,/g, ".");
+    }
+
+    function esPantallaCompacta() {
+      return window.innerWidth <= 1024;
+    }
+
+    function esPantallaMovil() {
+      return window.innerWidth <= 680;
     }
 
     function inicializarFirebase() {
@@ -1307,10 +1657,11 @@
       metaCargaRef = db.ref('agenda_metadata/ultima_carga');
       auditLogsRef = db.ref('agenda_auditoria');
       adminRolesRef = db.ref('agenda_config/administradores');
+      gcalConfigRef = db.ref('agenda_config/google_calendar');
     }
 
     // =========================================================================
-    // 2. NAVEGACIÓN GOOGLE CALENDAR, DROPDOWN DE VISTAS Y MINI CALENDARIO
+    // 2. NAVEGACIÓN GOOGLE CALENDAR, DRAWER RESPONSIVO Y MINI CALENDARIO
     // =========================================================================
     const NOMBRES_VISTA = {
       timeGridDay: "Día",
@@ -1319,10 +1670,50 @@
       dayGridMonth: "Mes"
     };
 
-    function toggleSidebar() {
-      document.getElementById('gcal-sidebar').classList.toggle('collapsed');
-      setTimeout(() => { if (calendar) calendar.updateSize(); }, 220);
+    function sincronizarEstadoSidebarInicial() {
+      const sb = document.getElementById('gcal-sidebar');
+      const bd = document.getElementById('sidebar-backdrop');
+      if (!sb) return;
+      if (esPantallaCompacta()) {
+        sb.classList.add('collapsed');
+        if (bd) bd.classList.remove('open');
+      }
     }
+
+    function cerrarSidebarMovil() {
+      if (!esPantallaCompacta()) return;
+      const sb = document.getElementById('gcal-sidebar');
+      const bd = document.getElementById('sidebar-backdrop');
+      if (sb) sb.classList.add('collapsed');
+      if (bd) bd.classList.remove('open');
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('gcal-sidebar');
+      const bd = document.getElementById('sidebar-backdrop');
+      const estabaColapsado = sb.classList.contains('collapsed');
+
+      sb.classList.toggle('collapsed');
+      if (bd) {
+        if (esPantallaCompacta() && estabaColapsado) {
+          bd.classList.add('open');
+        } else {
+          bd.classList.remove('open');
+        }
+      }
+      setTimeout(() => { if (calendar) calendar.updateSize(); }, 230);
+    }
+
+    window.addEventListener('resize', () => {
+      const bd = document.getElementById('sidebar-backdrop');
+      const sb = document.getElementById('gcal-sidebar');
+      if (!esPantallaCompacta() && bd) {
+        bd.classList.remove('open');
+      } else if (esPantallaCompacta() && sb && !sb.classList.contains('collapsed') && bd) {
+        bd.classList.add('open');
+      }
+      if (calendar) calendar.updateSize();
+    });
 
     function toggleMenuVistas(e) {
       if (e) e.stopPropagation();
@@ -1337,24 +1728,9 @@
       }
     });
 
-    // Atajos de teclado estilo Google Calendar (D, L, W, M, T, /, Escape)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        cerrarModalBusqueda();
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && currentUser) {
-        e.preventDefault();
-        abrirModalBusqueda();
-        return;
-      }
       const tag = (e.target && e.target.tagName || '').toLowerCase();
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === '/' && currentUser) {
-        e.preventDefault();
-        abrirModalBusqueda();
-        return;
-      }
       const k = e.key.toLowerCase();
       if (k === 'd') seleccionarVista('timeGridDay');
       else if (k === 'l') seleccionarVista('timeGridWorkWeek');
@@ -1433,6 +1809,7 @@
         calendar.gotoDate(iso);
       }
       renderizarMiniCalendario();
+      cerrarSidebarMovil();
     }
 
     function renderizarMiniCalendario() {
@@ -1491,123 +1868,7 @@
     }
 
     // =========================================================================
-    // BÚSQUEDA GLOBAL DE TEXTO EN TODAS LAS AUDIENCIAS
-    // =========================================================================
-    function abrirModalBusqueda() {
-      const modal = document.getElementById('search-modal');
-      const input = document.getElementById('global-search-input');
-      modal.style.display = 'flex';
-      ejecutarBusquedaTexto();
-      setTimeout(() => {
-        input.focus();
-        input.select();
-      }, 40);
-    }
-
-    function cerrarModalBusqueda() {
-      const modal = document.getElementById('search-modal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    function limpiarBusquedaTexto() {
-      const input = document.getElementById('global-search-input');
-      input.value = '';
-      ejecutarBusquedaTexto();
-      input.focus();
-    }
-
-    function escaparHTML(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    function ejecutarBusquedaTexto() {
-      const input = document.getElementById('global-search-input');
-      const listEl = document.getElementById('search-results-list');
-      const badgeEl = document.getElementById('search-count-badge');
-      if (!input || !listEl) return;
-
-      const rawQuery = input.value.trim();
-      const tokens = normTxt(rawQuery).split(/\s+/).filter(Boolean);
-
-      const todas = Object.entries(eventosCache)
-        .filter(([id, ev]) => ev && ev.fecha)
-        .map(([id, ev]) => ({ id, ...ev }))
-        .sort((a, b) => (a.fecha + (a.inicio || "")).localeCompare(b.fecha + (b.inicio || "")));
-
-      const coincidencias = tokens.length === 0
-        ? todas
-        : todas.filter(ev => {
-            const ritVis = formatearRitVisual(ev.rit, ev.tipoCausa);
-            const fechaCL = formatearFechaCL(ev.fecha);
-            const corpus = normTxt([
-              ritVis,
-              ev.rit,
-              ev.ruc,
-              ev.tipo,
-              ev.tipoCausa,
-              ev.sala,
-              ev.intervinientes,
-              fechaCL,
-              ev.fecha
-            ].filter(Boolean).join(" "));
-            return tokens.every(t => corpus.includes(t));
-          });
-
-      badgeEl.textContent = tokens.length === 0
-        ? `Total en agenda: ${todas.length} audiencia(s)`
-        : `${coincidencias.length} coincidencia(s) de ${todas.length}`;
-
-      if (!coincidencias.length) {
-        listEl.innerHTML = `<div style="text-align:center; color:#9aa0a6; padding:1.6rem 0.5rem; font-size:0.86rem;">
-          No se encontraron audiencias que coincidan con "${escaparHTML(rawQuery)}".
-        </div>`;
-        return;
-      }
-
-      const maxMostrar = 120;
-      const visibles = coincidencias.slice(0, maxMostrar);
-
-      listEl.innerHTML = visibles.map(ev => {
-        const color = resolverColorEvento(ev);
-        const ritVis = formatearRitVisual(ev.rit, ev.tipoCausa);
-        const inicioNorm = normalizarHoraExcel(ev.inicio) || ev.inicio || "";
-        const finEf = calcularFinEfectivo({ ...ev, inicio: inicioNorm });
-        const extra = [ev.sala, ev.ruc ? `RUC: ${ev.ruc}` : "", ev.intervinientes]
-          .filter(Boolean)
-          .join(" • ");
-
-        return `
-          <div class="search-result-card" style="border-left-color:${color};" onclick="irAAudienciaDesdeBusqueda('${ev.id}')">
-            <div class="search-result-top">
-              <span class="search-result-rit">${escaparHTML(ritVis)} — ${escaparHTML(ev.tipo || "")}</span>
-              <span class="search-result-date">${formatearFechaCL(ev.fecha)} | ${inicioNorm} – ${finEf}</span>
-            </div>
-            <div class="search-result-sub">${escaparHTML(extra || "Sin detalles adicionales")}</div>
-          </div>
-        `;
-      }).join("") + (coincidencias.length > maxMostrar
-        ? `<div style="text-align:center; font-size:0.76rem; color:#9aa0a6; padding:0.4rem;">Mostrando los primeros ${maxMostrar} resultados. Refine su búsqueda para acotar.</div>`
-        : "");
-    }
-
-    function irAAudienciaDesdeBusqueda(id) {
-      const ev = eventosCache[id];
-      if (!ev) return;
-      cerrarModalBusqueda();
-      if (calendar && ev.fecha) {
-        fechaSeleccionadaISO = ev.fecha;
-        calendar.gotoDate(ev.fecha);
-        renderizarMiniCalendario();
-      }
-      abrirModalDetalle(id);
-    }
-
-    // =========================================================================
-    // 3. SISTEMA DE AUDITORÍA Y CONTROL DE PRIVILEGIOS DE ADMINISTRADOR
+    // 3. SISTEMA DE AUDITORÍA, PRIVILEGIOS Y CONFIGURACIÓN GOOGLE
     // =========================================================================
     function registrarLogAuditoria(accion, rit, fechaAud, horaAud, detalle) {
       if (!auditLogsRef || !currentUser) return;
@@ -1657,6 +1918,21 @@
 
         renderizarListaAdministradores();
       });
+
+      if (gcalConfigRef) {
+        gcalConfigRef.on('value', (snap) => {
+          const val = snap.val() || {};
+          gcalConfigCache = {
+            url: val.url || DEFAULT_GCAL_SCRIPT_URL,
+            token: val.token || "",
+            label: val.label || "Calendario Compartido JG Illapel"
+          };
+          const tag = document.getElementById('last-gcal-sync-info');
+          if (tag) {
+            tag.textContent = `Solo lectura: ${gcalConfigCache.label}`;
+          }
+        });
+      }
     }
 
     function escucharLogsAuditoria() {
@@ -1686,6 +1962,12 @@
       if (!purgeInput.value) purgeInput.value = hoyISO;
       previsualizarDepuracion();
       renderizarListaAdministradores();
+
+      document.getElementById('cfg-gcal-url').value = gcalConfigCache.url || DEFAULT_GCAL_SCRIPT_URL;
+      document.getElementById('cfg-gcal-token').value = gcalConfigCache.token || "";
+      document.getElementById('cfg-gcal-label').value = gcalConfigCache.label || "Calendario Compartido JG Illapel";
+      document.getElementById('cfg-gcal-status').textContent = "";
+
       document.getElementById('audit-modal').style.display = 'flex';
     }
 
@@ -1702,6 +1984,125 @@
       });
       if (tabId === 'tab-purge') previsualizarDepuracion();
       if (tabId === 'tab-roles') renderizarListaAdministradores();
+    }
+
+    // Helper para consultar Apps Script (soporta doPost con action y fallback a doGet)
+    async function consultarBridgeGoogle(url, payload) {
+      let data = null;
+
+      try {
+        const respPost = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        const textPost = await respPost.text();
+        data = JSON.parse(textPost);
+      } catch (e) {
+        data = null;
+      }
+
+      if (!data || (!data.ok && data.status !== "ok" && payload.action === "list")) {
+        const qs = new URLSearchParams();
+        if (payload.start) qs.set("start", `${payload.start}T00:00:00`);
+        if (payload.end) qs.set("end", `${payload.end}T23:59:59`);
+        if (payload.token) qs.set("token", payload.token);
+
+        const sep = url.includes("?") ? "&" : "?";
+        const respGet = await fetch(`${url}${sep}${qs.toString()}`);
+        data = await respGet.json();
+      }
+
+      return data;
+    }
+
+    function normalizarEventosGoogleBridge(rawEvents) {
+      return (rawEvents || []).map((ev, idx) => {
+        if (ev.fecha && ev.inicio) {
+          return {
+            googleEventId: ev.googleEventId || ev.id || `gcal_${idx}_${ev.fecha}_${ev.inicio}`,
+            title: ev.title || "(Sin título)",
+            fecha: ev.fecha,
+            inicio: normalizarHoraExcel(ev.inicio) || ev.inicio,
+            fin: normalizarHoraExcel(ev.fin) || deMinutos(aMinutos(ev.inicio) + 60),
+            description: ev.description || "",
+            location: ev.location || "",
+            color: ev.color || "#475569"
+          };
+        }
+
+        const sDate = new Date(ev.start);
+        const eDate = ev.end ? new Date(ev.end) : new Date(sDate.getTime() + 60 * 60000);
+        const pad = (n) => String(n).padStart(2, "0");
+
+        const fecha = !isNaN(sDate) ? fechaLocalISO(sDate) : "";
+        const inicio = !isNaN(sDate) ? `${pad(sDate.getHours())}:${pad(sDate.getMinutes())}` : "09:00";
+        let fin = !isNaN(eDate) ? `${pad(eDate.getHours())}:${pad(eDate.getMinutes())}` : "10:00";
+        if (aMinutos(fin) <= aMinutos(inicio)) fin = deMinutos(aMinutos(inicio) + 60);
+
+        return {
+          googleEventId: ev.googleEventId || ev.id || `gcal_${idx}_${fecha}_${inicio}`,
+          title: ev.title || "(Sin título)",
+          fecha,
+          inicio,
+          fin,
+          description: ev.description || "",
+          location: ev.location || "",
+          color: (ev.color && String(ev.color).startsWith("#")) ? ev.color : "#475569"
+        };
+      }).filter(ev => ev.fecha);
+    }
+
+    function guardarConfigGoogle() {
+      if (!esUsuarioAdmin) return;
+      const url = document.getElementById('cfg-gcal-url').value.trim() || DEFAULT_GCAL_SCRIPT_URL;
+      const token = document.getElementById('cfg-gcal-token').value.trim();
+      const label = document.getElementById('cfg-gcal-label').value.trim() || "Calendario Compartido JG Illapel";
+
+      if (!url) {
+        alert("Ingrese la URL del Web App de Google Apps Script.");
+        return;
+      }
+
+      gcalConfigRef.set({
+        url,
+        token,
+        label,
+        actualizadoPor: currentUser.email,
+        actualizadoEn: new Date().toISOString()
+      });
+
+      const st = document.getElementById('cfg-gcal-status');
+      st.style.color = "#81c995";
+      st.textContent = "✔ Configuración guardada en Firebase.";
+    }
+
+    async function probarConexionGoogle() {
+      const url = document.getElementById('cfg-gcal-url').value.trim() || DEFAULT_GCAL_SCRIPT_URL;
+      const token = document.getElementById('cfg-gcal-token').value.trim();
+      const st = document.getElementById('cfg-gcal-status');
+
+      st.style.color = "#8ab4f8";
+      st.textContent = "Probando enlace de lectura con Google Calendar...";
+
+      try {
+        const hoyISO = fechaLocalISO(new Date());
+        const data = await consultarBridgeGoogle(url, { action: "ping", token, start: hoyISO, end: hoyISO });
+
+        if (data && data.ok) {
+          st.style.color = "#81c995";
+          st.textContent = `✔ Conectado (solo lectura) a: "${data.calendarName || 'Google Calendar'}" (${data.timeZone || 'America/Santiago'})`;
+        } else if (data && data.status === "ok") {
+          st.style.color = "#81c995";
+          st.textContent = `✔ Conectado vía GET (solo lectura). Eventos detectados hoy: ${data.count ?? (data.events || []).length}`;
+        } else {
+          st.style.color = "#f28b82";
+          st.textContent = `✖ Error: ${(data && (data.error || data.message)) || "Respuesta inválida"}`;
+        }
+      } catch (err) {
+        st.style.color = "#f28b82";
+        st.textContent = `✖ Fallo de red/CORS: ${err.message}`;
+      }
     }
 
     function aplicarPresetAuditoria() {
@@ -1762,6 +2163,7 @@
         ELIMINACION: `<span class="badge-del">ELIMINACIÓN</span>`,
         IMPORTACION_EXCEL: `<span class="badge-imp">IMPORT. EXCEL</span>`,
         CONCILIACION_EXCEL: `<span class="badge-imp">CONCILIACIÓN</span>`,
+        SYNC_GOOGLE: `<span class="badge-imp">IMPORT. GOOGLE</span>`,
         DEPURACION_BD: `<span class="badge-del">DEPURACIÓN BD</span>`
       };
       return map[accion] || `<span class="badge-imp">${accion || "-"}</span>`;
@@ -1773,7 +2175,7 @@
       const kpis = document.getElementById('audit-kpis');
 
       const creaciones = filtrados.filter(x => x.accion === 'CREACION' || x.accion === 'IMPORTACION_EXCEL').length;
-      const ediciones = filtrados.filter(x => x.accion === 'EDICION' || x.accion === 'CONCILIACION_EXCEL').length;
+      const ediciones = filtrados.filter(x => x.accion === 'EDICION' || x.accion === 'CONCILIACION_EXCEL' || x.accion === 'SYNC_GOOGLE').length;
       const eliminaciones = filtrados.filter(x => x.accion === 'ELIMINACION' || x.accion === 'DEPURACION_BD').length;
       const usuariosUnicos = new Set(filtrados.map(x => x.usuario).filter(Boolean)).size;
 
@@ -1816,9 +2218,9 @@
         "Fecha y Hora Acción": l.timestamp ? new Date(l.timestamp).toLocaleString('es-CL') : "",
         "Funcionario": l.usuario || "",
         "Operación": l.accion || "",
-        "Causa (RIT)": l.rit || "",
-        "Fecha Audiencia": l.fechaAudiencia || "",
-        "Horario Audiencia": l.horaAudiencia || "",
+        "Causa / Ref.": l.rit || "",
+        "Fecha": l.fechaAudiencia || "",
+        "Horario": l.horaAudiencia || "",
         "Detalle": l.detalle || ""
       }));
       const ws = XLSX.utils.json_to_sheet(filas);
@@ -1845,9 +2247,9 @@
         : "ninguna";
 
       box.innerHTML = `
-        <div>• <strong>Total audiencias actualmente en base de datos:</strong> ${todas.length}</div>
-        <div style="color:#f28b82;">• <strong>Audiencias anteriores al ${formatearFechaCL(cutoff)} que se eliminarán:</strong> ${aEliminar.length} (${rangoElim})</div>
-        <div style="color:#81c995;">• <strong>Audiencias presentes y futuras que se conservarán (≥ ${formatearFechaCL(cutoff)}):</strong> ${aConservar}</div>
+        <div>• <strong>Total registros actualmente en base de datos:</strong> ${todas.length}</div>
+        <div style="color:#f28b82;">• <strong>Registros anteriores al ${formatearFechaCL(cutoff)} que se eliminarán:</strong> ${aEliminar.length} (${rangoElim})</div>
+        <div style="color:#81c995;">• <strong>Registros presentes y futuros que se conservarán (≥ ${formatearFechaCL(cutoff)}):</strong> ${aConservar}</div>
       `;
     }
 
@@ -1866,14 +2268,14 @@
 
       const aEliminar = Object.entries(eventosCache).filter(([id, ev]) => ev && ev.fecha && ev.fecha < cutoff);
       if (aEliminar.length === 0 && !incluirLogs) {
-        alert(`No existen audiencias anteriores al ${formatearFechaCL(cutoff)} para depurar.`);
+        alert(`No existen registros anteriores al ${formatearFechaCL(cutoff)} para depurar.`);
         return;
       }
 
       const confirmMsg =
         `ATENCIÓN — DEPURACIÓN DEFINITIVA DE BASE DE DATOS\n\n` +
-        `Se eliminarán permanentemente ${aEliminar.length} audiencias anteriores al ${formatearFechaCL(cutoff)}.\n` +
-        `Se conservarán todas las audiencias desde el ${formatearFechaCL(cutoff)} en adelante.\n\n` +
+        `Se eliminarán permanentemente ${aEliminar.length} registros anteriores al ${formatearFechaCL(cutoff)}.\n` +
+        `Se conservarán todos los registros desde el ${formatearFechaCL(cutoff)} en adelante.\n\n` +
         `¿Confirma ejecutar esta depuración?`;
 
       if (!confirm(confirmMsg)) return;
@@ -1918,11 +2320,11 @@
         "MASIVO",
         cutoff,
         "-",
-        `Depuradas ${aEliminar.length} audiencias anteriores al ${formatearFechaCL(cutoff)}${incluirLogs ? ` y ${logsEliminados} registros de bitácora` : ''}.`
+        `Depurados ${aEliminar.length} registros anteriores al ${formatearFechaCL(cutoff)}${incluirLogs ? ` y ${logsEliminados} registros de bitácora` : ''}.`
       );
 
       previsualizarDepuracion();
-      alert(`Depuración completada: ${aEliminar.length} audiencias históricas eliminadas.`);
+      alert(`Depuración completada: ${aEliminar.length} registros históricos eliminados.`);
     }
 
     function renderizarListaAdministradores() {
@@ -2081,7 +2483,7 @@
             break;
           }
         } catch (err) {
-          // Continúa con la siguiente fuente
+          // Continúa
         }
       }
 
@@ -2151,6 +2553,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       try {
         inicializarFirebase();
+        sincronizarEstadoSidebarInicial();
+
         const hoy = new Date();
         const anioActual = hoy.getFullYear();
         document.getElementById('gcal-logo-day-num').textContent = hoy.getDate();
@@ -2165,6 +2569,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'flex';
             document.getElementById('user-display').textContent = user.email;
+            sincronizarEstadoSidebarInicial();
             configurarControlPrivilegios();
             inicializarCalendario();
             escucharBaseDatos();
@@ -2187,7 +2592,7 @@
     }
 
     // =========================================================================
-    // FORMATEADOR DE RIT ESTÁNDAR, COLORES Y CÁLCULO DE DURACIÓN VISUAL
+    // FORMATEADOR DE RIT ESTÁNDAR, COLORES Y BLOQUES JEFATURA FLEXIBLES
     // =========================================================================
     function normTxt(str) {
       return String(str ?? "")
@@ -2195,6 +2600,10 @@
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function esBloqueoJefatura(item) {
+      return item && item.tipoRegistro === 'bloqueo_jefatura';
     }
 
     function inferirColorAudiencia(tipo) {
@@ -2207,6 +2616,9 @@
     }
 
     function resolverColorEvento(item) {
+      if (esBloqueoJefatura(item)) {
+        return item.color || "#475569";
+      }
       if (item && item.color && item.color !== "#1d4ed8") {
         return item.color;
       }
@@ -2228,9 +2640,12 @@
       return `RIT ${letra}-${clean}`;
     }
 
-    function formatearTextoBloque(ritRaw, tipoAudiencia, tipoCausa = "") {
-      const ritEtiqueta = formatearRitVisual(ritRaw, tipoCausa);
-      const tipoLimpio = String(tipoAudiencia || "").trim();
+    function formatearTextoBloque(item) {
+      if (esBloqueoJefatura(item)) {
+        return `📌 ${item.tipo || item.rit || "Reserva Jefatura"}`;
+      }
+      const ritEtiqueta = formatearRitVisual(item.rit, item.tipoCausa);
+      const tipoLimpio = String(item.tipo || "").trim();
       if (!tipoLimpio) return ritEtiqueta;
       const yaTienePrefijo = /^audiencia\b/i.test(tipoLimpio);
       const textoAud = yaTienePrefijo ? tipoLimpio : `Audiencia de ${tipoLimpio}`;
@@ -2287,6 +2702,10 @@
         return deMinutos(finMin);
       }
 
+      if (esBloqueoJefatura(item)) {
+        return deMinutos(iniMin + 60);
+      }
+
       const desdeTexto = extraerHoraTerminoDesdeTexto(`${item.sala || ""} ${item.tipo || ""}`, iniMin);
       if (desdeTexto) return desdeTexto;
 
@@ -2305,9 +2724,15 @@
       if (calendar) return;
       const calendarEl = document.getElementById('calendar');
 
+      const vistaInicial = esPantallaMovil() ? 'timeGridDay' : 'timeGridWorkWeek';
+      document.getElementById('current-view-label').textContent = NOMBRES_VISTA[vistaInicial] || vistaInicial;
+      document.querySelectorAll('.view-option').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-view') === vistaInicial);
+      });
+
       calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
-        initialView: 'timeGridWorkWeek',
+        initialView: vistaInicial,
         views: {
           timeGridWorkWeek: {
             type: 'timeGridWeek',
@@ -2334,8 +2759,12 @@
         slotMaxTime: '18:00:00',
         nowIndicator: true,
         slotEventOverlap: false,
+        selectOverlap: true,
+        eventOverlap: true,
         eventMinHeight: 24,
         selectable: true,
+        selectLongPressDelay: 350,
+        eventLongPressDelay: 350,
         editable: true,
 
         datesSet: function(info) {
@@ -2367,7 +2796,7 @@
           }
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
-          const textoTotal = total === 1 ? '1 audiencia' : `${total} audiencias`;
+          const textoTotal = total === 1 ? '1 aud.' : `${total} aud.`;
           const cls = total > 0 ? 'day-count-badge has-events' : 'day-count-badge';
           const feriadoNombre = feriadosChileMap[iso];
           const feriadoHtml = feriadoNombre
@@ -2420,9 +2849,13 @@
           info.el.style.color = '#ffffff';
 
           const props = info.event.extendedProps || {};
+          if (props.esBloqueo) {
+            info.el.classList.add('is-jefatura-block');
+          }
           if (props.duracionMin > 15 && info.view.type.startsWith('timeGrid')) {
+            const slotHeight = esPantallaMovil() ? 32 : 28;
             const slots = props.duracionMin / 15;
-            info.el.style.minHeight = `${Math.max(26, Math.round(slots * 28) - 2)}px`;
+            info.el.style.minHeight = `${Math.max(26, Math.round(slots * slotHeight) - 2)}px`;
           }
         },
 
@@ -2467,7 +2900,7 @@
       document.querySelectorAll('[data-day-count]').forEach((el) => {
         const iso = el.getAttribute('data-day-count');
         const total = conteoPorFecha[iso] || 0;
-        el.textContent = total === 1 ? '1 audiencia' : `${total} audiencias`;
+        el.textContent = total === 1 ? '1 aud.' : `${total} aud.`;
         if (total > 0) el.classList.add('has-events');
         else el.classList.remove('has-events');
       });
@@ -2487,7 +2920,7 @@
     }
 
     // =========================================================================
-    // 7. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
+    // 7. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
     // =========================================================================
     function registrarUltimaCargaExcel(fechasDetectadas, origen = "Excel") {
       if (!fechasDetectadas || !fechasDetectadas.length || !metaCargaRef) return;
@@ -2515,8 +2948,8 @@
         el.title = `Período cargado (${meta.origen || 'Excel'}) por ${meta.actualizadoPor || 'N/D'}`;
       } else {
         const fechas = Object.values(eventosCache)
-          .map(ev => ev && ev.fecha)
-          .filter(Boolean)
+          .filter(ev => ev && ev.fecha && !esBloqueoJefatura(ev))
+          .map(ev => ev.fecha)
           .sort();
         if (fechas.length > 0) {
           const d1 = formatearFechaCL(fechas[0]);
@@ -2540,7 +2973,7 @@
         conteoPorFecha = {};
 
         Object.values(eventosCache).forEach((item) => {
-          if (item && item.fecha) {
+          if (item && item.fecha && !esBloqueoJefatura(item)) {
             conteoPorFecha[item.fecha] = (conteoPorFecha[item.fecha] || 0) + 1;
           }
         });
@@ -2548,10 +2981,6 @@
         metaCargaRef.once('value', (snap) => {
           if (!snap.val()) actualizarEtiquetaUltimaCarga(null);
         });
-
-        if (document.getElementById('search-modal').style.display === 'flex') {
-          ejecutarBusquedaTexto();
-        }
 
         if (!calendar) return;
 
@@ -2564,7 +2993,7 @@
 
           calendar.addEvent({
             id: id,
-            title: formatearTextoBloque(item.rit, item.tipo, item.tipoCausa),
+            title: formatearTextoBloque(item),
             start: `${item.fecha}T${inicioNorm}:00`,
             end: `${item.fecha}T${finEv}:00`,
             backgroundColor: colorEv,
@@ -2573,7 +3002,8 @@
             extendedProps: {
               inicioHora: inicioNorm,
               finHora: finEv,
-              duracionMin: durMin
+              duracionMin: durMin,
+              esBloqueo: esBloqueoJefatura(item)
             }
           });
         });
@@ -2603,9 +3033,13 @@
         modificadoEn: new Date().toISOString()
       });
 
+      const refAud = esBloqueoJefatura(actual)
+        ? `BLOQUEO: ${actual.tipo}`
+        : formatearRitVisual(actual.rit, actual.tipoCausa);
+
       registrarLogAuditoria(
         "EDICION",
-        formatearRitVisual(actual.rit, actual.tipoCausa),
+        refAud,
         nuevaFecha,
         `${nuevoInicio}-${nuevoFin}`,
         `Reagendamiento visual (arrastre/redimensión): de ${formatearFechaCL(actual.fecha)} (${actual.inicio}-${calcularFinEfectivo(actual)}) a ${formatearFechaCL(nuevaFecha)} (${nuevoInicio}-${nuevoFin}).`
@@ -2613,35 +3047,86 @@
     }
 
     // =========================================================================
-    // 8. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
+    // 8. MODAL DETALLE Y MODAL CRUD (CON AVISO NO BLOQUEANTE EN FRANJAS JEFATURA)
     // =========================================================================
+    function verificarCruceBloqueoJefatura() {
+      const banner = document.getElementById('ev-soft-warning');
+      if (!banner) return;
+      const fecha = document.getElementById('ev-fecha').value;
+      const inicio = document.getElementById('ev-inicio').value;
+      const fin = document.getElementById('ev-fin').value;
+      const editId = document.getElementById('ev-id').value;
+
+      if (!fecha || !inicio || !fin) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      const iniM = aMinutos(inicio);
+      const finM = aMinutos(fin);
+
+      const cruces = Object.entries(eventosCache)
+        .filter(([id, ev]) => id !== editId && esBloqueoJefatura(ev) && ev.fecha === fecha)
+        .filter(([id, ev]) => {
+          const bIni = aMinutos(ev.inicio);
+          const bFin = aMinutos(calcularFinEfectivo(ev));
+          return iniM < bFin && finM > bIni;
+        })
+        .map(([id, ev]) => `<strong>${ev.tipo || ev.rit}</strong> (${ev.inicio}–${calcularFinEfectivo(ev)})`);
+
+      if (cruces.length > 0) {
+        banner.innerHTML = `📌 <strong>Aviso de Jefatura (no bloqueante):</strong> Este horario coincide con ${cruces.join(", ")}. Puede guardar la audiencia de todas formas si la carga judicial lo requiere.`;
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
     function abrirModalDetalle(id) {
       const item = eventosCache[id];
       if (!item) return;
 
-      const ritEtiqueta = formatearRitVisual(item.rit, item.tipoCausa);
+      const esBloq = esBloqueoJefatura(item);
       const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
       const finEfectivo = calcularFinEfectivo({ ...item, inicio: inicioNorm });
       const durMin = Math.max(15, aMinutos(finEfectivo) - aMinutos(inicioNorm));
       const feriadoDia = item.fecha ? feriadosChileMap[item.fecha] : null;
 
       document.getElementById('det-id').value = id;
-      document.getElementById('det-title').textContent = `${ritEtiqueta}`;
 
-      const filas = [
-        ["Causa:", ritEtiqueta],
-        ["Tipo de Audiencia:", item.tipo || "-"],
-        ["Fecha:", `${formatearFechaCL(item.fecha)}${feriadoDia ? ` (Feriado: ${feriadoDia})` : ''}`],
-        ["Horario:", `${inicioNorm || "-"} a ${finEfectivo} hrs (${durMin} min)`],
-        ["Sala / Detalle:", item.sala || "No especificada"]
-      ];
-      if (item.tipoCausa) filas.push(["Tipo Causa:", item.tipoCausa]);
-      if (item.ruc) filas.push(["RUC:", item.ruc]);
-      if (item.intervinientes) filas.push(["Intervinientes:", item.intervinientes]);
+      if (esBloq) {
+        document.getElementById('det-title').textContent = `📌 ${item.tipo || item.rit || "Reserva / Bloqueo Jefatura"}`;
+        document.getElementById('btn-agendar-encima').style.display = 'inline-flex';
+        const filasBloq = [
+          ["Categoría:", "Bloqueo / Reserva Jefatura (Google Calendar — Flexible)"],
+          ["Título:", item.tipo || item.rit || "-"],
+          ["Fecha:", `${formatearFechaCL(item.fecha)}${feriadoDia ? ` (Feriado: ${feriadoDia})` : ''}`],
+          ["Franja horaria:", `${inicioNorm || "-"} a ${finEfectivo} hrs (${durMin} min)`],
+          ["Observación:", item.sala || "Sin detalle adicional"]
+        ];
+        document.getElementById('det-content').innerHTML = filasBloq
+          .map(([lbl, val]) => `<div class="detail-lbl">${lbl}</div><div class="detail-val">${val}</div>`)
+          .join("");
+      } else {
+        const ritEtiqueta = formatearRitVisual(item.rit, item.tipoCausa);
+        document.getElementById('det-title').textContent = `${ritEtiqueta}`;
+        document.getElementById('btn-agendar-encima').style.display = 'none';
 
-      document.getElementById('det-content').innerHTML = filas
-        .map(([lbl, val]) => `<div class="detail-lbl">${lbl}</div><div class="detail-val">${val}</div>`)
-        .join("");
+        const filas = [
+          ["Causa:", ritEtiqueta],
+          ["Tipo de Audiencia:", item.tipo || "-"],
+          ["Fecha:", `${formatearFechaCL(item.fecha)}${feriadoDia ? ` (Feriado: ${feriadoDia})` : ''}`],
+          ["Horario:", `${inicioNorm || "-"} a ${finEfectivo} hrs (${durMin} min)`],
+          ["Sala / Detalle:", item.sala || "No especificada"]
+        ];
+        if (item.tipoCausa) filas.push(["Tipo Causa:", item.tipoCausa]);
+        if (item.ruc) filas.push(["RUC:", item.ruc]);
+        if (item.intervinientes) filas.push(["Intervinientes:", item.intervinientes]);
+
+        document.getElementById('det-content').innerHTML = filas
+          .map(([lbl, val]) => `<div class="detail-lbl">${lbl}</div><div class="detail-val">${val}</div>`)
+          .join("");
+      }
 
       const infoAudit = item.modificadoPor
         ? `Última edición: ${item.modificadoPor} (${new Date(item.modificadoEn).toLocaleString('es-CL')})`
@@ -2655,6 +3140,19 @@
       document.getElementById('detail-modal').style.display = 'none';
     }
 
+    function agendarEncimaDesdeBloqueo() {
+      const id = document.getElementById('det-id').value;
+      const item = eventosCache[id];
+      cerrarModalDetalle();
+      if (!item) {
+        abrirModalNuevo();
+        return;
+      }
+      const ini = normalizarHoraExcel(item.inicio) || "09:00";
+      const fin = deMinutos(aMinutos(ini) + 15);
+      abrirModalNuevo(item.fecha, ini, fin);
+    }
+
     function pasarAEdicion() {
       const id = document.getElementById('det-id').value;
       cerrarModalDetalle();
@@ -2664,15 +3162,18 @@
     function eliminarDesdeDetalle() {
       const id = document.getElementById('det-id').value;
       const item = eventosCache[id];
-      if (id && confirm("¿Eliminar esta audiencia de la agenda?")) {
+      if (id && confirm("¿Eliminar este registro de la agenda?")) {
         agendaRef.child(id).remove();
         if (item) {
+          const refAud = esBloqueoJefatura(item)
+            ? `BLOQUEO: ${item.tipo}`
+            : formatearRitVisual(item.rit, item.tipoCausa);
           registrarLogAuditoria(
             "ELIMINACION",
-            formatearRitVisual(item.rit, item.tipoCausa),
+            refAud,
             item.fecha,
             item.inicio,
-            `Eliminada audiencia "${item.tipo}" (${item.sala || 'Sin sala'}).`
+            `Eliminado registro "${item.tipo}" (${item.sala || 'Sin detalle'}).`
           );
         }
         cerrarModalDetalle();
@@ -2680,11 +3181,19 @@
     }
 
     function autoseleccionarColorModal() {
+      if (document.getElementById('ev-kind').value === 'bloqueo_jefatura') return;
       const tipo = document.getElementById('ev-tipo').value;
       document.getElementById('ev-color').value = inferirColorAudiencia(tipo);
     }
 
+    function configurarEtiquetasModalEdicion(esBloq) {
+      document.getElementById('ev-kind').value = esBloq ? 'bloqueo_jefatura' : 'audiencia';
+      document.getElementById('lbl-ev-rit').textContent = esBloq ? 'Identificador / Referencia *' : 'RIT / Año *';
+      document.getElementById('lbl-ev-tipo').textContent = esBloq ? 'Título del Bloqueo / Actividad *' : 'Tipo de Audiencia *';
+    }
+
     function abrirModalNuevo(fecha = '', inicio = '09:00', fin = '09:15') {
+      configurarEtiquetasModalEdicion(false);
       document.getElementById('modal-title').textContent = 'Registrar Nueva Audiencia';
       document.getElementById('ev-id').value = '';
       document.getElementById('ev-rit').value = '';
@@ -2696,6 +3205,7 @@
       document.getElementById('ev-color').value = '#1d4ed8';
       document.getElementById('ev-audit').textContent = '';
       document.getElementById('btn-delete').style.display = 'none';
+      verificarCruceBloqueoJefatura();
       document.getElementById('event-modal').style.display = 'flex';
     }
 
@@ -2703,10 +3213,15 @@
       const item = eventosCache[id];
       if (!item) return;
 
+      const esBloq = esBloqueoJefatura(item);
+      configurarEtiquetasModalEdicion(esBloq);
+
       const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
-      document.getElementById('modal-title').textContent = 'Editar Audiencia';
+      document.getElementById('modal-title').textContent = esBloq ? 'Editar Bloqueo de Jefatura' : 'Editar Audiencia';
       document.getElementById('ev-id').value = id;
-      document.getElementById('ev-rit').value = formatearRitVisual(item.rit, item.tipoCausa).replace(/^RIT\s*/i, "");
+      document.getElementById('ev-rit').value = esBloq
+        ? (item.rit || "JEFATURA")
+        : formatearRitVisual(item.rit, item.tipoCausa).replace(/^RIT\s*/i, "");
       document.getElementById('ev-fecha').value = item.fecha || '';
       document.getElementById('ev-inicio').value = inicioNorm || '';
       document.getElementById('ev-fin').value = calcularFinEfectivo({ ...item, inicio: inicioNorm });
@@ -2720,6 +3235,7 @@
       document.getElementById('ev-audit').textContent = infoAudit;
 
       document.getElementById('btn-delete').style.display = 'inline-block';
+      verificarCruceBloqueoJefatura();
       document.getElementById('event-modal').style.display = 'flex';
     }
 
@@ -2729,6 +3245,7 @@
 
     function guardarAudiencia() {
       const id = document.getElementById('ev-id').value;
+      const esBloq = document.getElementById('ev-kind').value === 'bloqueo_jefatura';
       const ritInput = document.getElementById('ev-rit').value.trim();
       const fecha = document.getElementById('ev-fecha').value;
       const inicio = document.getElementById('ev-inicio').value;
@@ -2738,7 +3255,7 @@
       const color = document.getElementById('ev-color').value;
 
       if (!ritInput || !fecha || !inicio || !fin || !tipo) {
-        alert("Complete los campos obligatorios: RIT/Año, Día, Hora inicio, Hora término y Tipo de audiencia.");
+        alert("Complete todos los campos obligatorios.");
         return;
       }
       if (fin <= inicio) {
@@ -2746,22 +3263,25 @@
         return;
       }
 
-      const ritFormateado = formatearRitVisual(ritInput).replace(/^RIT\s*/i, "");
+      const ritFormateado = esBloq ? ritInput : formatearRitVisual(ritInput).replace(/^RIT\s*/i, "");
       const payload = {
         rit: ritFormateado,
         fecha, inicio, fin, tipo, sala, color,
+        tipoRegistro: esBloq ? 'bloqueo_jefatura' : 'audiencia',
         modificadoPor: currentUser.email,
         modificadoEn: new Date().toISOString()
       };
+
+      const refAud = esBloq ? `BLOQUEO: ${tipo}` : `RIT ${ritFormateado}`;
 
       if (id) {
         agendaRef.child(id).update(payload);
         registrarLogAuditoria(
           "EDICION",
-          `RIT ${ritFormateado}`,
+          refAud,
           fecha,
           `${inicio}-${fin}`,
-          `Actualizada audiencia "${tipo}" | Detalle: ${sala || 'Sin sala'}.`
+          `Actualizado registro "${tipo}" | Detalle: ${sala || 'Sin detalle'}.`
         );
       } else {
         payload.creadoPor = currentUser.email;
@@ -2769,10 +3289,10 @@
         agendaRef.push(payload);
         registrarLogAuditoria(
           "CREACION",
-          `RIT ${ritFormateado}`,
+          refAud,
           fecha,
           `${inicio}-${fin}`,
-          `Programada manualmente audiencia "${tipo}" | Detalle: ${sala || 'Sin sala'}.`
+          `Programado manualmente "${tipo}" | Detalle: ${sala || 'Sin detalle'}.`
         );
       }
       cerrarModal();
@@ -2781,15 +3301,18 @@
     function eliminarAudiencia() {
       const id = document.getElementById('ev-id').value;
       const item = eventosCache[id];
-      if (id && confirm("¿Eliminar esta audiencia de la agenda?")) {
+      if (id && confirm("¿Eliminar este registro de la agenda?")) {
         agendaRef.child(id).remove();
         if (item) {
+          const refAud = esBloqueoJefatura(item)
+            ? `BLOQUEO: ${item.tipo}`
+            : formatearRitVisual(item.rit, item.tipoCausa);
           registrarLogAuditoria(
             "ELIMINACION",
-            formatearRitVisual(item.rit, item.tipoCausa),
+            refAud,
             item.fecha,
             item.inicio,
-            `Eliminada audiencia "${item.tipo}" desde formulario de edición.`
+            `Eliminado "${item.tipo}" desde formulario de edición.`
           );
         }
         cerrarModal();
@@ -2835,6 +3358,8 @@
         .filter(ev => ev && ev.fecha >= startISO && ev.fecha < endISO)
         .sort((a, b) => (a.fecha + a.inicio).localeCompare(b.fecha + b.inicio));
 
+      const totalAud = eventosRango.filter(e => !esBloqueoJefatura(e)).length;
+
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 28;
@@ -2848,7 +3373,7 @@
       doc.text("JUZGADO DE GARANTÍA DE ILLAPEL — AGENDA DE AUDIENCIAS", margin + 10, margin + 15);
       doc.setFontSize(8.5);
       doc.setFont(undefined, 'normal');
-      doc.text(`Período: ${tituloPeriodo}   |   Total audiencias programadas: ${eventosRango.length}`, margin + 10, margin + 27);
+      doc.text(`Período: ${tituloPeriodo}   |   Total audiencias programadas: ${totalAud}`, margin + 10, margin + 27);
 
       const startY = margin + 44;
 
@@ -2856,10 +3381,11 @@
         const bodyRows = eventosRango.map(ev => {
           const finEf = calcularFinEfectivo(ev);
           const feriadoTxt = feriadosChileMap[ev.fecha] ? ` [Feriado: ${feriadosChileMap[ev.fecha]}]` : '';
+          const colRef = esBloqueoJefatura(ev) ? "[JEFATURA]" : formatearRitVisual(ev.rit, ev.tipoCausa);
           return [
             formatearFechaCL(ev.fecha) + feriadoTxt,
             `${ev.inicio} - ${finEf}`,
-            formatearRitVisual(ev.rit, ev.tipoCausa),
+            colRef,
             ev.tipo,
             ev.sala || "-"
           ];
@@ -2868,8 +3394,8 @@
         doc.autoTable({
           startY,
           margin: { left: margin, right: margin, bottom: 30 },
-          head: [["Fecha", "Horario", "Causa (RIT)", "Tipo de Audiencia", "Sala / Detalle"]],
-          body: bodyRows.length ? bodyRows : [["-", "-", "-", "Sin audiencias programadas en este período", "-"]],
+          head: [["Fecha", "Horario", "Causa / Ref.", "Tipo de Audiencia / Actividad", "Sala / Detalle"]],
+          body: bodyRows.length ? bodyRows : [["-", "-", "-", "Sin registros en este período", "-"]],
           styles: { fontSize: 8, cellPadding: 4, lineColor: [203, 213, 225], lineWidth: 0.4 },
           headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
           columnStyles: {
@@ -2906,7 +3432,7 @@
           const rowsMes = diasCols.map(d => {
             const evsDia = eventosRango.filter(e => e.fecha === d.iso);
             const resumen = evsDia.length
-              ? evsDia.map(e => formatearTextoBloque(e.rit, e.tipo, e.tipoCausa)).join("\n")
+              ? evsDia.map(e => formatearTextoBloque(e)).join("\n")
               : (d.feriado ? `Feriado: ${d.feriado}` : "Sin audiencias programadas");
             return [d.label, resumen];
           });
@@ -2914,7 +3440,7 @@
           doc.autoTable({
             startY,
             margin: { left: margin, right: margin, bottom: 30 },
-            head: [["Día / Total", "Audiencias Programadas"]],
+            head: [["Día / Total", "Audiencias y Reservas Programadas"]],
             body: rowsMes,
             styles: { fontSize: 7.5, cellPadding: 3.5, lineColor: [203, 213, 225], lineWidth: 0.4 },
             headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
@@ -3012,7 +3538,7 @@
               doc.setTextColor(255, 255, 255);
               doc.setFontSize(6.2);
               doc.setFont(undefined, 'bold');
-              const etiqueta = formatearTextoBloque(ev.rit, ev.tipo, ev.tipoCausa);
+              const etiqueta = formatearTextoBloque(ev);
               const lines = doc.splitTextToSize(etiqueta, Math.max(18, subW - 5));
               const maxLines = Math.max(1, Math.floor((bh - 3) / 7.2));
               doc.text(lines.slice(0, maxLines), bx + 2.5, by + 7.5);
@@ -3268,6 +3794,7 @@
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
+      cerrarSidebarMovil();
 
       leerArchivoExcel(file, (res, nombreArchivo) => {
         e.target.value = '';
@@ -3277,7 +3804,9 @@
         }
 
         const existentes = new Set(
-          Object.values(eventosCache).map(ev => `${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`)
+          Object.values(eventosCache)
+            .filter(ev => !esBloqueoJefatura(ev))
+            .map(ev => `${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`)
         );
 
         let cargadas = 0;
@@ -3300,6 +3829,7 @@
             sala: aud.sala,
             intervinientes: aud.intervinientes || "",
             color: aud.color,
+            tipoRegistro: 'audiencia',
             creadoPor: currentUser.email,
             creadoEn: new Date().toISOString()
           });
@@ -3328,11 +3858,12 @@
     });
 
     // =========================================================================
-    // 12. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // 12. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN EXCEL UNIJUD
     // =========================================================================
     document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
+      cerrarSidebarMovil();
 
       leerArchivoExcel(file, (res, nombreArchivo) => {
         e.target.value = '';
@@ -3349,7 +3880,7 @@
       const excelMap = new Map(res.audiencias.map(a => [a.clave, a]));
 
       const sistemaEnFechas = Object.entries(eventosCache)
-        .filter(([id, ev]) => fechasSet.has(ev.fecha))
+        .filter(([id, ev]) => fechasSet.has(ev.fecha) && !esBloqueoJefatura(ev))
         .map(([id, ev]) => ({ id, clave: `${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`, ...ev }));
 
       const sistemaMap = new Map(sistemaEnFechas.map(ev => [ev.clave, ev]));
@@ -3397,7 +3928,7 @@
       let html = `
         <p style="font-size:0.84rem; color:#9aa0a6; margin-top:0;">
           <strong style="color:#e3e3e3;">Período analizado:</strong> ${res.fechasDetectadas.map(formatearFechaCL).join(", ") || "Sin fechas"}
-          (Encabezados en fila ${res.headerRowNum} | Filas no Programadas descartadas: ${res.filasNoProgramadas})
+          (Encabezados en fila ${res.headerRowNum} | Los bloqueos de Jefatura se conservan intactos)
         </p>
         <div class="kpi-grid">
           <div class="kpi-card"><div class="num">${res.audiencias.length}</div><div class="lbl">Programadas en Excel</div></div>
@@ -3410,7 +3941,7 @@
 
       if (totalNoCoincidentes === 0) {
         html += `<p style="background:rgba(129,201,149,0.16); color:#81c995; padding:0.75rem; border-radius:8px; font-weight:500;">
-          ✔ Conciliación perfecta: Todos los registros del Excel coinciden exactamente con lo ya poblado en el sistema.
+          ✔ Conciliación perfecta: Todos los registros del Excel coinciden exactamente con las audiencias pobladas en el sistema.
         </p>`;
       } else {
         html += `<p style="font-size:0.83rem; font-weight:500; color:#f28b82;">
@@ -3450,7 +3981,7 @@
 
         if (sobrantesEnSistema.length > 0) {
           html += `<div class="diff-section">
-            <h4>3. En Sistema pero NO en Excel Programada (${sobrantesEnSistema.length}) <span class="badge-del">NO COINCIDENTE / REPROGRAMADA</span></h4>
+            <h4>3. En Sistema pero NO en Excel Programada (${sobrantesEnSistema.length}) <span class="badge-del">PENDIENTE EN UNIJUD / REPROGRAMADA</span></h4>
             <table class="diff-table">
               <thead><tr><th>Fecha</th><th>Horario</th><th>RIT</th><th>Audiencia en Sistema</th><th>Detalle / Sala</th></tr></thead>
               <tbody>
@@ -3478,8 +4009,8 @@
 
       if (modo === 'replace') {
         const msgConfirm =
-          `¿Confirma REPOBLAR todo el período (${res.fechasDetectadas.map(formatearFechaCL).join(", ")})?\n\n` +
-          `Se eliminarán los ${sistemaEnFechas.length} registros actuales de esas fechas y se cargarán las ${res.audiencias.length} audiencias Programadas del Excel.`;
+          `¿Confirma REPOBLAR las audiencias del período (${res.fechasDetectadas.map(formatearFechaCL).join(", ")})?\n\n` +
+          `Se reemplazarán las ${sistemaEnFechas.length} audiencias actuales por las ${res.audiencias.length} audiencias Programadas del Excel (los bloqueos de Jefatura se mantendrán).`;
         if (!confirm(msgConfirm)) return;
 
         sistemaEnFechas.forEach(ev => {
@@ -3498,6 +4029,7 @@
             sala: aud.sala,
             intervinientes: aud.intervinientes || "",
             color: aud.color,
+            tipoRegistro: 'audiencia',
             creadoPor: currentUser.email,
             creadoEn: new Date().toISOString()
           });
@@ -3513,7 +4045,7 @@
         );
 
         cerrarModalConciliacion();
-        alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas para el período.`);
+        alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas.`);
       } else {
         nuevasEnExcel.forEach(aud => {
           agendaRef.push({
@@ -3527,6 +4059,7 @@
             sala: aud.sala,
             intervinientes: aud.intervinientes || "",
             color: aud.color,
+            tipoRegistro: 'audiencia',
             creadoPor: currentUser.email,
             creadoEn: new Date().toISOString()
           });
@@ -3559,6 +4092,249 @@
         cerrarModalConciliacion();
         alert(`Sincronización completada: ${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`);
       }
+    }
+
+    // =========================================================================
+    // 13. IMPORTACIÓN Y COTEJO UNIDIRECCIONAL (GOOGLE CALENDAR -> AGENDA WEB)
+    // =========================================================================
+    async function abrirConciliacionGoogle() {
+      const scriptUrl = (gcalConfigCache && gcalConfigCache.url) ? gcalConfigCache.url : DEFAULT_GCAL_SCRIPT_URL;
+      const scriptToken = (gcalConfigCache && gcalConfigCache.token) ? gcalConfigCache.token : "";
+
+      if (!calendar) return;
+
+      const view = calendar.view;
+      const startISO = fechaLocalISO(view.activeStart);
+      const endDateInc = new Date(view.activeEnd.getTime() - 86400000);
+      const endISO = fechaLocalISO(endDateInc);
+
+      const bodyDiv = document.getElementById('gcal-sync-body');
+      const btnApply = document.getElementById('btn-apply-gcal-sync');
+      btnApply.style.display = 'none';
+      bodyDiv.innerHTML = `<p style="color:#8ab4f8; font-size:0.9rem;">Leyendo eventos desde Google Calendar (${formatearFechaCL(startISO)} al ${formatearFechaCL(endISO)}) en modo solo lectura para cotejar con esta Agenda Web...</p>`;
+      document.getElementById('gcal-sync-modal').style.display = 'flex';
+
+      try {
+        const data = await consultarBridgeGoogle(scriptUrl, {
+          action: "list",
+          token: scriptToken,
+          start: startISO,
+          end: endISO
+        });
+
+        const esExito = data && (data.ok === true || data.status === "ok");
+        if (!esExito) {
+          bodyDiv.innerHTML = `<p style="color:#f28b82;">Error al consultar Google Calendar: ${(data && (data.error || data.message)) || "Respuesta inválida"}</p>`;
+          return;
+        }
+
+        const eventosNormalizados = normalizarEventosGoogleBridge(data.events || []);
+        construirPlanLecturaGoogle(startISO, endISO, eventosNormalizados);
+      } catch (err) {
+        bodyDiv.innerHTML = `<p style="color:#f28b82;">No se pudo conectar con Google Apps Script: ${err.message}</p>`;
+      }
+    }
+
+    function construirPlanLecturaGoogle(startISO, endISO, googleEvents) {
+      const eventosWebRango = Object.entries(eventosCache)
+        .filter(([id, ev]) => ev && ev.fecha >= startISO && ev.fecha <= endISO)
+        .map(([id, ev]) => ({ id, ...ev }));
+
+      const porGoogleId = new Map();
+      const clavesWeb = new Set();
+      eventosWebRango.forEach(ev => {
+        if (ev.googleEventId) porGoogleId.set(ev.googleEventId, ev);
+        clavesWeb.add(`${claveCanonRit(ev.rit)}|${ev.fecha}|${ev.inicio}`);
+      });
+
+      const entrantesDesdeGoogle = [];
+      let yaExistentesOmitidos = 0;
+
+      googleEvents.forEach(gev => {
+        const existente = porGoogleId.get(gev.googleEventId);
+        const matchRit = gev.title.match(/\b(?:RIT\s*)?[OSREP]-\d{1,5}-\d{4}\b/i);
+        const pareceRit = Boolean(matchRit);
+        const clavePotencial = pareceRit
+          ? `${claveCanonRit(matchRit[0])}|${gev.fecha}|${gev.inicio}`
+          : "";
+
+        if (existente) {
+          const finEx = calcularFinEfectivo(existente);
+          const cambio = existente.fecha !== gev.fecha ||
+                         existente.inicio !== gev.inicio ||
+                         finEx !== gev.fin ||
+                         normTxt(existente.tipo) !== normTxt(gev.title) ||
+                         (existente.color || "").toLowerCase() !== (gev.color || "").toLowerCase();
+          if (cambio) {
+            entrantesDesdeGoogle.push({
+              modo: "actualizar",
+              firebaseId: existente.id,
+              gev,
+              anterior: existente,
+              esPosibleAud: false,
+              checked: true
+            });
+          } else {
+            yaExistentesOmitidos++;
+          }
+        } else {
+          if (clavePotencial && clavesWeb.has(clavePotencial)) {
+            yaExistentesOmitidos++;
+            return;
+          }
+          entrantesDesdeGoogle.push({
+            modo: "crear",
+            firebaseId: null,
+            gev,
+            anterior: null,
+            esPosibleAud: pareceRit,
+            checked: !pareceRit
+          });
+        }
+      });
+
+      planGoogleSyncPendiente = {
+        startISO,
+        endISO,
+        entrantesDesdeGoogle
+      };
+
+      let html = `
+        <p style="font-size:0.84rem; color:#9aa0a6; margin-top:0;">
+          <strong style="color:#e3e3e3;">Ventana consultada:</strong> ${formatearFechaCL(startISO)} al ${formatearFechaCL(endISO)}
+          | <span style="color:#8ab4f8;">Modo unidireccional (Google Calendar → Agenda Web): no se escribe ni modifica nada en Google Calendar.</span>
+        </p>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="num">${googleEvents.length}</div><div class="lbl">Leídos en Google Calendar</div></div>
+          <div class="kpi-card"><div class="num" style="color:#81c995;">${entrantesDesdeGoogle.filter(x => x.modo === 'crear').length}</div><div class="lbl">Nuevos por revisar</div></div>
+          <div class="kpi-card"><div class="num" style="color:#fdd663;">${entrantesDesdeGoogle.filter(x => x.modo === 'actualizar').length}</div><div class="lbl">Modificados en Google</div></div>
+          <div class="kpi-card"><div class="num" style="color:#9aa0a6;">${yaExistentesOmitidos}</div><div class="lbl">Ya conciliados / omitidos</div></div>
+        </div>
+      `;
+
+      if (entrantesDesdeGoogle.length === 0) {
+        html += `<p style="background:rgba(129,201,149,0.16); color:#81c995; padding:0.75rem; border-radius:8px; font-weight:500;">
+          ✔ Sin novedades en Google Calendar para este período: todos los eventos ya existen o están conciliados en la Agenda Web.
+        </p>`;
+      } else {
+        html += `<div class="diff-section">
+          <h4>Eventos detectados en Google Calendar para cotejar antes de incorporar</h4>
+          <p style="font-size:0.78rem; color:#9aa0a6; margin:0 0 0.45rem 0;">
+            Se importarán como <strong>Bloques Flexibles de Jefatura</strong> respetando su color original (podrá agendar audiencias encima). Los eventos con formato RIT ausentes en Unijud se destacan en rojo y vienen desmarcados para su revisión manual.
+          </p>
+          <table class="diff-table">
+            <thead>
+              <tr>
+                <th style="width:34px;"><input type="checkbox" checked onchange="toggleTodosCheckboxes('.chk-gcal-in', this.checked)" /></th>
+                <th style="width:92px;">Estado</th>
+                <th style="width:145px;">Fecha y Horario</th>
+                <th>Título y Color en Google</th>
+                <th>Observación / Cotejo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entrantesDesdeGoogle.map((item, idx) => {
+                const g = item.gev;
+                const badge = item.modo === 'actualizar'
+                  ? `<span class="badge-mod">MODIFICADO</span>`
+                  : (item.esPosibleAud ? `<span class="badge-del">POSIBLE RIT</span>` : `<span class="badge-new">NUEVO BLOQUE</span>`);
+                const obs = item.modo === 'actualizar'
+                  ? `Antes en Web: ${formatearFechaCL(item.anterior.fecha)} (${item.anterior.inicio}-${calcularFinEfectivo(item.anterior)}) — ${item.anterior.tipo}`
+                  : (item.esPosibleAud
+                      ? `⚠ Contiene formato RIT pero no figura en Unijud/Web. Márquelo solo si desea incorporarlo.`
+                      : (g.description || g.location || "Se incorporará como bloqueo flexible de Jefatura."));
+                return `
+                  <tr>
+                    <td><input type="checkbox" class="chk-gcal-in" data-idx="${idx}" ${item.checked ? 'checked' : ''} /></td>
+                    <td>${badge}</td>
+                    <td>${formatearFechaCL(g.fecha)}<br><small style="color:#9aa0a6;">${g.inicio} – ${g.fin}</small></td>
+                    <td><span class="color-swatch-pill" style="background:${g.color};"></span><strong>${g.title}</strong></td>
+                    <td style="font-size:0.76rem; color:#cbd5e1;">${obs}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>`;
+
+        document.getElementById('btn-apply-gcal-sync').style.display = 'inline-flex';
+      }
+
+      document.getElementById('gcal-sync-body').innerHTML = html;
+    }
+
+    function toggleTodosCheckboxes(selector, checked) {
+      document.querySelectorAll(selector).forEach(cb => { cb.checked = checked; });
+    }
+
+    function cerrarModalGoogleSync() {
+      document.getElementById('gcal-sync-modal').style.display = 'none';
+      planGoogleSyncPendiente = null;
+    }
+
+    function aplicarConciliacionGoogle() {
+      if (!planGoogleSyncPendiente) return;
+      const { startISO, endISO, entrantesDesdeGoogle } = planGoogleSyncPendiente;
+
+      const selIn = Array.from(document.querySelectorAll('.chk-gcal-in:checked'))
+        .map(cb => entrantesDesdeGoogle[Number(cb.getAttribute('data-idx'))])
+        .filter(Boolean);
+
+      if (selIn.length === 0) {
+        alert("No hay elementos seleccionados para incorporar a la Agenda Web.");
+        return;
+      }
+
+      let importados = 0;
+      let actualizados = 0;
+
+      selIn.forEach(item => {
+        const g = item.gev;
+        const detalleObs = [g.location, g.description].filter(Boolean).join(" | ");
+        if (item.modo === 'actualizar' && item.firebaseId) {
+          agendaRef.child(item.firebaseId).update({
+            fecha: g.fecha,
+            inicio: g.inicio,
+            fin: g.fin,
+            tipo: g.title,
+            sala: detalleObs,
+            color: g.color || "#475569",
+            modificadoPor: currentUser.email,
+            modificadoEn: new Date().toISOString()
+          });
+          actualizados++;
+        } else {
+          agendaRef.push({
+            rit: "JEFATURA",
+            fecha: g.fecha,
+            inicio: g.inicio,
+            fin: g.fin,
+            tipo: g.title,
+            sala: detalleObs,
+            color: g.color || "#475569",
+            tipoRegistro: 'bloqueo_jefatura',
+            googleEventId: g.googleEventId,
+            creadoPor: currentUser.email,
+            creadoEn: new Date().toISOString()
+          });
+          importados++;
+        }
+      });
+
+      registrarLogAuditoria(
+        "SYNC_GOOGLE",
+        `${importados + actualizados} reg.`,
+        startISO,
+        "-",
+        `Importación unidireccional Google Calendar → Web (${formatearFechaCL(startISO)} al ${formatearFechaCL(endISO)}): ${importados} bloques importados, ${actualizados} actualizados.`
+      );
+
+      cerrarModalGoogleSync();
+      alert(
+        `Importación desde Google Calendar completada:\n` +
+        `• Bloques nuevos incorporados a la Agenda Web: ${importados}\n` +
+        `• Bloques actualizados: ${actualizados}`
+      );
     }
   </script>
 </body>
