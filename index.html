@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Agenda de Audiencias - JG Illapel</title>
@@ -2604,7 +2605,7 @@
         .trim()
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "");
+        .replace(/[\u0300-\u036f]/g, "");
     }
 
     function esBloqueoJefatura(item) {
@@ -3437,8 +3438,7 @@
           const rowsMes = diasCols.map(d => {
             const evsDia = eventosRango.filter(e => e.fecha === d.iso);
             const resumen = evsDia.length
-              ? evsDia.map(e => formatearTextoBloque(e)).join("
-")
+              ? evsDia.map(e => formatearTextoBloque(e)).join("\n")
               : (d.feriado ? `Feriado: ${d.feriado}` : "Sin audiencias programadas");
             return [d.label, resumen];
           });
@@ -4111,7 +4111,7 @@
     function extraerRitYTipoDesdeTituloGoogle(tituloRaw) {
       const original = String(tituloRaw || "").trim();
       // Detecta patrón opcional "RIT", letra opcional (O/S/R/E/P) y número XXXX-AAAA
-      const regexCausa = /(?:RIT\s*[:\-]?\s*)?([OSREP]\s*-\s*)?(\d{1,6}\s*-\s*\d{4})/i;
+      const regexCausa = /\b(?:RIT\s*[:\-]?\s*)?([OSREP]\s*-\s*)?(\d{1,6}\s*-\s*\d{4})\b/i;
       const match = original.match(regexCausa);
 
       if (!match) {
