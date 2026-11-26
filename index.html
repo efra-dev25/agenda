@@ -23,94 +23,606 @@
 
   <style>
     :root {
-      --primary: #0f172a;
-      --accent: #1d4ed8;
-      --bg: #f8fafc;
-      --border: #cbd5e1;
-      --text: #1e293b;
+      --gcal-bg: #131314;
+      --gcal-surface: #1e1f20;
+      --gcal-surface-hover: #282a2c;
+      --gcal-surface-active: #333537;
+      --gcal-border: #3c4043;
+      --gcal-grid-line: #2c2d30;
+      --gcal-text: #e3e3e3;
+      --gcal-text-muted: #9aa0a6;
+      --gcal-accent: #8ab4f8;
+      --gcal-accent-solid: #1a73e8;
+      --gcal-accent-text: #062e6f;
     }
-    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); }
 
-    /* Pantalla Login */
+    * { box-sizing: border-box; font-family: 'Google Sans', 'Segoe UI', Roboto, system-ui, sans-serif; }
+    body { margin: 0; background: var(--gcal-bg); color: var(--gcal-text); overflow: hidden; }
+
+    /* =====================================================================
+       1. PANTALLA LOGIN
+    ===================================================================== */
     #login-screen {
       display: flex; align-items: center; justify-content: center;
-      height: 100vh; background: var(--primary);
+      height: 100vh; background: var(--gcal-bg);
     }
     .login-box {
-      background: #fff; padding: 2rem; border-radius: 10px;
-      width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      background: var(--gcal-surface); padding: 2rem; border-radius: 16px;
+      width: 100%; max-width: 390px; border: 1px solid var(--gcal-border);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
     }
-    .login-box h2 { margin-top: 0; color: var(--primary); font-size: 1.3rem; }
+    .login-box h2 { margin-top: 0; color: var(--gcal-text); font-size: 1.3rem; font-weight: 500; }
     .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--gcal-text-muted); }
     .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
+      width: 100%; padding: 0.58rem 0.7rem; border: 1px solid var(--gcal-border);
+      border-radius: 8px; font-size: 0.9rem; background: #131314; color: var(--gcal-text);
     }
-    .btn {
-      padding: 0.52rem 0.85rem; border: none; border-radius: 6px; cursor: pointer;
-      font-weight: 600; font-size: 0.84rem; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 0.3rem;
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: var(--gcal-accent);
     }
-    .btn:hover { opacity: 0.9; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-dark { background: var(--primary); color: #fff; }
-    .btn-success { background: #15803d; color: #fff; }
-    .btn-warning { background: #b45309; color: #fff; }
-    .btn-danger { background: #dc2626; color: #fff; }
-    .btn-info { background: #0369a1; color: #fff; }
-    .btn-purple { background: #6d28d9; color: #fff; }
-    .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
 
-    /* App Principal */
-    #app-screen { display: none; flex-direction: column; height: 100vh; }
-    header {
-      background: var(--primary); color: #fff; padding: 0.55rem 1.2rem;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    /* Botones generales */
+    .btn {
+      padding: 0.5rem 0.9rem; border: none; border-radius: 20px; cursor: pointer;
+      font-weight: 500; font-size: 0.83rem; transition: background 0.18s, opacity 0.18s;
+      display: inline-flex; align-items: center; gap: 0.35rem; color: var(--gcal-text);
+      background: var(--gcal-surface-hover);
     }
-    header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
-    .toolbar {
-      display: flex; gap: 0.45rem; align-items: flex-start; flex-wrap: wrap;
-    }
-    .import-stack {
-      display: flex;
+    .btn:hover { background: var(--gcal-surface-active); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--gcal-accent-solid); color: #fff; }
+    .btn-primary:hover { background: #1b66c9; }
+    .btn-success { background: #137333; color: #fff; }
+    .btn-success:hover { background: #188038; }
+    .btn-warning { background: #b06000; color: #fff; }
+    .btn-warning:hover { background: #c26a00; }
+    .btn-danger { background: #c5221f; color: #fff; }
+    .btn-danger:hover { background: #d93025; }
+    .btn-info { background: #00639b; color: #fff; }
+    .btn-info:hover { background: #0077b6; }
+    .btn-purple { background: #681da8; color: #fff; }
+    .btn-purple:hover { background: #7b1fa2; }
+    .btn-outline { background: transparent; border: 1px solid var(--gcal-border); color: var(--gcal-text); }
+    .btn-outline:hover { background: var(--gcal-surface-hover); }
+
+    /* =====================================================================
+       2. ESTRUCTURA PRINCIPAL ESTILO GOOGLE CALENDAR
+    ===================================================================== */
+    #app-screen {
+      display: none;
       flex-direction: column;
-      align-items: stretch;
-      gap: 2px;
+      height: 100vh;
+      background: var(--gcal-bg);
     }
-    .last-import-tag {
-      font-size: 0.67rem;
-      color: #cbd5e1;
-      text-align: center;
-      line-height: 1.15;
+
+    /* Barra Superior (Topbar Google Calendar) */
+    .gcal-topbar {
+      height: 64px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--gcal-bg);
+      border-bottom: 1px solid transparent;
+      flex-shrink: 0;
+    }
+
+    .gcal-top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 240px;
+    }
+
+    .icon-circle-btn {
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: transparent; color: var(--gcal-text); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; transition: background 0.15s;
+    }
+    .icon-circle-btn:hover { background: var(--gcal-surface-hover); }
+
+    .gcal-brand {
+      display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    .gcal-logo-box {
+      width: 36px; height: 36px; border-radius: 8px; background: #1a73e8;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      position: relative; overflow: hidden;
+    }
+    .gcal-logo-box::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: #174ea6;
+    }
+    .gcal-logo-day {
+      font-size: 0.95rem; margin-top: 5px; line-height: 1;
+    }
+    .gcal-brand-title {
+      font-size: 1.22rem; font-weight: 400; color: var(--gcal-text); letter-spacing: -0.2px;
       white-space: nowrap;
-      letter-spacing: 0.1px;
     }
-    .user-badge {
-      font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.42rem 0.6rem; border-radius: 4px;
+    .gcal-brand-sub {
+      font-size: 0.72rem; color: var(--gcal-text-muted); display: block; line-height: 1.1;
+    }
+
+    /* Centro de Topbar: Hoy, < >, Fecha actual y Semana N */
+    .gcal-top-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .gcal-pill-btn {
+      height: 36px;
+      padding: 0 18px;
+      border-radius: 18px;
+      border: 1px solid var(--gcal-border);
+      background: transparent;
+      color: var(--gcal-text);
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .gcal-pill-btn:hover { background: var(--gcal-surface-hover); }
+
+    .gcal-nav-arrows {
+      display: flex; align-items: center; gap: 2px;
+    }
+    .gcal-nav-arrows button {
+      width: 32px; height: 32px; border-radius: 50%; border: none;
+      background: transparent; color: var(--gcal-text); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .gcal-nav-arrows button:hover { background: var(--gcal-surface-hover); }
+
+    .gcal-current-title {
+      font-size: 1.32rem;
+      font-weight: 400;
+      color: var(--gcal-text);
+      margin: 0 4px;
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+
+    .gcal-week-chip {
+      background: var(--gcal-surface-hover);
+      color: var(--gcal-text-muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    /* Derecha de Topbar: Herramientas, Dropdown de Vistas y Usuario */
+    .gcal-top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Dropdown unificado de Vistas (Día / Semana laboral / Semana / Mes) */
+    .view-dropdown-wrap {
+      position: relative;
+    }
+    .view-dropdown-trigger {
+      height: 36px;
+      padding: 0 14px 0 16px;
+      border-radius: 18px;
+      border: 1px solid var(--gcal-border);
+      background: transparent;
+      color: var(--gcal-text);
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .view-dropdown-trigger:hover { background: var(--gcal-surface-hover); }
+
+    .view-dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 42px;
+      width: 215px;
+      background: #282a2c;
+      border: 1px solid var(--gcal-border);
+      border-radius: 10px;
+      padding: 6px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 2000;
+    }
+    .view-dropdown-menu.open { display: block; }
+
+    .view-option {
+      width: 100%;
+      padding: 9px 16px;
+      border: none;
+      background: transparent;
+      color: var(--gcal-text);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      text-align: left;
+    }
+    .view-option:hover { background: #37393b; }
+    .view-option.active {
+      background: rgba(138, 180, 248, 0.16);
+      color: var(--gcal-accent);
+      font-weight: 600;
+    }
+    .view-shortcut {
+      font-size: 0.74rem;
+      color: var(--gcal-text-muted);
+      font-family: monospace;
+    }
+
+    .user-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--gcal-surface); border: 1px solid var(--gcal-border);
+      padding: 4px 10px; border-radius: 18px; font-size: 0.78rem; color: var(--gcal-text);
     }
     .admin-pill {
-      background: #7c3aed; color: #fff; font-size: 0.68rem; font-weight: 700;
-      padding: 1px 5px; border-radius: 3px; margin-left: 4px; text-transform: uppercase;
+      background: #7c3aed; color: #fff; font-size: 0.65rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 10px; text-transform: uppercase;
     }
+
+    /* =====================================================================
+       3. CUERPO PRINCIPAL: SIDEBAR IZQUIERDO + ÁREA CALENDARIO
+    ===================================================================== */
+    .gcal-workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      padding: 0 12px 12px 0;
+    }
+
+    /* Sidebar Izquierdo (256px) */
+    .gcal-sidebar {
+      width: 256px;
+      flex-shrink: 0;
+      padding: 4px 14px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      transition: width 0.2s, padding 0.2s, opacity 0.2s;
+    }
+    .gcal-sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    /* Botón "+ Crear" estilo FAB redondeado Google Calendar */
+    .gcal-create-btn {
+      width: fit-content;
+      height: 52px;
+      padding: 0 22px 0 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #2b2d30;
+      color: var(--gcal-text);
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .gcal-create-btn:hover {
+      background: #35383c;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.55);
+    }
+    .gcal-plus-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      font-weight: 400;
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Mini Calendario Mensual con número de semana */
+    .mini-cal-card {
+      padding: 4px 2px;
+      user-select: none;
+    }
+    .mini-cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px 8px 6px;
+    }
+    .mini-cal-title {
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--gcal-text);
+      text-transform: capitalize;
+    }
+    .mini-cal-nav {
+      display: flex; gap: 2px;
+    }
+    .mini-cal-nav button {
+      width: 24px; height: 24px; border-radius: 50%; border: none;
+      background: transparent; color: var(--gcal-text-muted); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;
+    }
+    .mini-cal-nav button:hover { background: var(--gcal-surface-hover); color: var(--gcal-text); }
+
+    .mini-cal-grid {
+      display: grid;
+      grid-template-columns: 24px repeat(7, 1fr);
+      gap: 2px 1px;
+      text-align: center;
+      align-items: center;
+    }
+    .mini-cal-dow {
+      font-size: 0.68rem;
+      color: var(--gcal-text-muted);
+      font-weight: 500;
+      padding-bottom: 4px;
+    }
+    .mini-cal-wk {
+      font-size: 0.66rem;
+      color: var(--gcal-text-muted);
+      background: rgba(255,255,255,0.04);
+      border-radius: 4px;
+      padding: 4px 0;
+      font-weight: 500;
+    }
+    .mini-cal-day {
+      width: 26px;
+      height: 26px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gcal-text);
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.12s;
+    }
+    .mini-cal-day:hover { background: var(--gcal-surface-hover); }
+    .mini-cal-day.other-month { color: #5f6368; }
+    .mini-cal-day.is-holiday { color: #f28b82; font-weight: 700; }
+    .mini-cal-day.is-today {
+      background: var(--gcal-accent);
+      color: var(--gcal-accent-text);
+      font-weight: 700;
+    }
+    .mini-cal-day.is-selected:not(.is-today) {
+      background: rgba(138, 180, 248, 0.24);
+      color: var(--gcal-accent);
+      font-weight: 700;
+    }
+    .mini-cal-day.has-aud::after {
+      content: "";
+      position: absolute;
+      bottom: 2px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #8ab4f8;
+    }
+    .mini-cal-day.is-today.has-aud::after {
+      background: #062e6f;
+    }
+
+    /* Sección Acciones Excel y Gestión en Sidebar */
+    .sidebar-section {
+      border-top: 1px solid var(--gcal-grid-line);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-section-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gcal-text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+    }
+    .sidebar-action-btn {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--gcal-border);
+      background: var(--gcal-surface);
+      color: var(--gcal-text);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .sidebar-action-btn:hover { background: var(--gcal-surface-hover); }
+    .last-import-tag {
+      font-size: 0.7rem;
+      color: var(--gcal-text-muted);
+      padding: 0 6px;
+      line-height: 1.3;
+    }
+
+    /* Leyenda de Clasificación en Sidebar ("Mis calendarios / Categorías") */
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      color: var(--gcal-text);
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* =====================================================================
+       4. CONTENEDOR PRINCIPAL DEL CALENDARIO (TARJETA REDONDEADA OSCURA)
+    ===================================================================== */
     #calendar-container {
-      flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
+      flex: 1;
+      background: var(--gcal-surface);
+      border-radius: 22px;
+      padding: 10px 14px 12px 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #26272a;
     }
     #calendar { height: 100%; }
 
-    /* Bloques en FullCalendar: cada slot de 15 min mide 28px exactos */
-    .fc-timegrid-slot { height: 28px !important; }
-    .fc-timegrid-event-harness {
-      margin-right: 2px !important;
+    /* Ocultar toolbar nativa de FullCalendar (reemplazada por la barra superior Google Calendar) */
+    .fc .fc-toolbar { display: none !important; }
+
+    /* Tema oscuro Google Calendar para FullCalendar */
+    .fc {
+      --fc-border-color: var(--gcal-grid-line);
+      --fc-page-bg-color: var(--gcal-surface);
+      --fc-neutral-bg-color: #252629;
+      --fc-today-bg-color: rgba(138, 180, 248, 0.06);
+      color: var(--gcal-text);
     }
+
+    .fc-theme-standard td,
+    .fc-theme-standard th,
+    .fc-theme-standard .fc-scrollgrid {
+      border-color: var(--gcal-grid-line) !important;
+    }
+
+    /* Encabezados de días estilo Google Calendar (DIA arriba, número grande abajo) */
+    .fc-col-header-cell {
+      padding: 6px 0 8px 0 !important;
+      background: var(--gcal-surface);
+    }
+    .gcal-col-hdr {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .gcal-col-dow {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--gcal-text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .gcal-col-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--gcal-text);
+      line-height: 1;
+    }
+    .fc-day-today .gcal-col-dow { color: var(--gcal-accent); }
+    .fc-day-today .gcal-col-num {
+      background: var(--gcal-accent);
+      color: var(--gcal-accent-text);
+      font-weight: 600;
+    }
+
+    .day-count-badge {
+      display: inline-block;
+      background: #2b2d30;
+      color: var(--gcal-text-muted);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 10px;
+      line-height: 1.3;
+    }
+    .day-count-badge.has-events {
+      background: rgba(138, 180, 248, 0.18);
+      color: var(--gcal-accent);
+      border: 1px solid rgba(138, 180, 248, 0.35);
+    }
+
+    .holiday-header-pill {
+      display: inline-block;
+      background: rgba(242, 139, 130, 0.18);
+      color: #f28b82;
+      border: 1px solid rgba(242, 139, 130, 0.45);
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 6px;
+      max-width: 155px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Sombreado de feriados en vista oscura */
+    .fc-col-header-cell.is-holiday-col {
+      background-color: rgba(242, 139, 130, 0.08) !important;
+    }
+    .fc-timegrid-col.is-holiday-col,
+    .fc-daygrid-day.is-holiday-col {
+      background-color: rgba(242, 139, 130, 0.07) !important;
+    }
+
+    /* Eje horario izquierdo (08:00, 09:00...) */
+    .fc-timegrid-slot { height: 28px !important; }
+    .fc-timegrid-slot-label-cushion {
+      font-size: 0.68rem !important;
+      color: var(--gcal-text-muted) !important;
+      font-weight: 400 !important;
+    }
+    .fc-timegrid-axis-cushion {
+      font-size: 0.66rem !important;
+      color: var(--gcal-text-muted) !important;
+    }
+
+    /* Bloques de audiencias en el calendario */
+    .fc-timegrid-event-harness { margin-right: 2px !important; }
     .fc-timegrid-event {
-      border-radius: 4px !important;
-      padding: 2px 5px !important;
-      font-size: 0.76rem !important;
+      border-radius: 6px !important;
+      padding: 2px 6px !important;
+      font-size: 0.75rem !important;
       line-height: 1.2 !important;
-      border: 1px solid rgba(255,255,255,0.75) !important;
-      border-left: 4px solid rgba(0,0,0,0.45) !important;
-      box-shadow: 0 1px 3px rgba(15,23,42,0.22);
+      border: 1px solid rgba(255,255,255,0.22) !important;
+      border-left: 4px solid rgba(255,255,255,0.75) !important;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.35);
       cursor: pointer;
       overflow: hidden;
       height: 100% !important;
@@ -124,21 +636,18 @@
       justify-content: space-between;
     }
     .fc-event-time,
-    .fc-daygrid-event-dot {
-      display: none !important;
-    }
+    .fc-daygrid-event-dot { display: none !important; }
 
-    /* Etiqueta de rango horario en tarjetas extendidas (> 15 min): visible solo al pasar el cursor */
+    /* Etiqueta de duración extendida (>15 min) visible al pasar el cursor */
     .ev-extended-badge {
       display: none;
       margin-top: 3px;
-      padding: 1px 5px;
-      border-radius: 3px;
-      background: rgba(0, 0, 0, 0.28);
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.38);
       color: #ffffff;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.2px;
+      font-size: 0.67rem;
+      font-weight: 600;
       width: fit-content;
     }
     .fc-timegrid-event:hover .ev-extended-badge,
@@ -149,11 +658,11 @@
     /* Vista Mensual */
     .fc-daygrid-event {
       background-color: var(--ev-bg, #1d4ed8) !important;
-      border: 1px solid var(--ev-bg, #1d4ed8) !important;
-      border-left: 4px solid rgba(0,0,0,0.4) !important;
+      border: 1px solid rgba(255,255,255,0.2) !important;
+      border-left: 4px solid rgba(255,255,255,0.75) !important;
       color: #ffffff !important;
-      border-radius: 4px !important;
-      padding: 2px 5px !important;
+      border-radius: 5px !important;
+      padding: 2px 6px !important;
       margin: 1px 2px !important;
       white-space: normal !important;
       cursor: pointer;
@@ -161,177 +670,104 @@
     .fc-daygrid-event .fc-event-main,
     .fc-daygrid-event .fc-event-title {
       color: #ffffff !important;
-      font-weight: 600 !important;
-      font-size: 0.74rem !important;
+      font-weight: 500 !important;
+      font-size: 0.73rem !important;
       line-height: 1.2 !important;
       white-space: normal !important;
     }
-    .fc-event-title { font-weight: 600; }
-
-    /* Contador de audiencias y Días Feriados */
-    .day-header-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding: 2px 0;
-    }
-    .day-count-badge {
-      display: inline-block;
-      background: #e2e8f0;
-      color: #0f172a;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 1px 7px;
-      border-radius: 10px;
-      line-height: 1.3;
-    }
-    .day-count-badge.has-events {
-      background: #dbeafe;
-      color: #1e40af;
-      border: 1px solid #93c5fd;
-    }
-    .holiday-header-pill {
-      display: inline-block;
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
-      font-size: 0.67rem;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 6px;
-      max-width: 155px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.25;
-    }
-
-    /* Sombreado especial de columna y celda para días feriados en Chile */
-    .fc-col-header-cell.is-holiday-col {
-      background-color: #fef2f2 !important;
-    }
-    .fc-timegrid-col.is-holiday-col,
-    .fc-daygrid-day.is-holiday-col {
-      background-color: rgba(254, 226, 226, 0.48) !important;
-    }
-    .fc-daygrid-day.is-holiday-col .fc-daygrid-day-number {
-      color: #b91c1c !important;
-      font-weight: 700 !important;
-    }
-
     .month-day-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      padding: 2px 4px 0 4px;
-      gap: 3px;
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; padding: 2px 4px 0 4px; gap: 3px;
     }
     .month-count-pill {
-      font-size: 0.68rem;
-      font-weight: 700;
-      background: #dbeafe;
-      color: #1e40af;
-      padding: 0 5px;
-      border-radius: 8px;
-      white-space: nowrap;
+      font-size: 0.66rem; font-weight: 600;
+      background: rgba(138, 180, 248, 0.2); color: var(--gcal-accent);
+      padding: 0 6px; border-radius: 8px; white-space: nowrap;
     }
     .month-holiday-banner {
-      margin: 2px 4px 1px 4px;
-      padding: 1px 4px;
-      border-radius: 4px;
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
-      font-size: 0.66rem;
-      font-weight: 700;
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      margin: 2px 4px 1px 4px; padding: 1px 5px; border-radius: 4px;
+      background: rgba(242, 139, 130, 0.18); color: #f28b82;
+      border: 1px solid rgba(242, 139, 130, 0.4);
+      font-size: 0.65rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Modales */
+    /* =====================================================================
+       5. MODALES (ESTILO OSCURO COHERENTE)
+    ===================================================================== */
     .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72);
       align-items: center; justify-content: center; z-index: 9999; padding: 1rem;
     }
     .modal {
-      background: #fff; border-radius: 8px; width: 95%; max-width: 520px;
-      padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;
+      background: #1e1f20; color: var(--gcal-text); border: 1px solid var(--gcal-border);
+      border-radius: 16px; width: 95%; max-width: 520px;
+      padding: 1.4rem; box-shadow: 0 18px 40px rgba(0,0,0,0.65); max-height: 90vh; overflow-y: auto;
     }
-    .modal.modal-sm { max-width: 410px; }
-    .modal.modal-lg { max-width: 820px; }
-    .modal.modal-xl { max-width: 980px; }
-    .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; flex-wrap: wrap; }
-    .meta-info { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
-    #login-error { color: #dc2626; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
-    #login-status { color: #1d4ed8; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
+    .modal.modal-sm { max-width: 420px; }
+    .modal.modal-lg { max-width: 840px; }
+    .modal.modal-xl { max-width: 1000px; }
+    .modal h3 {
+      margin-top: 0; color: var(--gcal-text); font-weight: 500;
+      border-bottom: 1px solid var(--gcal-grid-line); padding-bottom: 0.6rem;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.55rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    .meta-info { font-size: 0.75rem; color: var(--gcal-text-muted); margin-top: 0.5rem; }
+    #login-error { color: #f28b82; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
+    #login-status { color: var(--gcal-accent); font-size: 0.82rem; margin-top: 0.6rem; display: none; }
 
     /* Vista Detalle */
-    .detail-grid { display: grid; grid-template-columns: 135px 1fr; gap: 0.45rem 0.8rem; font-size: 0.88rem; }
-    .detail-lbl { font-weight: 600; color: #475569; }
-    .detail-val { color: #0f172a; word-break: break-word; }
+    .detail-grid { display: grid; grid-template-columns: 135px 1fr; gap: 0.5rem 0.8rem; font-size: 0.88rem; }
+    .detail-lbl { font-weight: 600; color: var(--gcal-text-muted); }
+    .detail-val { color: var(--gcal-text); word-break: break-word; }
 
-    /* Estilos Conciliación y Auditoría */
+    /* KPIs, Tablas y Auditoría */
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
-    .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.65rem; background: #f8fafc; }
-    .kpi-card .num { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
-    .kpi-card .lbl { font-size: 0.75rem; color: #475569; }
+    .kpi-card { border: 1px solid var(--gcal-grid-line); border-radius: 10px; padding: 0.7rem; background: #131314; }
+    .kpi-card .num { font-size: 1.35rem; font-weight: 600; color: var(--gcal-text); }
+    .kpi-card .lbl { font-size: 0.74rem; color: var(--gcal-text-muted); }
     .diff-section { margin-top: 0.9rem; }
-    .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.92rem; color: var(--primary); }
+    .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.9rem; color: var(--gcal-text); }
     .diff-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; margin-bottom: 0.8rem; }
-    .diff-table th, .diff-table td { border: 1px solid #cbd5e1; padding: 0.38rem 0.5rem; text-align: left; vertical-align: top; }
-    .diff-table th { background: #f1f5f9; font-weight: 600; position: sticky; top: 0; }
-    .badge-new { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
-    .badge-mod { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
-    .badge-del { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
-    .badge-imp { background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
+    .diff-table th, .diff-table td { border: 1px solid var(--gcal-grid-line); padding: 0.42rem 0.55rem; text-align: left; vertical-align: top; }
+    .diff-table th { background: #282a2c; color: var(--gcal-text); font-weight: 600; position: sticky; top: 0; }
+    .badge-new { background: rgba(129, 201, 149, 0.18); color: #81c995; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
+    .badge-mod { background: rgba(253, 214, 99, 0.18); color: #fdd663; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
+    .badge-del { background: rgba(242, 139, 130, 0.18); color: #f28b82; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
+    .badge-imp { background: rgba(138, 180, 248, 0.18); color: #8ab4f8; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
 
-    /* Tabs del Panel de Auditoría */
     .admin-tabs {
-      display: flex; gap: 0.4rem; border-bottom: 2px solid #e2e8f0; margin-bottom: 1rem; flex-wrap: wrap;
+      display: flex; gap: 0.4rem; border-bottom: 1px solid var(--gcal-grid-line); margin-bottom: 1rem; flex-wrap: wrap;
     }
     .admin-tab {
-      padding: 0.5rem 0.9rem; border: none; background: #f1f5f9; color: #475569;
-      font-weight: 600; font-size: 0.83rem; border-radius: 6px 6px 0 0; cursor: pointer;
+      padding: 0.5rem 0.95rem; border: none; background: transparent; color: var(--gcal-text-muted);
+      font-weight: 500; font-size: 0.84rem; border-radius: 8px 8px 0 0; cursor: pointer;
     }
     .admin-tab.active {
-      background: var(--primary); color: #fff;
+      background: rgba(138, 180, 248, 0.16); color: var(--gcal-accent); border-bottom: 2px solid var(--gcal-accent);
     }
     .admin-panel { display: none; }
     .admin-panel.active { display: block; }
     .filter-bar {
-      display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;
-      background: #f8fafc; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.9rem;
+      display: flex; gap: 0.55rem; align-items: flex-end; flex-wrap: wrap;
+      background: #131314; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--gcal-grid-line); margin-bottom: 0.9rem;
     }
-    .filter-bar .fg { display: flex; flex-direction: column; gap: 0.2rem; }
-    .filter-bar .fg label { font-size: 0.75rem; font-weight: 600; color: #475569; }
+    .filter-bar .fg { display: flex; flex-direction: column; gap: 0.25rem; }
+    .filter-bar .fg label { font-size: 0.74rem; font-weight: 500; color: var(--gcal-text-muted); }
     .filter-bar .fg input, .filter-bar .fg select {
-      padding: 0.4rem 0.55rem; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.82rem;
+      padding: 0.42rem 0.6rem; border: 1px solid var(--gcal-border); border-radius: 8px;
+      font-size: 0.82rem; background: #1e1f20; color: var(--gcal-text);
     }
     .purge-box {
-      border: 1px solid #fca5a5; background: #fef2f2; border-radius: 8px; padding: 1rem;
+      border: 1px solid rgba(242, 139, 130, 0.45); background: rgba(242, 139, 130, 0.06); border-radius: 12px; padding: 1rem;
     }
-    .purge-box h4 { margin-top: 0; color: #991b1b; }
+    .purge-box h4 { margin-top: 0; color: #f28b82; }
     .admin-list-item {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 0.45rem 0.7rem; border: 1px solid #e2e8f0; border-radius: 5px; margin-bottom: 0.4rem; background: #fff;
+      padding: 0.5rem 0.75rem; border: 1px solid var(--gcal-grid-line); border-radius: 8px; margin-bottom: 0.45rem; background: #131314;
       font-size: 0.84rem;
     }
-
-    /* Leyenda de colores */
-    .legend-bar {
-      display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap;
-      padding: 0.35rem 1.2rem; background: #f1f5f9; border-bottom: 1px solid #cbd5e1;
-      font-size: 0.75rem; color: #334155;
-    }
-    .legend-item { display: inline-flex; align-items: center; gap: 0.3rem; }
-    .legend-dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
   </style>
 </head>
 <body>
@@ -339,8 +775,8 @@
   <!-- 1. PANTALLA DE INICIO DE SESIÓN -->
   <div id="login-screen">
     <div class="login-box">
-      <h2>Agenda de Audiencias - JG Illapel</h2>
-      <p style="font-size:0.83rem; color:#475569; margin-bottom:1.2rem;">
+      <h2>Agenda de Audiencias — JG Illapel</h2>
+      <p style="font-size:0.83rem; color:#9aa0a6; margin-bottom:1.2rem;">
         Ingrese con su cuenta institucional autorizada.
       </p>
       <form id="login-form" onsubmit="return iniciarSesion(event);">
@@ -359,50 +795,130 @@
     </div>
   </div>
 
-  <!-- 2. APLICACIÓN PRINCIPAL -->
+  <!-- 2. APLICACIÓN PRINCIPAL (ESTILO GOOGLE CALENDAR) -->
   <div id="app-screen">
-    <header>
-      <h1>Agenda de Audiencias - JG Illapel (15 min)</h1>
-      <div class="toolbar">
-        <button type="button" class="btn btn-primary" onclick="abrirModalNuevo()">+ Nueva Audiencia</button>
-
-        <div class="import-stack">
-          <label class="btn btn-success" style="margin:0; justify-content:center;" title="Agrega audiencias nuevas desde Excel sin borrar las existentes">
-            Importar Excel (Agregar)
-            <input type="file" id="excel-input-append" accept=".xlsx,.xls" style="display:none;" />
-          </label>
-          <span class="last-import-tag" id="last-import-info">Última carga: sin registros</span>
+    <!-- BARRA SUPERIOR -->
+    <header class="gcal-topbar">
+      <div class="gcal-top-left">
+        <button type="button" class="icon-circle-btn" onclick="toggleSidebar()" title="Mostrar u ocultar menú lateral">
+          ☰
+        </button>
+        <div class="gcal-brand">
+          <div class="gcal-logo-box">
+            <span class="gcal-logo-day" id="gcal-logo-day-num">25</span>
+          </div>
+          <div>
+            <span class="gcal-brand-title">Agenda JG Illapel</span>
+            <span class="gcal-brand-sub">Bloques 15 min</span>
+          </div>
         </div>
+      </div>
 
-        <label class="btn btn-warning" style="margin:0;" title="Compara con el sistema, muestra diferencias y repuebla los días incluidos en el Excel">
-          Repoblar / Conciliar Excel
-          <input type="file" id="excel-input-repopulate" accept=".xlsx,.xls" style="display:none;" />
-        </label>
+      <div class="gcal-top-center">
+        <button type="button" class="gcal-pill-btn" onclick="irAHoy()">Hoy</button>
+        <div class="gcal-nav-arrows">
+          <button type="button" onclick="navegarCalendario('prev')" title="Período anterior">‹</button>
+          <button type="button" onclick="navegarCalendario('next')" title="Período siguiente">›</button>
+        </div>
+        <h2 class="gcal-current-title" id="gcal-header-title">Noviembre de 2026</h2>
+        <span class="gcal-week-chip" id="gcal-header-week">Semana 48</span>
+      </div>
 
-        <button type="button" class="btn btn-info" onclick="abrirModalPdf()">Imprimir en PDF</button>
-
-        <!-- Botón visible únicamente para usuarios con privilegio de Administrador / Auditoría -->
-        <button type="button" class="btn btn-purple" id="btn-auditoria-admin" style="display:none;" onclick="abrirModalAuditoria()" title="Panel de Auditoría, Depuración y Privilegios">
-          Auditoría y Admin
+      <div class="gcal-top-right">
+        <button type="button" class="gcal-pill-btn" onclick="abrirModalPdf()" title="Exportar agenda actual a PDF tamaño Oficio">
+          🖨️ Imprimir PDF
         </button>
 
-        <span class="user-badge" id="user-display"></span>
-        <button type="button" class="btn btn-danger" onclick="cerrarSesion()">Salir</button>
+        <button type="button" class="btn btn-purple" id="btn-auditoria-admin" style="display:none;" onclick="abrirModalAuditoria()" title="Panel de Auditoría, Depuración y Privilegios">
+          🛡️ Auditoría
+        </button>
+
+        <!-- BOTÓN ÚNICO DESPLEGABLE DE VISTAS (DÍA / SEMANA LABORAL / SEMANA / MES) -->
+        <div class="view-dropdown-wrap" id="view-dropdown-wrap">
+          <button type="button" class="view-dropdown-trigger" id="view-dropdown-btn" onclick="toggleMenuVistas(event)">
+            <span id="current-view-label">Semana laboral</span>
+            <span style="font-size:0.75rem; color:#9aa0a6;">▼</span>
+          </button>
+          <div class="view-dropdown-menu" id="view-dropdown-menu">
+            <button type="button" class="view-option" data-view="timeGridDay" onclick="seleccionarVista('timeGridDay')">
+              <span>Día</span><span class="view-shortcut">D</span>
+            </button>
+            <button type="button" class="view-option active" data-view="timeGridWorkWeek" onclick="seleccionarVista('timeGridWorkWeek')">
+              <span>Semana laboral (Lun–Vie)</span><span class="view-shortcut">L</span>
+            </button>
+            <button type="button" class="view-option" data-view="timeGridWeek" onclick="seleccionarVista('timeGridWeek')">
+              <span>Semana completa</span><span class="view-shortcut">W</span>
+            </button>
+            <button type="button" class="view-option" data-view="dayGridMonth" onclick="seleccionarVista('dayGridMonth')">
+              <span>Mes</span><span class="view-shortcut">M</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="user-pill" id="user-display"></div>
+        <button type="button" class="btn btn-danger" style="padding:0.42rem 0.75rem;" onclick="cerrarSesion()">Salir</button>
       </div>
     </header>
 
-    <div class="legend-bar">
-      <strong>Clasificación:</strong>
-      <span class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span> Control Detención / Cautelares</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#b45309;"></span> Juicio Oral / Preparación</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado / Sobreseimiento</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Supervisión</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras Audiencias</span>
-      <span class="legend-item" style="margin-left:auto;"><span class="legend-dot" style="background:#fee2e2; border:1px solid #f87171;"></span> <strong style="color:#991b1b;">Día Feriado</strong></span>
-    </div>
+    <!-- ÁREA DE TRABAJO: SIDEBAR IZQUIERDO + GRILLA CALENDARIO -->
+    <div class="gcal-workspace">
+      <aside class="gcal-sidebar" id="gcal-sidebar">
+        <!-- Botón Crear (+ Nueva Audiencia) -->
+        <button type="button" class="gcal-create-btn" onclick="abrirModalNuevo()">
+          <span class="gcal-plus-icon">+</span>
+          <span>Crear audiencia</span>
+        </button>
 
-    <div id="calendar-container">
-      <div id="calendar"></div>
+        <!-- Mini Calendario Mensual Interactivo -->
+        <div class="mini-cal-card">
+          <div class="mini-cal-header">
+            <span class="mini-cal-title" id="mini-cal-month-label">Noviembre de 2026</span>
+            <div class="mini-cal-nav">
+              <button type="button" onclick="cambiarMesMiniCal(-1)" title="Mes anterior">‹</button>
+              <button type="button" onclick="cambiarMesMiniCal(1)" title="Mes siguiente">›</button>
+            </div>
+          </div>
+          <div class="mini-cal-grid" id="mini-cal-grid"></div>
+        </div>
+
+        <!-- Carga y Conciliación Excel Unijud -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">
+            <span>Sincronización Unijud</span>
+          </div>
+
+          <label class="sidebar-action-btn" title="Agrega audiencias nuevas desde Excel sin borrar las existentes">
+            <span>📥 Importar Excel (Agregar)</span>
+            <input type="file" id="excel-input-append" accept=".xlsx,.xls" style="display:none;" />
+          </label>
+          <div class="last-import-tag" id="last-import-info">Última carga: sin registros</div>
+
+          <label class="sidebar-action-btn" title="Compara con el sistema, muestra diferencias y repuebla los días incluidos en el Excel">
+            <span>🔄 Repoblar / Conciliar Excel</span>
+            <input type="file" id="excel-input-repopulate" accept=".xlsx,.xls" style="display:none;" />
+          </label>
+        </div>
+
+        <!-- Clasificación Visual (Estilo "Mis calendarios") -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">
+            <span>Clasificación de audiencias</span>
+          </div>
+          <div class="legend-list">
+            <div class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span> Control Detención / Cautelares</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#b45309;"></span> Juicio Oral / Preparación</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Sup.</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f28b82;"></span> Día Feriado Legal</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Contenedor Principal FullCalendar -->
+      <main id="calendar-container">
+        <div id="calendar"></div>
+      </main>
     </div>
   </div>
 
@@ -412,7 +928,7 @@
       <h3 id="det-title">Detalle de Audiencia</h3>
       <input type="hidden" id="det-id" />
       <div class="detail-grid" id="det-content"></div>
-      <div class="meta-info" id="det-audit" style="margin-top:0.9rem; padding-top:0.5rem; border-top:1px solid #e2e8f0;"></div>
+      <div class="meta-info" id="det-audit" style="margin-top:0.9rem; padding-top:0.5rem; border-top:1px solid #2c2d30;"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" style="margin-right:auto;" onclick="eliminarDesdeDetalle()">Eliminar</button>
         <button type="button" class="btn btn-outline" onclick="cerrarModalDetalle()">Cerrar</button>
@@ -496,8 +1012,8 @@
   <div class="modal-backdrop" id="pdf-modal">
     <div class="modal modal-sm">
       <h3>Imprimir Agenda en PDF (8,5" x 13")</h3>
-      <p style="font-size:0.83rem; color:#475569; margin-top:0;">
-        Genera el reporte PDF tamaño Oficio chileno (8,5 x 13 pulgadas) correspondiente al período actualmente visible en el calendario (<strong id="pdf-period-preview"></strong>).
+      <p style="font-size:0.83rem; color:#9aa0a6; margin-top:0;">
+        Genera el reporte PDF tamaño Oficio chileno (8,5 x 13 pulgadas) correspondiente al período actualmente visible en el calendario (<strong id="pdf-period-preview" style="color:#e3e3e3;"></strong>).
       </p>
 
       <div class="form-group">
@@ -601,7 +1117,7 @@
 
         <div class="kpi-grid" id="audit-kpis"></div>
 
-        <div style="max-height: 360px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px;">
+        <div style="max-height: 360px; overflow-y: auto; border: 1px solid #2c2d30; border-radius: 8px;">
           <table class="diff-table" style="margin-bottom:0;">
             <thead>
               <tr>
@@ -622,7 +1138,7 @@
       <div id="tab-purge" class="admin-panel">
         <div class="purge-box">
           <h4>Depuración Histórica de Audiencias</h4>
-          <p style="font-size:0.84rem; color:#334155; margin-top:0;">
+          <p style="font-size:0.84rem; color:#e3e3e3; margin-top:0;">
             Esta herramienta elimina definitivamente de Firebase las audiencias cuya <strong>fecha de realización sea anterior</strong> a la fecha de corte indicada, conservando únicamente las audiencias presentes y futuras para optimizar el tráfico y almacenamiento gratuito.
           </p>
 
@@ -640,7 +1156,7 @@
             </div>
           </div>
 
-          <div id="purge-preview-box" style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:0.75rem; font-size:0.84rem; margin-bottom:0.9rem;"></div>
+          <div id="purge-preview-box" style="background:#131314; border:1px solid #2c2d30; border-radius:8px; padding:0.75rem; font-size:0.84rem; margin-bottom:0.9rem;"></div>
 
           <button type="button" class="btn btn-danger" id="btn-ejecutar-depuracion" onclick="ejecutarDepuracionBD()">
             Ejecutar Depuración Definitiva
@@ -650,8 +1166,8 @@
 
       <!-- SUBPANEL 3: CONTROL DE PRIVILEGIOS -->
       <div id="tab-roles" class="admin-panel">
-        <p style="font-size:0.84rem; color:#334155; margin-top:0;">
-          Solo los correos electrónicos autorizados en esta lista pueden visualizar el botón <strong>Auditoría y Admin</strong>, consultar la bitácora de movimientos y ejecutar depuraciones de base de datos. Los demás usuarios mantienen acceso operativo normal a la agenda.
+        <p style="font-size:0.84rem; color:#e3e3e3; margin-top:0;">
+          Solo los correos electrónicos autorizados en esta lista pueden visualizar el botón <strong>Auditoría</strong>, consultar la bitácora de movimientos y ejecutar depuraciones de base de datos. Los demás usuarios mantienen acceso operativo normal a la agenda.
         </p>
 
         <div class="filter-bar">
@@ -702,6 +1218,10 @@
     let conteoPorFecha = {};
     let planConciliacionPendiente = null;
 
+    // Estado del Mini Calendario Izquierdo y Vista Actual
+    let miniCalFechaBase = new Date();
+    let fechaSeleccionadaISO = fechaLocalISO(new Date());
+
     // Registro de feriados de Chile (mapa YYYY-MM-DD -> nombre del feriado)
     let feriadosChileMap = {};
     let aniosFeriadosCargados = new Set();
@@ -730,7 +1250,174 @@
     }
 
     // =========================================================================
-    // 2. SISTEMA DE AUDITORÍA Y CONTROL DE PRIVILEGIOS DE ADMINISTRADOR
+    // 2. NAVEGACIÓN GOOGLE CALENDAR, DROPDOWN DE VISTAS Y MINI CALENDARIO
+    // =========================================================================
+    const NOMBRES_VISTA = {
+      timeGridDay: "Día",
+      timeGridWorkWeek: "Semana laboral",
+      timeGridWeek: "Semana",
+      dayGridMonth: "Mes"
+    };
+
+    function toggleSidebar() {
+      document.getElementById('gcal-sidebar').classList.toggle('collapsed');
+      setTimeout(() => { if (calendar) calendar.updateSize(); }, 220);
+    }
+
+    function toggleMenuVistas(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('view-dropdown-menu').classList.toggle('open');
+    }
+
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('view-dropdown-wrap');
+      const menu = document.getElementById('view-dropdown-menu');
+      if (wrap && menu && !wrap.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    });
+
+    // Atajos de teclado estilo Google Calendar (D, L, W, M, T) cuando no se escribe en un input
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'd') seleccionarVista('timeGridDay');
+      else if (k === 'l') seleccionarVista('timeGridWorkWeek');
+      else if (k === 'w') seleccionarVista('timeGridWeek');
+      else if (k === 'm') seleccionarVista('dayGridMonth');
+      else if (k === 't') irAHoy();
+    });
+
+    function seleccionarVista(viewName) {
+      if (!calendar) return;
+      calendar.changeView(viewName);
+      document.getElementById('current-view-label').textContent = NOMBRES_VISTA[viewName] || viewName;
+      document.querySelectorAll('.view-option').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+      });
+      document.getElementById('view-dropdown-menu').classList.remove('open');
+    }
+
+    function navegarCalendario(dir) {
+      if (!calendar) return;
+      if (dir === 'prev') calendar.prev();
+      else if (dir === 'next') calendar.next();
+    }
+
+    function irAHoy() {
+      if (!calendar) return;
+      const hoy = new Date();
+      fechaSeleccionadaISO = fechaLocalISO(hoy);
+      miniCalFechaBase = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      calendar.today();
+      renderizarMiniCalendario();
+    }
+
+    function obtenerNumeroSemanaISO(dateObj) {
+      const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function actualizarBarraSuperiorDesdeCalendario(info) {
+      if (!calendar) return;
+      const view = calendar.view;
+      const refDate = calendar.getDate();
+      const titleEl = document.getElementById('gcal-header-title');
+      const weekEl = document.getElementById('gcal-header-week');
+
+      if (view.type === 'timeGridDay') {
+        titleEl.textContent = refDate.toLocaleDateString('es-CL', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        });
+      } else {
+        titleEl.textContent = view.title || refDate.toLocaleDateString('es-CL', {
+          month: 'long', year: 'numeric'
+        });
+      }
+
+      const semNum = obtenerNumeroSemanaISO(refDate);
+      weekEl.textContent = `Semana ${semNum}`;
+
+      fechaSeleccionadaISO = fechaLocalISO(refDate);
+      miniCalFechaBase = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
+      renderizarMiniCalendario();
+    }
+
+    function cambiarMesMiniCal(delta) {
+      miniCalFechaBase = new Date(miniCalFechaBase.getFullYear(), miniCalFechaBase.getMonth() + delta, 1);
+      cargarFeriadosChile(miniCalFechaBase.getFullYear());
+      renderizarMiniCalendario();
+    }
+
+    function seleccionarDiaDesdeMiniCal(iso) {
+      fechaSeleccionadaISO = iso;
+      if (calendar) {
+        calendar.gotoDate(iso);
+      }
+      renderizarMiniCalendario();
+    }
+
+    function renderizarMiniCalendario() {
+      const grid = document.getElementById('mini-cal-grid');
+      const label = document.getElementById('mini-cal-month-label');
+      if (!grid || !label) return;
+
+      const year = miniCalFechaBase.getFullYear();
+      const month = miniCalFechaBase.getMonth();
+      const hoyISO = fechaLocalISO(new Date());
+
+      label.textContent = miniCalFechaBase.toLocaleDateString('es-CL', {
+        month: 'long', year: 'numeric'
+      });
+
+      const dows = ['', 'L', 'M', 'X', 'J', 'V', 'S', 'D'];
+      let html = dows.map(d => `<div class="mini-cal-dow">${d}</div>`).join('');
+
+      const primerDiaMes = new Date(year, month, 1);
+      const offsetLunes = (primerDiaMes.getDay() + 6) % 7;
+      const cursor = new Date(year, month, 1 - offsetLunes);
+
+      for (let row = 0; row < 6; row++) {
+        const numSem = obtenerNumeroSemanaISO(cursor);
+        html += `<div class="mini-cal-wk" title="Semana ${numSem}">${numSem}</div>`;
+
+        for (let col = 0; col < 7; col++) {
+          const iso = fechaLocalISO(cursor);
+          const esOtroMes = cursor.getMonth() !== month;
+          const esHoy = iso === hoyISO;
+          const esSel = iso === fechaSeleccionadaISO;
+          const esFeriado = Boolean(feriadosChileMap[iso]);
+          const tieneAud = (conteoPorFecha[iso] || 0) > 0;
+
+          const clases = [
+            'mini-cal-day',
+            esOtroMes ? 'other-month' : '',
+            esHoy ? 'is-today' : '',
+            esSel ? 'is-selected' : '',
+            esFeriado ? 'is-holiday' : '',
+            tieneAud ? 'has-aud' : ''
+          ].filter(Boolean).join(' ');
+
+          const tooltip = [
+            formatearFechaCL(iso),
+            esFeriado ? `Feriado: ${feriadosChileMap[iso]}` : '',
+            tieneAud ? `${conteoPorFecha[iso]} audiencia(s)` : ''
+          ].filter(Boolean).join(' • ');
+
+          html += `<button type="button" class="${clases}" title="${tooltip}" onclick="seleccionarDiaDesdeMiniCal('${iso}')">${cursor.getDate()}</button>`;
+          cursor.setDate(cursor.getDate() + 1);
+        }
+      }
+
+      grid.innerHTML = html;
+    }
+
+    // =========================================================================
+    // 3. SISTEMA DE AUDITORÍA Y CONTROL DE PRIVILEGIOS DE ADMINISTRADOR
     // =========================================================================
     function registrarLogAuditoria(accion, rit, fechaAud, horaAud, detalle) {
       if (!auditLogsRef || !currentUser) return;
@@ -769,7 +1456,7 @@
 
         if (esUsuarioAdmin) {
           btnAdmin.style.display = 'inline-flex';
-          userBadge.innerHTML = `${currentUser.email} <span class="admin-pill">Admin</span>`;
+          userBadge.innerHTML = `<span>${currentUser.email}</span><span class="admin-pill">Admin</span>`;
           escucharLogsAuditoria();
         } else {
           btnAdmin.style.display = 'none';
@@ -902,14 +1589,14 @@
 
       kpis.innerHTML = `
         <div class="kpi-card"><div class="num">${filtrados.length}</div><div class="lbl">Movimientos en período</div></div>
-        <div class="kpi-card"><div class="num" style="color:#15803d;">${creaciones}</div><div class="lbl">Altas / Importaciones</div></div>
-        <div class="kpi-card"><div class="num" style="color:#b45309;">${ediciones}</div><div class="lbl">Ediciones / Conciliaciones</div></div>
-        <div class="kpi-card"><div class="num" style="color:#dc2626;">${eliminaciones}</div><div class="lbl">Eliminaciones / Depuraciones</div></div>
-        <div class="kpi-card"><div class="num" style="color:#1d4ed8;">${usuariosUnicos}</div><div class="lbl">Funcionarios activos</div></div>
+        <div class="kpi-card"><div class="num" style="color:#81c995;">${creaciones}</div><div class="lbl">Altas / Importaciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#fdd663;">${ediciones}</div><div class="lbl">Ediciones / Conciliaciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#f28b82;">${eliminaciones}</div><div class="lbl">Eliminaciones / Depuraciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#8ab4f8;">${usuariosUnicos}</div><div class="lbl">Funcionarios activos</div></div>
       `;
 
       if (!filtrados.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:1rem;">No se registran movimientos de auditoría para los filtros seleccionados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9aa0a6; padding:1rem;">No se registran movimientos de auditoría para los filtros seleccionados.</td></tr>`;
         return;
       }
 
@@ -950,7 +1637,6 @@
       XLSX.writeFile(wb, `Bitacora_Auditoria_JG_Illapel_${fechaLocalISO(new Date())}.xlsx`);
     }
 
-    // Depuración de Base de Datos hasta una fecha determinada
     function previsualizarDepuracion() {
       const cutoff = document.getElementById('purge-cutoff-date').value;
       const box = document.getElementById('purge-preview-box');
@@ -970,8 +1656,8 @@
 
       box.innerHTML = `
         <div>• <strong>Total audiencias actualmente en base de datos:</strong> ${todas.length}</div>
-        <div style="color:#b91c1c;">• <strong>Audiencias anteriores al ${formatearFechaCL(cutoff)} que se eliminarán:</strong> ${aEliminar.length} (${rangoElim})</div>
-        <div style="color:#15803d;">• <strong>Audiencias presentes y futuras que se conservarán (≥ ${formatearFechaCL(cutoff)}):</strong> ${aConservar}</div>
+        <div style="color:#f28b82;">• <strong>Audiencias anteriores al ${formatearFechaCL(cutoff)} que se eliminarán:</strong> ${aEliminar.length} (${rangoElim})</div>
+        <div style="color:#81c995;">• <strong>Audiencias presentes y futuras que se conservarán (≥ ${formatearFechaCL(cutoff)}):</strong> ${aConservar}</div>
       `;
     }
 
@@ -1049,14 +1735,13 @@
       alert(`Depuración completada: ${aEliminar.length} audiencias históricas eliminadas.`);
     }
 
-    // Gestión de usuarios con privilegios de administrador
     function renderizarListaAdministradores() {
       const container = document.getElementById('admin-users-list');
       if (!container) return;
 
       const entradas = Object.entries(listaAdminsCache || {});
       if (!entradas.length) {
-        container.innerHTML = `<p style="font-size:0.82rem; color:#64748b;">No hay administradores configurados.</p>`;
+        container.innerHTML = `<p style="font-size:0.82rem; color:#9aa0a6;">No hay administradores configurados.</p>`;
         return;
       }
 
@@ -1067,11 +1752,11 @@
           <div class="admin-list-item">
             <div>
               <strong>${email}</strong> ${esMismo ? '<span class="badge-new">Tu cuenta</span>' : ''}
-              <div style="font-size:0.73rem; color:#64748b;">
+              <div style="font-size:0.73rem; color:#9aa0a6;">
                 Asignado por: ${info.asignadoPor || 'Sistema'}
               </div>
             </div>
-            ${entradas.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.76rem;" onclick="revocarAdministrador('${key}', '${email}')">Revocar</button>` : '<span style="font-size:0.74rem; color:#64748b;">Admin único</span>'}
+            ${entradas.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:0.3rem 0.65rem; font-size:0.76rem;" onclick="revocarAdministrador('${key}', '${email}')">Revocar</button>` : '<span style="font-size:0.74rem; color:#9aa0a6;">Admin único</span>'}
           </div>
         `;
       }).join("");
@@ -1106,7 +1791,7 @@
     }
 
     // =========================================================================
-    // 3. OBTENCIÓN DE DÍAS FERIADOS DE CHILE DESDE PORTAL PÚBLICO + RESPALDO LEGAL
+    // 4. DÍAS FERIADOS DE CHILE
     // =========================================================================
     function obtenerRespaldoFeriadosChile(anio) {
       const fijos = {
@@ -1206,10 +1891,11 @@
             break;
           }
         } catch (err) {
-          // Continúa con la siguiente fuente pública
+          // Continúa con la siguiente fuente
         }
       }
 
+      renderizarMiniCalendario();
       if (calendar) {
         aplicarEstilosFeriadosDOM();
         calendar.render();
@@ -1231,7 +1917,7 @@
     }
 
     // =========================================================================
-    // 4. AUTENTICACIÓN
+    // 5. AUTENTICACIÓN
     // =========================================================================
     async function iniciarSesion(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -1275,9 +1961,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       try {
         inicializarFirebase();
-        const anioActual = new Date().getFullYear();
+        const hoy = new Date();
+        const anioActual = hoy.getFullYear();
+        document.getElementById('gcal-logo-day-num').textContent = hoy.getDate();
+
         cargarFeriadosChile(anioActual);
         cargarFeriadosChile(anioActual + 1);
+        renderizarMiniCalendario();
 
         auth.onAuthStateChanged((user) => {
           if (user) {
@@ -1419,7 +2109,7 @@
     }
 
     // =========================================================================
-    // 5. INICIALIZACIÓN DE FULLCALENDAR (INCLUYE VISTA LABORAL LUN-VIE)
+    // 6. INICIALIZACIÓN DE FULLCALENDAR
     // =========================================================================
     function inicializarCalendario() {
       if (calendar) return;
@@ -1432,7 +2122,7 @@
           timeGridWorkWeek: {
             type: 'timeGridWeek',
             weekends: false,
-            buttonText: 'Lun–Vie'
+            buttonText: 'Semana laboral'
           },
           timeGridWeek: {
             buttonText: 'Semana'
@@ -1444,19 +2134,9 @@
             buttonText: 'Mes'
           }
         },
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'timeGridDay,timeGridWorkWeek,timeGridWeek,dayGridMonth'
-        },
-        buttonText: {
-          today: 'Hoy',
-          month: 'Mes',
-          week: 'Semana',
-          day: 'Día'
-        },
+        headerToolbar: false,
         slotDuration: '00:15:00',
-        slotLabelInterval: '00:30:00',
+        slotLabelInterval: '01:00:00',
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         displayEventTime: false,
         allDaySlot: false,
@@ -1471,6 +2151,7 @@
         datesSet: function(info) {
           cargarFeriadosChile(info.start.getFullYear());
           cargarFeriadosChile(info.end.getFullYear());
+          actualizarBarraSuperiorDesdeCalendario(info);
           setTimeout(aplicarEstilosFeriadosDOM, 0);
         },
 
@@ -1492,7 +2173,7 @@
 
         dayHeaderContent: function(arg) {
           if (arg.view.type === 'dayGridMonth') {
-            return arg.text;
+            return arg.text.toUpperCase();
           }
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
@@ -1503,9 +2184,13 @@
             ? `<span class="holiday-header-pill" title="${feriadoNombre}">Feriado: ${feriadoNombre}</span>`
             : '';
 
+          const dowCorto = arg.date.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', '').toUpperCase();
+          const numDia = arg.date.getDate();
+
           return {
-            html: `<div class="day-header-wrap">
-                     <span>${arg.text}</span>
+            html: `<div class="gcal-col-hdr">
+                     <span class="gcal-col-dow">${dowCorto}</span>
+                     <span class="gcal-col-num">${numDia}</span>
                      ${feriadoHtml}
                      <span class="${cls}" data-day-count="${iso}">${textoTotal}</span>
                    </div>`
@@ -1607,10 +2292,12 @@
           el.style.display = 'none';
         }
       });
+
+      renderizarMiniCalendario();
     }
 
     // =========================================================================
-    // 6. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
+    // 7. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
     // =========================================================================
     function registrarUltimaCargaExcel(fechasDetectadas, origen = "Excel") {
       if (!fechasDetectadas || !fechasDetectadas.length || !metaCargaRef) return;
@@ -1732,7 +2419,7 @@
     }
 
     // =========================================================================
-    // 7. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
+    // 8. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
     // =========================================================================
     function abrirModalDetalle(id) {
       const item = eventosCache[id];
@@ -1807,7 +2494,7 @@
       document.getElementById('modal-title').textContent = 'Registrar Nueva Audiencia';
       document.getElementById('ev-id').value = '';
       document.getElementById('ev-rit').value = '';
-      document.getElementById('ev-fecha').value = fecha || new Date().toISOString().slice(0, 10);
+      document.getElementById('ev-fecha').value = fecha || fechaSeleccionadaISO || new Date().toISOString().slice(0, 10);
       document.getElementById('ev-inicio').value = inicio;
       document.getElementById('ev-fin').value = fin;
       document.getElementById('ev-tipo').value = '';
@@ -1916,11 +2603,11 @@
     }
 
     // =========================================================================
-    // 8. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
+    // 9. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
     // =========================================================================
     function abrirModalPdf() {
       if (!calendar) return;
-      document.getElementById('pdf-period-preview').textContent = calendar.view.title || "";
+      document.getElementById('pdf-period-preview').textContent = document.getElementById('gcal-header-title').textContent || "";
       document.getElementById('pdf-modal').style.display = 'flex';
     }
 
@@ -1957,7 +2644,7 @@
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 28;
-      const tituloPeriodo = view.title || `${startISO} a ${endISO}`;
+      const tituloPeriodo = document.getElementById('gcal-header-title').textContent || `${startISO} a ${endISO}`;
 
       doc.setFillColor(15, 23, 42);
       doc.rect(margin, margin, pageW - margin * 2, 34, 'F');
@@ -2156,7 +2843,7 @@
     }
 
     // =========================================================================
-    // 9. PARSEO DE EXCEL UNIJUD
+    // 10. PARSEO DE EXCEL UNIJUD
     // =========================================================================
     function normalizarFechaExcel(val) {
       if (val === undefined || val === null || val === "") return null;
@@ -2382,7 +3069,7 @@
     }
 
     // =========================================================================
-    // 10. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
+    // 11. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
     // =========================================================================
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -2447,7 +3134,7 @@
     });
 
     // =========================================================================
-    // 11. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // 12. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
     // =========================================================================
     document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -2514,25 +3201,25 @@
       const totalNoCoincidentes = nuevasEnExcel.length + conDiferencias.length + sobrantesEnSistema.length;
 
       let html = `
-        <p style="font-size:0.84rem; color:#334155; margin-top:0;">
-          <strong>Período analizado:</strong> ${res.fechasDetectadas.map(formatearFechaCL).join(", ") || "Sin fechas"}
+        <p style="font-size:0.84rem; color:#9aa0a6; margin-top:0;">
+          <strong style="color:#e3e3e3;">Período analizado:</strong> ${res.fechasDetectadas.map(formatearFechaCL).join(", ") || "Sin fechas"}
           (Encabezados en fila ${res.headerRowNum} | Filas no Programadas descartadas: ${res.filasNoProgramadas})
         </p>
         <div class="kpi-grid">
           <div class="kpi-card"><div class="num">${res.audiencias.length}</div><div class="lbl">Programadas en Excel</div></div>
           <div class="kpi-card"><div class="num">${coincidentes.length}</div><div class="lbl">Coincidentes exactas</div></div>
-          <div class="kpi-card"><div class="num" style="color:#15803d;">${nuevasEnExcel.length}</div><div class="lbl">Nuevas en Excel</div></div>
-          <div class="kpi-card"><div class="num" style="color:#b45309;">${conDiferencias.length}</div><div class="lbl">Con cambios (Tipo/Horario/Sala)</div></div>
-          <div class="kpi-card"><div class="num" style="color:#dc2626;">${sobrantesEnSistema.length}</div><div class="lbl">En Sistema pero no en Excel</div></div>
+          <div class="kpi-card"><div class="num" style="color:#81c995;">${nuevasEnExcel.length}</div><div class="lbl">Nuevas en Excel</div></div>
+          <div class="kpi-card"><div class="num" style="color:#fdd663;">${conDiferencias.length}</div><div class="lbl">Con cambios (Tipo/Horario/Sala)</div></div>
+          <div class="kpi-card"><div class="num" style="color:#f28b82;">${sobrantesEnSistema.length}</div><div class="lbl">En Sistema pero no en Excel</div></div>
         </div>
       `;
 
       if (totalNoCoincidentes === 0) {
-        html += `<p style="background:#dcfce7; color:#166534; padding:0.75rem; border-radius:6px; font-weight:600;">
+        html += `<p style="background:rgba(129,201,149,0.16); color:#81c995; padding:0.75rem; border-radius:8px; font-weight:500;">
           ✔ Conciliación perfecta: Todos los registros del Excel coinciden exactamente con lo ya poblado en el sistema.
         </p>`;
       } else {
-        html += `<p style="font-size:0.83rem; font-weight:600; color:#991b1b;">
+        html += `<p style="font-size:0.83rem; font-weight:500; color:#f28b82;">
           Se detectaron ${totalNoCoincidentes} registros NO coincidentes entre el Excel y el sistema:
         </p>`;
 
@@ -2558,8 +3245,8 @@
                   <tr>
                     <td>${formatearFechaCL(d.excel.fecha)} ${d.excel.inicio}</td>
                     <td>${formatearRitVisual(d.excel.rit, d.excel.tipoCausa)}</td>
-                    <td>${d.sistema.tipo} (${d.sistema.inicio}-${calcularFinEfectivo(d.sistema)})<br><small style="color:#64748b;">${d.sistema.sala || '-'}</small></td>
-                    <td>${d.excel.tipo} (${d.excel.inicio}-${d.excel.fin})<br><small style="color:#64748b;">${d.excel.sala || '-'}</small></td>
+                    <td>${d.sistema.tipo} (${d.sistema.inicio}-${calcularFinEfectivo(d.sistema)})<br><small style="color:#9aa0a6;">${d.sistema.sala || '-'}</small></td>
+                    <td>${d.excel.tipo} (${d.excel.inicio}-${d.excel.fin})<br><small style="color:#9aa0a6;">${d.excel.sala || '-'}</small></td>
                   </tr>
                 `).join('')}
               </tbody>
