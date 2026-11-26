@@ -59,6 +59,7 @@
     .btn-warning { background: #b45309; color: #fff; }
     .btn-danger { background: #dc2626; color: #fff; }
     .btn-info { background: #0369a1; color: #fff; }
+    .btn-purple { background: #6d28d9; color: #fff; }
     .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
 
     /* App Principal */
@@ -87,6 +88,10 @@
     }
     .user-badge {
       font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.42rem 0.6rem; border-radius: 4px;
+    }
+    .admin-pill {
+      background: #7c3aed; color: #fff; font-size: 0.68rem; font-weight: 700;
+      padding: 1px 5px; border-radius: 3px; margin-left: 4px; text-transform: uppercase;
     }
     #calendar-container {
       flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
@@ -257,9 +262,11 @@
       padding: 1.4rem; box-shadow: 0 15px 30px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;
     }
     .modal.modal-sm { max-width: 410px; }
-    .modal.modal-lg { max-width: 780px; }
+    .modal.modal-lg { max-width: 820px; }
+    .modal.modal-xl { max-width: 980px; }
     .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.2rem; flex-wrap: wrap; }
     .meta-info { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
     #login-error { color: #dc2626; font-size: 0.82rem; margin-top: 0.6rem; display: none; }
@@ -270,19 +277,52 @@
     .detail-lbl { font-weight: 600; color: #475569; }
     .detail-val { color: #0f172a; word-break: break-word; }
 
-    /* Estilos Conciliación */
+    /* Estilos Conciliación y Auditoría */
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
     .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.65rem; background: #f8fafc; }
     .kpi-card .num { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
     .kpi-card .lbl { font-size: 0.75rem; color: #475569; }
     .diff-section { margin-top: 0.9rem; }
     .diff-section h4 { margin: 0 0 0.4rem 0; font-size: 0.92rem; color: var(--primary); }
-    .diff-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 0.8rem; }
-    .diff-table th, .diff-table td { border: 1px solid #cbd5e1; padding: 0.4rem 0.5rem; text-align: left; }
-    .diff-table th { background: #f1f5f9; font-weight: 600; }
+    .diff-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; margin-bottom: 0.8rem; }
+    .diff-table th, .diff-table td { border: 1px solid #cbd5e1; padding: 0.38rem 0.5rem; text-align: left; vertical-align: top; }
+    .diff-table th { background: #f1f5f9; font-weight: 600; position: sticky; top: 0; }
     .badge-new { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
     .badge-mod { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
     .badge-del { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
+    .badge-imp { background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }
+
+    /* Tabs del Panel de Auditoría */
+    .admin-tabs {
+      display: flex; gap: 0.4rem; border-bottom: 2px solid #e2e8f0; margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .admin-tab {
+      padding: 0.5rem 0.9rem; border: none; background: #f1f5f9; color: #475569;
+      font-weight: 600; font-size: 0.83rem; border-radius: 6px 6px 0 0; cursor: pointer;
+    }
+    .admin-tab.active {
+      background: var(--primary); color: #fff;
+    }
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    .filter-bar {
+      display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;
+      background: #f8fafc; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.9rem;
+    }
+    .filter-bar .fg { display: flex; flex-direction: column; gap: 0.2rem; }
+    .filter-bar .fg label { font-size: 0.75rem; font-weight: 600; color: #475569; }
+    .filter-bar .fg input, .filter-bar .fg select {
+      padding: 0.4rem 0.55rem; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 0.82rem;
+    }
+    .purge-box {
+      border: 1px solid #fca5a5; background: #fef2f2; border-radius: 8px; padding: 1rem;
+    }
+    .purge-box h4 { margin-top: 0; color: #991b1b; }
+    .admin-list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.45rem 0.7rem; border: 1px solid #e2e8f0; border-radius: 5px; margin-bottom: 0.4rem; background: #fff;
+      font-size: 0.84rem;
+    }
 
     /* Leyenda de colores */
     .legend-bar {
@@ -340,6 +380,12 @@
         </label>
 
         <button type="button" class="btn btn-info" onclick="abrirModalPdf()">Imprimir en PDF</button>
+
+        <!-- Botón visible únicamente para usuarios con privilegio de Administrador / Auditoría -->
+        <button type="button" class="btn btn-purple" id="btn-auditoria-admin" style="display:none;" onclick="abrirModalAuditoria()" title="Panel de Auditoría, Depuración y Privilegios">
+          Auditoría y Admin
+        </button>
+
         <span class="user-badge" id="user-display"></span>
         <button type="button" class="btn btn-danger" onclick="cerrarSesion()">Salir</button>
       </div>
@@ -494,6 +540,137 @@
     </div>
   </div>
 
+  <!-- 7. MODAL ADMINISTRATIVO: AUDITORÍA, DEPURACIÓN DE BD Y PRIVILEGIOS -->
+  <div class="modal-backdrop" id="audit-modal">
+    <div class="modal modal-xl">
+      <h3>Panel de Auditoría y Administración — JG Illapel</h3>
+
+      <div class="admin-tabs">
+        <button type="button" class="admin-tab active" data-tab="tab-log" onclick="cambiarTabAdmin('tab-log')">
+          1. Bitácora de Programaciones
+        </button>
+        <button type="button" class="admin-tab" data-tab="tab-purge" onclick="cambiarTabAdmin('tab-purge')">
+          2. Depuración de Base de Datos
+        </button>
+        <button type="button" class="admin-tab" data-tab="tab-roles" onclick="cambiarTabAdmin('tab-roles')">
+          3. Control de Privilegios (Administradores)
+        </button>
+      </div>
+
+      <!-- SUBPANEL 1: BITÁCORA DE AUDITORÍA -->
+      <div id="tab-log" class="admin-panel active">
+        <div class="filter-bar">
+          <div class="fg">
+            <label>Período rápido</label>
+            <select id="audit-preset" onchange="aplicarPresetAuditoria()">
+              <option value="hoy">Hoy (Diario)</option>
+              <option value="semana" selected>Últimos 7 días (Semanal)</option>
+              <option value="mes">Mes actual (Mensual)</option>
+              <option value="todo">Todo el historial</option>
+              <option value="custom">Rango personalizado</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Desde (fecha acción)</label>
+            <input type="date" id="audit-desde" onchange="document.getElementById('audit-preset').value='custom'; renderizarTablaAuditoria();" />
+          </div>
+          <div class="fg">
+            <label>Hasta (fecha acción)</label>
+            <input type="date" id="audit-hasta" onchange="document.getElementById('audit-preset').value='custom'; renderizarTablaAuditoria();" />
+          </div>
+          <div class="fg">
+            <label>Funcionario</label>
+            <select id="audit-usuario" onchange="renderizarTablaAuditoria()">
+              <option value="">Todos los usuarios</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Acción</label>
+            <select id="audit-accion" onchange="renderizarTablaAuditoria()">
+              <option value="">Todas las acciones</option>
+              <option value="CREACION">Creación manual</option>
+              <option value="EDICION">Edición / Arrastre</option>
+              <option value="ELIMINACION">Eliminación</option>
+              <option value="IMPORTACION_EXCEL">Importación Excel</option>
+              <option value="CONCILIACION_EXCEL">Conciliación / Repoblación</option>
+              <option value="DEPURACION_BD">Depuración de BD</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-info" onclick="exportarAuditoriaExcel()">Exportar Excel</button>
+        </div>
+
+        <div class="kpi-grid" id="audit-kpis"></div>
+
+        <div style="max-height: 360px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px;">
+          <table class="diff-table" style="margin-bottom:0;">
+            <thead>
+              <tr>
+                <th style="width:130px;">Fecha / Hora Acción</th>
+                <th style="width:165px;">Funcionario</th>
+                <th style="width:125px;">Operación</th>
+                <th style="width:100px;">Causa (RIT)</th>
+                <th style="width:115px;">Fecha / Hora Aud.</th>
+                <th>Detalle / Resumen del Cambio</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUBPANEL 2: DEPURACIÓN DE BASE DE DATOS -->
+      <div id="tab-purge" class="admin-panel">
+        <div class="purge-box">
+          <h4>Depuración Histórica de Audiencias</h4>
+          <p style="font-size:0.84rem; color:#334155; margin-top:0;">
+            Esta herramienta elimina definitivamente de Firebase las audiencias cuya <strong>fecha de realización sea anterior</strong> a la fecha de corte indicada, conservando únicamente las audiencias presentes y futuras para optimizar el tráfico y almacenamiento gratuito.
+          </p>
+
+          <div class="row-2" style="max-width:520px; margin-bottom:0.8rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Conservar audiencias desde el día (inclusive) *</label>
+              <input type="date" id="purge-cutoff-date" onchange="previsualizarDepuracion()" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Depurar también bitácora anterior a esa fecha</label>
+              <select id="purge-include-logs">
+                <option value="no">No, conservar toda la bitácora de auditoría</option>
+                <option value="si">Sí, depurar también registros antiguos de bitácora</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="purge-preview-box" style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:0.75rem; font-size:0.84rem; margin-bottom:0.9rem;"></div>
+
+          <button type="button" class="btn btn-danger" id="btn-ejecutar-depuracion" onclick="ejecutarDepuracionBD()">
+            Ejecutar Depuración Definitiva
+          </button>
+        </div>
+      </div>
+
+      <!-- SUBPANEL 3: CONTROL DE PRIVILEGIOS -->
+      <div id="tab-roles" class="admin-panel">
+        <p style="font-size:0.84rem; color:#334155; margin-top:0;">
+          Solo los correos electrónicos autorizados en esta lista pueden visualizar el botón <strong>Auditoría y Admin</strong>, consultar la bitácora de movimientos y ejecutar depuraciones de base de datos. Los demás usuarios mantienen acceso operativo normal a la agenda.
+        </p>
+
+        <div class="filter-bar">
+          <div class="fg" style="flex:1; min-width:240px;">
+            <label>Correo institucional del nuevo administrador</label>
+            <input type="email" id="new-admin-email" placeholder="usuario@pjud.cl" />
+          </div>
+          <button type="button" class="btn btn-primary" onclick="agregarAdministrador()">Otorgar Privilegio Admin</button>
+        </div>
+
+        <div id="admin-users-list"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalAuditoria()">Cerrar Panel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // 1. CONFIGURACIÓN DE FIREBASE (Proyecto: agenda-jg-illapel)
@@ -513,15 +690,29 @@
     let db = null;
     let agendaRef = null;
     let metaCargaRef = null;
+    let auditLogsRef = null;
+    let adminRolesRef = null;
+
     let calendar = null;
     let currentUser = null;
+    let esUsuarioAdmin = false;
+    let listaAdminsCache = {};
     let eventosCache = {};
+    let auditLogsCache = [];
     let conteoPorFecha = {};
     let planConciliacionPendiente = null;
 
     // Registro de feriados de Chile (mapa YYYY-MM-DD -> nombre del feriado)
     let feriadosChileMap = {};
     let aniosFeriadosCargados = new Set();
+
+    function emailKey(email) {
+      return String(email || "").trim().toLowerCase().replace(/\./g, ",");
+    }
+
+    function keyToEmail(key) {
+      return String(key || "").replace(/,/g, ".");
+    }
 
     function inicializarFirebase() {
       if (typeof firebase === "undefined") {
@@ -534,13 +725,390 @@
       db = firebase.database();
       agendaRef = db.ref('agenda_audiencias');
       metaCargaRef = db.ref('agenda_metadata/ultima_carga');
+      auditLogsRef = db.ref('agenda_auditoria');
+      adminRolesRef = db.ref('agenda_config/administradores');
     }
 
     // =========================================================================
-    // 2. OBTENCIÓN DE DÍAS FERIADOS DE CHILE DESDE PORTAL PÚBLICO + RESPALDO LEGAL
+    // 2. SISTEMA DE AUDITORÍA Y CONTROL DE PRIVILEGIOS DE ADMINISTRADOR
+    // =========================================================================
+    function registrarLogAuditoria(accion, rit, fechaAud, horaAud, detalle) {
+      if (!auditLogsRef || !currentUser) return;
+      auditLogsRef.push({
+        timestamp: new Date().toISOString(),
+        usuario: currentUser.email,
+        accion: accion,
+        rit: rit || "-",
+        fechaAudiencia: fechaAud || "-",
+        horaAudiencia: horaAud || "-",
+        detalle: detalle || ""
+      });
+    }
+
+    function configurarControlPrivilegios() {
+      if (!adminRolesRef || !currentUser) return;
+
+      adminRolesRef.on('value', (snap) => {
+        const val = snap.val();
+        const miClave = emailKey(currentUser.email);
+
+        if (!val || Object.keys(val).length === 0) {
+          adminRolesRef.child(miClave).set({
+            email: currentUser.email.toLowerCase(),
+            asignadoPor: "Sistema (Bootstrap inicial)",
+            asignadoEn: new Date().toISOString()
+          });
+          return;
+        }
+
+        listaAdminsCache = val;
+        esUsuarioAdmin = Boolean(val[miClave]);
+
+        const btnAdmin = document.getElementById('btn-auditoria-admin');
+        const userBadge = document.getElementById('user-display');
+
+        if (esUsuarioAdmin) {
+          btnAdmin.style.display = 'inline-flex';
+          userBadge.innerHTML = `${currentUser.email} <span class="admin-pill">Admin</span>`;
+          escucharLogsAuditoria();
+        } else {
+          btnAdmin.style.display = 'none';
+          userBadge.textContent = currentUser.email;
+          if (auditLogsRef) auditLogsRef.off();
+          cerrarModalAuditoria();
+        }
+
+        renderizarListaAdministradores();
+      });
+    }
+
+    function escucharLogsAuditoria() {
+      if (!auditLogsRef || !esUsuarioAdmin) return;
+      auditLogsRef.off();
+      auditLogsRef.limitToLast(1500).on('value', (snap) => {
+        const raw = snap.val() || {};
+        auditLogsCache = Object.entries(raw)
+          .map(([id, item]) => ({ id, ...item }))
+          .sort((a, b) => String(b.timestamp || "").localeCompare(String(a.timestamp || "")));
+
+        actualizarSelectorUsuariosAuditoria();
+        if (document.getElementById('audit-modal').style.display === 'flex') {
+          renderizarTablaAuditoria();
+        }
+      });
+    }
+
+    function abrirModalAuditoria() {
+      if (!esUsuarioAdmin) {
+        alert("Acceso denegado: Su cuenta no posee privilegios de administración y auditoría.");
+        return;
+      }
+      aplicarPresetAuditoria();
+      const hoyISO = fechaLocalISO(new Date());
+      const purgeInput = document.getElementById('purge-cutoff-date');
+      if (!purgeInput.value) purgeInput.value = hoyISO;
+      previsualizarDepuracion();
+      renderizarListaAdministradores();
+      document.getElementById('audit-modal').style.display = 'flex';
+    }
+
+    function cerrarModalAuditoria() {
+      document.getElementById('audit-modal').style.display = 'none';
+    }
+
+    function cambiarTabAdmin(tabId) {
+      document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+      });
+      document.querySelectorAll('.admin-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === tabId);
+      });
+      if (tabId === 'tab-purge') previsualizarDepuracion();
+      if (tabId === 'tab-roles') renderizarListaAdministradores();
+    }
+
+    function aplicarPresetAuditoria() {
+      const preset = document.getElementById('audit-preset').value;
+      const hoy = new Date();
+      const hoyISO = fechaLocalISO(hoy);
+      const desdeEl = document.getElementById('audit-desde');
+      const hastaEl = document.getElementById('audit-hasta');
+
+      if (preset === 'hoy') {
+        desdeEl.value = hoyISO;
+        hastaEl.value = hoyISO;
+      } else if (preset === 'semana') {
+        const d7 = new Date(hoy.getTime() - 6 * 86400000);
+        desdeEl.value = fechaLocalISO(d7);
+        hastaEl.value = hoyISO;
+      } else if (preset === 'mes') {
+        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        desdeEl.value = fechaLocalISO(primerDia);
+        hastaEl.value = hoyISO;
+      } else if (preset === 'todo') {
+        desdeEl.value = '';
+        hastaEl.value = '';
+      }
+      renderizarTablaAuditoria();
+    }
+
+    function actualizarSelectorUsuariosAuditoria() {
+      const sel = document.getElementById('audit-usuario');
+      if (!sel) return;
+      const actual = sel.value;
+      const usuarios = Array.from(new Set(auditLogsCache.map(l => l.usuario).filter(Boolean))).sort();
+      sel.innerHTML = `<option value="">Todos los usuarios (${usuarios.length})</option>` +
+        usuarios.map(u => `<option value="${u}">${u}</option>`).join("");
+      sel.value = actual;
+    }
+
+    function obtenerLogsFiltrados() {
+      const desde = document.getElementById('audit-desde').value;
+      const hasta = document.getElementById('audit-hasta').value;
+      const usuario = document.getElementById('audit-usuario').value;
+      const accion = document.getElementById('audit-accion').value;
+
+      return auditLogsCache.filter(item => {
+        const fechaAccion = item.timestamp ? fechaLocalISO(new Date(item.timestamp)) : "";
+        if (desde && fechaAccion < desde) return false;
+        if (hasta && fechaAccion > hasta) return false;
+        if (usuario && item.usuario !== usuario) return false;
+        if (accion && item.accion !== accion) return false;
+        return true;
+      });
+    }
+
+    function badgeAccionAuditoria(accion) {
+      const map = {
+        CREACION: `<span class="badge-new">CREACIÓN</span>`,
+        EDICION: `<span class="badge-mod">EDICIÓN</span>`,
+        ELIMINACION: `<span class="badge-del">ELIMINACIÓN</span>`,
+        IMPORTACION_EXCEL: `<span class="badge-imp">IMPORT. EXCEL</span>`,
+        CONCILIACION_EXCEL: `<span class="badge-imp">CONCILIACIÓN</span>`,
+        DEPURACION_BD: `<span class="badge-del">DEPURACIÓN BD</span>`
+      };
+      return map[accion] || `<span class="badge-imp">${accion || "-"}</span>`;
+    }
+
+    function renderizarTablaAuditoria() {
+      const filtrados = obtenerLogsFiltrados();
+      const tbody = document.getElementById('audit-tbody');
+      const kpis = document.getElementById('audit-kpis');
+
+      const creaciones = filtrados.filter(x => x.accion === 'CREACION' || x.accion === 'IMPORTACION_EXCEL').length;
+      const ediciones = filtrados.filter(x => x.accion === 'EDICION' || x.accion === 'CONCILIACION_EXCEL').length;
+      const eliminaciones = filtrados.filter(x => x.accion === 'ELIMINACION' || x.accion === 'DEPURACION_BD').length;
+      const usuariosUnicos = new Set(filtrados.map(x => x.usuario).filter(Boolean)).size;
+
+      kpis.innerHTML = `
+        <div class="kpi-card"><div class="num">${filtrados.length}</div><div class="lbl">Movimientos en período</div></div>
+        <div class="kpi-card"><div class="num" style="color:#15803d;">${creaciones}</div><div class="lbl">Altas / Importaciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#b45309;">${ediciones}</div><div class="lbl">Ediciones / Conciliaciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#dc2626;">${eliminaciones}</div><div class="lbl">Eliminaciones / Depuraciones</div></div>
+        <div class="kpi-card"><div class="num" style="color:#1d4ed8;">${usuariosUnicos}</div><div class="lbl">Funcionarios activos</div></div>
+      `;
+
+      if (!filtrados.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:1rem;">No se registran movimientos de auditoría para los filtros seleccionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(l => {
+        const dt = l.timestamp ? new Date(l.timestamp).toLocaleString('es-CL') : "-";
+        const fAud = l.fechaAudiencia && l.fechaAudiencia.includes('-') ? formatearFechaCL(l.fechaAudiencia) : (l.fechaAudiencia || "-");
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td><strong>${l.usuario || "-"}</strong></td>
+            <td>${badgeAccionAuditoria(l.accion)}</td>
+            <td>${l.rit || "-"}</td>
+            <td>${fAud} ${l.horaAudiencia && l.horaAudiencia !== "-" ? l.horaAudiencia : ""}</td>
+            <td>${l.detalle || "-"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function exportarAuditoriaExcel() {
+      const filtrados = obtenerLogsFiltrados();
+      if (!filtrados.length) {
+        alert("No hay registros en el filtro actual para exportar.");
+        return;
+      }
+      const filas = filtrados.map(l => ({
+        "Fecha y Hora Acción": l.timestamp ? new Date(l.timestamp).toLocaleString('es-CL') : "",
+        "Funcionario": l.usuario || "",
+        "Operación": l.accion || "",
+        "Causa (RIT)": l.rit || "",
+        "Fecha Audiencia": l.fechaAudiencia || "",
+        "Horario Audiencia": l.horaAudiencia || "",
+        "Detalle": l.detalle || ""
+      }));
+      const ws = XLSX.utils.json_to_sheet(filas);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Agenda");
+      XLSX.writeFile(wb, `Bitacora_Auditoria_JG_Illapel_${fechaLocalISO(new Date())}.xlsx`);
+    }
+
+    // Depuración de Base de Datos hasta una fecha determinada
+    function previsualizarDepuracion() {
+      const cutoff = document.getElementById('purge-cutoff-date').value;
+      const box = document.getElementById('purge-preview-box');
+      if (!cutoff) {
+        box.innerHTML = "Seleccione una fecha de corte para calcular los registros a depurar.";
+        return;
+      }
+
+      const todas = Object.entries(eventosCache);
+      const aEliminar = todas.filter(([id, ev]) => ev && ev.fecha && ev.fecha < cutoff);
+      const aConservar = todas.length - aEliminar.length;
+
+      const fechasElim = aEliminar.map(([id, ev]) => ev.fecha).sort();
+      const rangoElim = fechasElim.length
+        ? `desde el <strong>${formatearFechaCL(fechasElim[0])}</strong> hasta el <strong>${formatearFechaCL(fechasElim[fechasElim.length - 1])}</strong>`
+        : "ninguna";
+
+      box.innerHTML = `
+        <div>• <strong>Total audiencias actualmente en base de datos:</strong> ${todas.length}</div>
+        <div style="color:#b91c1c;">• <strong>Audiencias anteriores al ${formatearFechaCL(cutoff)} que se eliminarán:</strong> ${aEliminar.length} (${rangoElim})</div>
+        <div style="color:#15803d;">• <strong>Audiencias presentes y futuras que se conservarán (≥ ${formatearFechaCL(cutoff)}):</strong> ${aConservar}</div>
+      `;
+    }
+
+    async function ejecutarDepuracionBD() {
+      if (!esUsuarioAdmin) {
+        alert("Acceso denegado: Solo administradores pueden depurar la base de datos.");
+        return;
+      }
+      const cutoff = document.getElementById('purge-cutoff-date').value;
+      const incluirLogs = document.getElementById('purge-include-logs').value === 'si';
+
+      if (!cutoff) {
+        alert("Seleccione la fecha de corte.");
+        return;
+      }
+
+      const aEliminar = Object.entries(eventosCache).filter(([id, ev]) => ev && ev.fecha && ev.fecha < cutoff);
+      if (aEliminar.length === 0 && !incluirLogs) {
+        alert(`No existen audiencias anteriores al ${formatearFechaCL(cutoff)} para depurar.`);
+        return;
+      }
+
+      const confirmMsg =
+        `ATENCIÓN — DEPURACIÓN DEFINITIVA DE BASE DE DATOS\n\n` +
+        `Se eliminarán permanentemente ${aEliminar.length} audiencias anteriores al ${formatearFechaCL(cutoff)}.\n` +
+        `Se conservarán todas las audiencias desde el ${formatearFechaCL(cutoff)} en adelante.\n\n` +
+        `¿Confirma ejecutar esta depuración?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      const updates = {};
+      aEliminar.forEach(([id]) => {
+        updates[id] = null;
+      });
+
+      if (aEliminar.length > 0) {
+        await agendaRef.update(updates);
+      }
+
+      let logsEliminados = 0;
+      if (incluirLogs && auditLogsCache.length > 0) {
+        const logUpdates = {};
+        auditLogsCache.forEach(l => {
+          const fLog = l.timestamp ? fechaLocalISO(new Date(l.timestamp)) : "";
+          if (fLog && fLog < cutoff) {
+            logUpdates[l.id] = null;
+            logsEliminados++;
+          }
+        });
+        if (logsEliminados > 0) {
+          await auditLogsRef.update(logUpdates);
+        }
+      }
+
+      const fechasRestantes = Object.values(eventosCache)
+        .filter(ev => ev && ev.fecha && ev.fecha >= cutoff)
+        .map(ev => ev.fecha)
+        .sort();
+
+      if (fechasRestantes.length > 0) {
+        registrarUltimaCargaExcel(fechasRestantes, "Depuración BD");
+      } else if (metaCargaRef) {
+        metaCargaRef.remove();
+      }
+
+      registrarLogAuditoria(
+        "DEPURACION_BD",
+        "MASIVO",
+        cutoff,
+        "-",
+        `Depuradas ${aEliminar.length} audiencias anteriores al ${formatearFechaCL(cutoff)}${incluirLogs ? ` y ${logsEliminados} registros de bitácora` : ''}.`
+      );
+
+      previsualizarDepuracion();
+      alert(`Depuración completada: ${aEliminar.length} audiencias históricas eliminadas.`);
+    }
+
+    // Gestión de usuarios con privilegios de administrador
+    function renderizarListaAdministradores() {
+      const container = document.getElementById('admin-users-list');
+      if (!container) return;
+
+      const entradas = Object.entries(listaAdminsCache || {});
+      if (!entradas.length) {
+        container.innerHTML = `<p style="font-size:0.82rem; color:#64748b;">No hay administradores configurados.</p>`;
+        return;
+      }
+
+      container.innerHTML = entradas.map(([key, info]) => {
+        const email = info.email || keyToEmail(key);
+        const esMismo = currentUser && email.toLowerCase() === currentUser.email.toLowerCase();
+        return `
+          <div class="admin-list-item">
+            <div>
+              <strong>${email}</strong> ${esMismo ? '<span class="badge-new">Tu cuenta</span>' : ''}
+              <div style="font-size:0.73rem; color:#64748b;">
+                Asignado por: ${info.asignadoPor || 'Sistema'}
+              </div>
+            </div>
+            ${entradas.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.76rem;" onclick="revocarAdministrador('${key}', '${email}')">Revocar</button>` : '<span style="font-size:0.74rem; color:#64748b;">Admin único</span>'}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function agregarAdministrador() {
+      if (!esUsuarioAdmin) return;
+      const input = document.getElementById('new-admin-email');
+      const email = input.value.trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        alert("Ingrese un correo electrónico institucional válido.");
+        return;
+      }
+      const key = emailKey(email);
+      adminRolesRef.child(key).set({
+        email,
+        asignadoPor: currentUser.email,
+        asignadoEn: new Date().toISOString()
+      });
+      input.value = '';
+    }
+
+    function revocarAdministrador(key, email) {
+      if (!esUsuarioAdmin) return;
+      if (Object.keys(listaAdminsCache).length <= 1) {
+        alert("Debe existir al menos un usuario administrador en el sistema.");
+        return;
+      }
+      if (confirm(`¿Revocar privilegios de auditoría y administración a ${email}?`)) {
+        adminRolesRef.child(key).remove();
+      }
+    }
+
+    // =========================================================================
+    // 3. OBTENCIÓN DE DÍAS FERIADOS DE CHILE DESDE PORTAL PÚBLICO + RESPALDO LEGAL
     // =========================================================================
     function obtenerRespaldoFeriadosChile(anio) {
-      // Feriados fijos legales en Chile como respaldo si el portal externo está bloqueado
       const fijos = {
         [`${anio}-01-01`]: "Año Nuevo",
         [`${anio}-05-01`]: "Día Nacional del Trabajo",
@@ -557,7 +1125,6 @@
         [`${anio}-12-08`]: "Inmaculada Concepción",
         [`${anio}-12-25`]: "Navidad"
       };
-      // Semana Santa y feriados móviles 2025-2028
       const moviles = {
         "2025-04-18": "Viernes Santo",
         "2025-04-19": "Sábado Santo",
@@ -580,7 +1147,6 @@
       if (aniosFeriadosCargados.has(anio)) return;
       aniosFeriadosCargados.add(anio);
 
-      // Precarga inmediata del respaldo legal para respuesta instantánea
       Object.assign(feriadosChileMap, obtenerRespaldoFeriadosChile(anio));
 
       const fuentes = [
@@ -633,7 +1199,6 @@
           const json = await resp.json();
           const parsed = fuente.parse(json);
           if (parsed) {
-            // Reemplazar datos del año con la fuente oficial pública
             Object.keys(feriadosChileMap).forEach(k => {
               if (k.startsWith(`${anio}-`)) delete feriadosChileMap[k];
             });
@@ -641,7 +1206,7 @@
             break;
           }
         } catch (err) {
-          // Continúa con la siguiente fuente pública si hay restricción CORS o de red
+          // Continúa con la siguiente fuente pública
         }
       }
 
@@ -666,7 +1231,7 @@
     }
 
     // =========================================================================
-    // 3. AUTENTICACIÓN Y CONTROL DE PRIVILEGIOS
+    // 4. AUTENTICACIÓN
     // =========================================================================
     async function iniciarSesion(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -720,10 +1285,12 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'flex';
             document.getElementById('user-display').textContent = user.email;
+            configurarControlPrivilegios();
             inicializarCalendario();
             escucharBaseDatos();
           } else {
             currentUser = null;
+            esUsuarioAdmin = false;
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app-screen').style.display = 'none';
           }
@@ -852,7 +1419,7 @@
     }
 
     // =========================================================================
-    // 4. INICIALIZACIÓN DE FULLCALENDAR (INCLUYE VISTA LABORAL LUN-VIE)
+    // 5. INICIALIZACIÓN DE FULLCALENDAR (INCLUYE VISTA LABORAL LUN-VIE)
     // =========================================================================
     function inicializarCalendario() {
       if (calendar) return;
@@ -1043,7 +1610,7 @@
     }
 
     // =========================================================================
-    // 5. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
+    // 6. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
     // =========================================================================
     function registrarUltimaCargaExcel(fechasDetectadas, origen = "Excel") {
       if (!fechasDetectadas || !fechasDetectadas.length || !metaCargaRef) return;
@@ -1070,7 +1637,6 @@
           : `Última carga: ${d1} al ${d2}`;
         el.title = `Período cargado (${meta.origen || 'Excel'}) por ${meta.actualizadoPor || 'N/D'}`;
       } else {
-        // Si aún no hay metadata explícita, inferir el rango de fechas cargado en agenda_audiencias
         const fechas = Object.values(eventosCache)
           .map(ev => ev && ev.fecha)
           .filter(Boolean)
@@ -1102,7 +1668,6 @@
           }
         });
 
-        // Actualizar etiqueta de respaldo si no existe metadata guardada
         metaCargaRef.once('value', (snap) => {
           if (!snap.val()) actualizarEtiquetaUltimaCarga(null);
         });
@@ -1156,10 +1721,18 @@
         modificadoPor: currentUser.email,
         modificadoEn: new Date().toISOString()
       });
+
+      registrarLogAuditoria(
+        "EDICION",
+        formatearRitVisual(actual.rit, actual.tipoCausa),
+        nuevaFecha,
+        `${nuevoInicio}-${nuevoFin}`,
+        `Reagendamiento visual (arrastre/redimensión): de ${formatearFechaCL(actual.fecha)} (${actual.inicio}-${calcularFinEfectivo(actual)}) a ${formatearFechaCL(nuevaFecha)} (${nuevoInicio}-${nuevoFin}).`
+      );
     }
 
     // =========================================================================
-    // 6. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
+    // 7. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
     // =========================================================================
     function abrirModalDetalle(id) {
       const item = eventosCache[id];
@@ -1209,8 +1782,18 @@
 
     function eliminarDesdeDetalle() {
       const id = document.getElementById('det-id').value;
+      const item = eventosCache[id];
       if (id && confirm("¿Eliminar esta audiencia de la agenda?")) {
         agendaRef.child(id).remove();
+        if (item) {
+          registrarLogAuditoria(
+            "ELIMINACION",
+            formatearRitVisual(item.rit, item.tipoCausa),
+            item.fecha,
+            item.inicio,
+            `Eliminada audiencia "${item.tipo}" (${item.sala || 'Sin sala'}).`
+          );
+        }
         cerrarModalDetalle();
       }
     }
@@ -1292,24 +1875,48 @@
 
       if (id) {
         agendaRef.child(id).update(payload);
+        registrarLogAuditoria(
+          "EDICION",
+          `RIT ${ritFormateado}`,
+          fecha,
+          `${inicio}-${fin}`,
+          `Actualizada audiencia "${tipo}" | Detalle: ${sala || 'Sin sala'}.`
+        );
       } else {
         payload.creadoPor = currentUser.email;
         payload.creadoEn = new Date().toISOString();
         agendaRef.push(payload);
+        registrarLogAuditoria(
+          "CREACION",
+          `RIT ${ritFormateado}`,
+          fecha,
+          `${inicio}-${fin}`,
+          `Programada manualmente audiencia "${tipo}" | Detalle: ${sala || 'Sin sala'}.`
+        );
       }
       cerrarModal();
     }
 
     function eliminarAudiencia() {
       const id = document.getElementById('ev-id').value;
+      const item = eventosCache[id];
       if (id && confirm("¿Eliminar esta audiencia de la agenda?")) {
         agendaRef.child(id).remove();
+        if (item) {
+          registrarLogAuditoria(
+            "ELIMINACION",
+            formatearRitVisual(item.rit, item.tipoCausa),
+            item.fecha,
+            item.inicio,
+            `Eliminada audiencia "${item.tipo}" desde formulario de edición.`
+          );
+        }
         cerrarModal();
       }
     }
 
     // =========================================================================
-    // 7. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
+    // 8. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
     // =========================================================================
     function abrirModalPdf() {
       if (!calendar) return;
@@ -1549,7 +2156,7 @@
     }
 
     // =========================================================================
-    // 8. PARSEO DE EXCEL UNIJUD
+    // 9. PARSEO DE EXCEL UNIJUD
     // =========================================================================
     function normalizarFechaExcel(val) {
       if (val === undefined || val === null || val === "") return null;
@@ -1769,19 +2376,19 @@
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const matriz = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
         const resultado = parsearPlanillaUnijud(matriz);
-        callback(resultado);
+        callback(resultado, file.name);
       };
       reader.readAsArrayBuffer(file);
     }
 
     // =========================================================================
-    // 9. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
+    // 10. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
     // =========================================================================
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      leerArchivoExcel(file, (res) => {
+      leerArchivoExcel(file, (res, nombreArchivo) => {
         e.target.value = '';
         if (res.error) {
           alert(res.error);
@@ -1820,6 +2427,16 @@
 
         registrarUltimaCargaExcel(res.fechasDetectadas, "Importar Excel");
 
+        const fDesde = res.fechasDetectadas[0] || "-";
+        const fHasta = res.fechasDetectadas[res.fechasDetectadas.length - 1] || "-";
+        registrarLogAuditoria(
+          "IMPORTACION_EXCEL",
+          `${cargadas} causas`,
+          fDesde,
+          "-",
+          `Archivo "${nombreArchivo}" (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}): ${cargadas} nuevas cargadas, ${duplicadas} duplicadas omitidas.`
+        );
+
         alert(
           `Importación completada (Encabezados leídos en fila ${res.headerRowNum}):\n` +
           `• Audiencias Programadas nuevas cargadas: ${cargadas}\n` +
@@ -1830,23 +2447,23 @@
     });
 
     // =========================================================================
-    // 10. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // 11. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
     // =========================================================================
     document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      leerArchivoExcel(file, (res) => {
+      leerArchivoExcel(file, (res, nombreArchivo) => {
         e.target.value = '';
         if (res.error) {
           alert(res.error);
           return;
         }
-        mostrarModalConciliacion(res);
+        mostrarModalConciliacion(res, nombreArchivo);
       });
     });
 
-    function mostrarModalConciliacion(res) {
+    function mostrarModalConciliacion(res, nombreArchivo = "") {
       const fechasSet = new Set(res.fechasDetectadas);
       const excelMap = new Map(res.audiencias.map(a => [a.clave, a]));
 
@@ -1886,6 +2503,7 @@
 
       planConciliacionPendiente = {
         res,
+        nombreArchivo,
         nuevasEnExcel,
         conDiferencias,
         coincidentes,
@@ -1973,7 +2591,9 @@
 
     function ejecutarRepoblacion(modo) {
       if (!planConciliacionPendiente) return;
-      const { res, nuevasEnExcel, conDiferencias, sistemaEnFechas } = planConciliacionPendiente;
+      const { res, nombreArchivo, nuevasEnExcel, conDiferencias, sistemaEnFechas } = planConciliacionPendiente;
+      const fDesde = res.fechasDetectadas[0] || "-";
+      const fHasta = res.fechasDetectadas[res.fechasDetectadas.length - 1] || "-";
 
       if (modo === 'replace') {
         const msgConfirm =
@@ -2003,6 +2623,14 @@
         });
 
         registrarUltimaCargaExcel(res.fechasDetectadas, "Repoblar Excel");
+        registrarLogAuditoria(
+          "CONCILIACION_EXCEL",
+          `${res.audiencias.length} causas`,
+          fDesde,
+          "-",
+          `Repoblación total (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": reemplazados ${sistemaEnFechas.length} registros por ${res.audiencias.length}.`
+        );
+
         cerrarModalConciliacion();
         alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas para el período.`);
       } else {
@@ -2039,6 +2667,14 @@
         });
 
         registrarUltimaCargaExcel(res.fechasDetectadas, "Conciliar Excel");
+        registrarLogAuditoria(
+          "CONCILIACION_EXCEL",
+          `${nuevasEnExcel.length + conDiferencias.length} causas`,
+          fDesde,
+          "-",
+          `Sincronización parcial (${formatearFechaCL(fDesde)} al ${formatearFechaCL(fHasta)}) desde "${nombreArchivo}": ${nuevasEnExcel.length} nuevas y ${conDiferencias.length} actualizadas.`
+        );
+
         cerrarModalConciliacion();
         alert(`Sincronización completada: ${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`);
       }
