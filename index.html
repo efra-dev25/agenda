@@ -48,8 +48,8 @@
       width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
     }
     .btn {
-      padding: 0.55rem 0.9rem; border: none; border-radius: 6px; cursor: pointer;
-      font-weight: 600; font-size: 0.85rem; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.52rem 0.85rem; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 600; font-size: 0.84rem; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 0.3rem;
     }
     .btn:hover { opacity: 0.9; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -64,15 +64,29 @@
     /* App Principal */
     #app-screen { display: none; flex-direction: column; height: 100vh; }
     header {
-      background: var(--primary); color: #fff; padding: 0.65rem 1.2rem;
+      background: var(--primary); color: #fff; padding: 0.55rem 1.2rem;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
     }
     header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
     .toolbar {
-      display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;
+      display: flex; gap: 0.45rem; align-items: flex-start; flex-wrap: wrap;
+    }
+    .import-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+    }
+    .last-import-tag {
+      font-size: 0.67rem;
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.15;
+      white-space: nowrap;
+      letter-spacing: 0.1px;
     }
     .user-badge {
-      font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.3rem 0.6rem; border-radius: 4px;
+      font-size: 0.78rem; background: rgba(255,255,255,0.15); padding: 0.42rem 0.6rem; border-radius: 4px;
     }
     #calendar-container {
       flex: 1; padding: 0.8rem; overflow: hidden; background: #fff;
@@ -149,7 +163,7 @@
     }
     .fc-event-title { font-weight: 600; }
 
-    /* Contador de audiencias */
+    /* Contador de audiencias y Días Feriados */
     .day-header-wrap {
       display: flex;
       flex-direction: column;
@@ -172,12 +186,42 @@
       color: #1e40af;
       border: 1px solid #93c5fd;
     }
+    .holiday-header-pill {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      font-size: 0.67rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 6px;
+      max-width: 155px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    /* Sombreado especial de columna y celda para días feriados en Chile */
+    .fc-col-header-cell.is-holiday-col {
+      background-color: #fef2f2 !important;
+    }
+    .fc-timegrid-col.is-holiday-col,
+    .fc-daygrid-day.is-holiday-col {
+      background-color: rgba(254, 226, 226, 0.48) !important;
+    }
+    .fc-daygrid-day.is-holiday-col .fc-daygrid-day-number {
+      color: #b91c1c !important;
+      font-weight: 700 !important;
+    }
+
     .month-day-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       width: 100%;
       padding: 2px 4px 0 4px;
+      gap: 3px;
     }
     .month-count-pill {
       font-size: 0.68rem;
@@ -186,6 +230,21 @@
       color: #1e40af;
       padding: 0 5px;
       border-radius: 8px;
+      white-space: nowrap;
+    }
+    .month-holiday-banner {
+      margin: 2px 4px 1px 4px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Modales */
@@ -266,16 +325,21 @@
       <h1>Agenda de Audiencias - JG Illapel (15 min)</h1>
       <div class="toolbar">
         <button type="button" class="btn btn-primary" onclick="abrirModalNuevo()">+ Nueva Audiencia</button>
-        <label class="btn btn-success" style="margin:0;" title="Agrega audiencias nuevas desde Excel sin borrar las existentes">
-          Importar Excel (Agregar)
-          <input type="file" id="excel-input-append" accept=".xlsx,.xls" style="display:none;" />
-        </label>
+
+        <div class="import-stack">
+          <label class="btn btn-success" style="margin:0; justify-content:center;" title="Agrega audiencias nuevas desde Excel sin borrar las existentes">
+            Importar Excel (Agregar)
+            <input type="file" id="excel-input-append" accept=".xlsx,.xls" style="display:none;" />
+          </label>
+          <span class="last-import-tag" id="last-import-info">Última carga: sin registros</span>
+        </div>
+
         <label class="btn btn-warning" style="margin:0;" title="Compara con el sistema, muestra diferencias y repuebla los días incluidos en el Excel">
           Repoblar / Conciliar Excel
           <input type="file" id="excel-input-repopulate" accept=".xlsx,.xls" style="display:none;" />
         </label>
+
         <button type="button" class="btn btn-info" onclick="abrirModalPdf()">Imprimir en PDF</button>
-        <button type="button" class="btn btn-outline" onclick="descargarPlantillaExcel()">Plantilla Excel</button>
         <span class="user-badge" id="user-display"></span>
         <button type="button" class="btn btn-danger" onclick="cerrarSesion()">Salir</button>
       </div>
@@ -288,6 +352,7 @@
       <span class="legend-item"><span class="legend-dot" style="background:#15803d;"></span> Salida Alternativa / Abreviado / Sobreseimiento</span>
       <span class="legend-item"><span class="legend-dot" style="background:#6d28d9;"></span> Cautela / Ley 21.675 / Supervisión</span>
       <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras Audiencias</span>
+      <span class="legend-item" style="margin-left:auto;"><span class="legend-dot" style="background:#fee2e2; border:1px solid #f87171;"></span> <strong style="color:#991b1b;">Día Feriado</strong></span>
     </div>
 
     <div id="calendar-container">
@@ -447,11 +512,16 @@
     let auth = null;
     let db = null;
     let agendaRef = null;
+    let metaCargaRef = null;
     let calendar = null;
     let currentUser = null;
     let eventosCache = {};
     let conteoPorFecha = {};
     let planConciliacionPendiente = null;
+
+    // Registro de feriados de Chile (mapa YYYY-MM-DD -> nombre del feriado)
+    let feriadosChileMap = {};
+    let aniosFeriadosCargados = new Set();
 
     function inicializarFirebase() {
       if (typeof firebase === "undefined") {
@@ -463,10 +533,140 @@
       auth = firebase.auth();
       db = firebase.database();
       agendaRef = db.ref('agenda_audiencias');
+      metaCargaRef = db.ref('agenda_metadata/ultima_carga');
     }
 
     // =========================================================================
-    // 2. AUTENTICACIÓN Y CONTROL DE PRIVILEGIOS
+    // 2. OBTENCIÓN DE DÍAS FERIADOS DE CHILE DESDE PORTAL PÚBLICO + RESPALDO LEGAL
+    // =========================================================================
+    function obtenerRespaldoFeriadosChile(anio) {
+      // Feriados fijos legales en Chile como respaldo si el portal externo está bloqueado
+      const fijos = {
+        [`${anio}-01-01`]: "Año Nuevo",
+        [`${anio}-05-01`]: "Día Nacional del Trabajo",
+        [`${anio}-05-21`]: "Día de las Glorias Navales",
+        [`${anio}-06-20`]: "Día Nacional de los Pueblos Indígenas",
+        [`${anio}-06-29`]: "San Pedro y San Pablo",
+        [`${anio}-07-16`]: "Día de la Virgen del Carmen",
+        [`${anio}-08-15`]: "Asunción de la Virgen",
+        [`${anio}-09-18`]: "Independencia Nacional",
+        [`${anio}-09-19`]: "Día de las Glorias del Ejército",
+        [`${anio}-10-12`]: "Encuentro de Dos Mundos",
+        [`${anio}-10-31`]: "Día de las Iglesias Evangélicas y Protestantes",
+        [`${anio}-11-01`]: "Día de Todos los Santos",
+        [`${anio}-12-08`]: "Inmaculada Concepción",
+        [`${anio}-12-25`]: "Navidad"
+      };
+      // Semana Santa y feriados móviles 2025-2028
+      const moviles = {
+        "2025-04-18": "Viernes Santo",
+        "2025-04-19": "Sábado Santo",
+        "2026-04-03": "Viernes Santo",
+        "2026-04-04": "Sábado Santo",
+        "2026-09-17": "Feriado Adicional Fiestas Patrias",
+        "2027-03-26": "Viernes Santo",
+        "2027-03-27": "Sábado Santo",
+        "2027-06-21": "Día Nacional de los Pueblos Indígenas",
+        "2028-04-14": "Viernes Santo",
+        "2028-04-15": "Sábado Santo"
+      };
+      Object.entries(moviles).forEach(([f, nom]) => {
+        if (f.startsWith(`${anio}-`)) fijos[f] = nom;
+      });
+      return fijos;
+    }
+
+    async function cargarFeriadosChile(anio) {
+      if (aniosFeriadosCargados.has(anio)) return;
+      aniosFeriadosCargados.add(anio);
+
+      // Precarga inmediata del respaldo legal para respuesta instantánea
+      Object.assign(feriadosChileMap, obtenerRespaldoFeriadosChile(anio));
+
+      const fuentes = [
+        {
+          url: `https://apis.digital.gob.cl/fl/feriados/${anio}`,
+          parse: (data) => {
+            if (!Array.isArray(data)) return null;
+            const out = {};
+            data.forEach(item => {
+              if (item && item.fecha && item.nombre) {
+                out[String(item.fecha).slice(0, 10)] = String(item.nombre).trim();
+              }
+            });
+            return Object.keys(out).length ? out : null;
+          }
+        },
+        {
+          url: `https://api.boostr.cl/holidays/${anio}.json`,
+          parse: (json) => {
+            const arr = json && Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : null);
+            if (!arr) return null;
+            const out = {};
+            arr.forEach(item => {
+              const f = item.date || item.fecha;
+              const n = item.title || item.nombre;
+              if (f && n) out[String(f).slice(0, 10)] = String(n).trim();
+            });
+            return Object.keys(out).length ? out : null;
+          }
+        },
+        {
+          url: `https://date.nager.at/api/v3/PublicHolidays/${anio}/CL`,
+          parse: (data) => {
+            if (!Array.isArray(data)) return null;
+            const out = {};
+            data.forEach(item => {
+              if (item && item.date) {
+                out[String(item.date).slice(0, 10)] = String(item.localName || item.name || "Feriado").trim();
+              }
+            });
+            return Object.keys(out).length ? out : null;
+          }
+        }
+      ];
+
+      for (const fuente of fuentes) {
+        try {
+          const resp = await fetch(fuente.url, { cache: "force-cache" });
+          if (!resp.ok) continue;
+          const json = await resp.json();
+          const parsed = fuente.parse(json);
+          if (parsed) {
+            // Reemplazar datos del año con la fuente oficial pública
+            Object.keys(feriadosChileMap).forEach(k => {
+              if (k.startsWith(`${anio}-`)) delete feriadosChileMap[k];
+            });
+            Object.assign(feriadosChileMap, parsed);
+            break;
+          }
+        } catch (err) {
+          // Continúa con la siguiente fuente pública si hay restricción CORS o de red
+        }
+      }
+
+      if (calendar) {
+        aplicarEstilosFeriadosDOM();
+        calendar.render();
+      }
+    }
+
+    function aplicarEstilosFeriadosDOM() {
+      document.querySelectorAll('[data-date]').forEach((el) => {
+        const iso = el.getAttribute('data-date');
+        if (!iso) return;
+        const nombreFeriado = feriadosChileMap[iso];
+        if (nombreFeriado) {
+          el.classList.add('is-holiday-col');
+          el.setAttribute('title', `Feriado: ${nombreFeriado}`);
+        } else {
+          el.classList.remove('is-holiday-col');
+        }
+      });
+    }
+
+    // =========================================================================
+    // 3. AUTENTICACIÓN Y CONTROL DE PRIVILEGIOS
     // =========================================================================
     async function iniciarSesion(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -510,6 +710,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       try {
         inicializarFirebase();
+        const anioActual = new Date().getFullYear();
+        cargarFeriadosChile(anioActual);
+        cargarFeriadosChile(anioActual + 1);
+
         auth.onAuthStateChanged((user) => {
           if (user) {
             currentUser = user;
@@ -595,6 +799,12 @@
       return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
     }
 
+    function formatearFechaCL(iso) {
+      if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || "";
+      const [y, m, d] = iso.split("-");
+      return `${d}-${m}-${y}`;
+    }
+
     function aMinutos(hhmm) {
       const [h, m] = String(hhmm || "00:00").split(":").map(Number);
       return (h || 0) * 60 + (m || 0);
@@ -606,7 +816,6 @@
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     }
 
-    // Extrae cualquier hora de término escrita explícitamente en textos (ej: "09:00 a 10:30" o "Término: 10:15")
     function extraerHoraTerminoDesdeTexto(texto, inicioMin) {
       const s = String(texto || "");
       const mRango = s.match(/(\d{1,2}:\d{2})\s*(?:-|a|hasta|al)\s*(\d{1,2}:\d{2})/i);
@@ -622,10 +831,6 @@
       return null;
     }
 
-    // Calcula la hora de término efectiva:
-    // 1) Usa item.fin explícito si es posterior a item.inicio
-    // 2) Si no existe, busca rango horario en sala/tipo/observaciones
-    // 3) Si tampoco existe, estima duración según naturaleza procesal de la audiencia
     function calcularFinEfectivo(item) {
       const iniMin = aMinutos(item.inicio);
       const finExplicit = item.fin ? normalizarHoraExcel(item.fin) : null;
@@ -647,7 +852,7 @@
     }
 
     // =========================================================================
-    // 3. INICIALIZACIÓN DE FULLCALENDAR (ESTILO GOOGLE CALENDAR 15 MIN)
+    // 4. INICIALIZACIÓN DE FULLCALENDAR (INCLUYE VISTA LABORAL LUN-VIE)
     // =========================================================================
     function inicializarCalendario() {
       if (calendar) return;
@@ -655,11 +860,27 @@
 
       calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
-        initialView: 'timeGridWeek',
+        initialView: 'timeGridWorkWeek',
+        views: {
+          timeGridWorkWeek: {
+            type: 'timeGridWeek',
+            weekends: false,
+            buttonText: 'Lun–Vie'
+          },
+          timeGridWeek: {
+            buttonText: 'Semana'
+          },
+          timeGridDay: {
+            buttonText: 'Día'
+          },
+          dayGridMonth: {
+            buttonText: 'Mes'
+          }
+        },
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: 'timeGridDay,timeGridWeek,dayGridMonth'
+          right: 'timeGridDay,timeGridWorkWeek,timeGridWeek,dayGridMonth'
         },
         buttonText: {
           today: 'Hoy',
@@ -680,6 +901,28 @@
         selectable: true,
         editable: true,
 
+        datesSet: function(info) {
+          cargarFeriadosChile(info.start.getFullYear());
+          cargarFeriadosChile(info.end.getFullYear());
+          setTimeout(aplicarEstilosFeriadosDOM, 0);
+        },
+
+        dayHeaderDidMount: function(arg) {
+          const iso = fechaLocalISO(arg.date);
+          if (feriadosChileMap[iso]) {
+            arg.el.classList.add('is-holiday-col');
+            arg.el.setAttribute('title', `Feriado: ${feriadosChileMap[iso]}`);
+          }
+        },
+
+        dayCellDidMount: function(arg) {
+          const iso = fechaLocalISO(arg.date);
+          if (feriadosChileMap[iso]) {
+            arg.el.classList.add('is-holiday-col');
+            arg.el.setAttribute('title', `Feriado: ${feriadosChileMap[iso]}`);
+          }
+        },
+
         dayHeaderContent: function(arg) {
           if (arg.view.type === 'dayGridMonth') {
             return arg.text;
@@ -688,9 +931,15 @@
           const total = conteoPorFecha[iso] || 0;
           const textoTotal = total === 1 ? '1 audiencia' : `${total} audiencias`;
           const cls = total > 0 ? 'day-count-badge has-events' : 'day-count-badge';
+          const feriadoNombre = feriadosChileMap[iso];
+          const feriadoHtml = feriadoNombre
+            ? `<span class="holiday-header-pill" title="${feriadoNombre}">Feriado: ${feriadoNombre}</span>`
+            : '';
+
           return {
             html: `<div class="day-header-wrap">
                      <span>${arg.text}</span>
+                     ${feriadoHtml}
                      <span class="${cls}" data-day-count="${iso}">${textoTotal}</span>
                    </div>`
           };
@@ -702,13 +951,21 @@
           }
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
+          const feriadoNombre = feriadosChileMap[iso];
           const badgeHtml = total > 0
             ? `<span class="month-count-pill" data-month-count="${iso}">${total} aud.</span>`
             : `<span class="month-count-pill" style="display:none;" data-month-count="${iso}">0 aud.</span>`;
+          const feriadoBanner = feriadoNombre
+            ? `<div class="month-holiday-banner" title="${feriadoNombre}">Feriado: ${feriadoNombre}</div>`
+            : '';
+
           return {
-            html: `<div class="month-day-top">
-                     <span>${arg.dayNumberText}</span>
-                     ${badgeHtml}
+            html: `<div style="width:100%;">
+                     <div class="month-day-top">
+                       <span>${arg.dayNumberText}</span>
+                       ${badgeHtml}
+                     </div>
+                     ${feriadoBanner}
                    </div>`
           };
         },
@@ -786,9 +1043,55 @@
     }
 
     // =========================================================================
-    // 4. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
+    // 5. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE Y REGISTRO DE ÚLTIMA CARGA
     // =========================================================================
+    function registrarUltimaCargaExcel(fechasDetectadas, origen = "Excel") {
+      if (!fechasDetectadas || !fechasDetectadas.length || !metaCargaRef) return;
+      const ordenadas = [...fechasDetectadas].sort();
+      const desde = ordenadas[0];
+      const hasta = ordenadas[ordenadas.length - 1];
+      metaCargaRef.set({
+        desde,
+        hasta,
+        origen,
+        actualizadoPor: currentUser ? currentUser.email : "",
+        actualizadoEn: new Date().toISOString()
+      });
+    }
+
+    function actualizarEtiquetaUltimaCarga(meta) {
+      const el = document.getElementById('last-import-info');
+      if (!el) return;
+      if (meta && meta.desde && meta.hasta) {
+        const d1 = formatearFechaCL(meta.desde);
+        const d2 = formatearFechaCL(meta.hasta);
+        el.textContent = d1 === d2
+          ? `Última carga: ${d1}`
+          : `Última carga: ${d1} al ${d2}`;
+        el.title = `Período cargado (${meta.origen || 'Excel'}) por ${meta.actualizadoPor || 'N/D'}`;
+      } else {
+        // Si aún no hay metadata explícita, inferir el rango de fechas cargado en agenda_audiencias
+        const fechas = Object.values(eventosCache)
+          .map(ev => ev && ev.fecha)
+          .filter(Boolean)
+          .sort();
+        if (fechas.length > 0) {
+          const d1 = formatearFechaCL(fechas[0]);
+          const d2 = formatearFechaCL(fechas[fechas.length - 1]);
+          el.textContent = d1 === d2
+            ? `Datos cargados: ${d1}`
+            : `Datos cargados: ${d1} al ${d2}`;
+        } else {
+          el.textContent = "Última carga: sin registros";
+        }
+      }
+    }
+
     function escucharBaseDatos() {
+      metaCargaRef.on('value', (snap) => {
+        actualizarEtiquetaUltimaCarga(snap.val());
+      });
+
       agendaRef.on('value', (snapshot) => {
         eventosCache = snapshot.val() || {};
         conteoPorFecha = {};
@@ -797,6 +1100,11 @@
           if (item && item.fecha) {
             conteoPorFecha[item.fecha] = (conteoPorFecha[item.fecha] || 0) + 1;
           }
+        });
+
+        // Actualizar etiqueta de respaldo si no existe metadata guardada
+        metaCargaRef.once('value', (snap) => {
+          if (!snap.val()) actualizarEtiquetaUltimaCarga(null);
         });
 
         if (!calendar) return;
@@ -851,7 +1159,7 @@
     }
 
     // =========================================================================
-    // 5. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
+    // 6. MODAL DETALLE Y MODAL CRUD (CREAR, EDITAR, ELIMINAR)
     // =========================================================================
     function abrirModalDetalle(id) {
       const item = eventosCache[id];
@@ -861,6 +1169,7 @@
       const inicioNorm = normalizarHoraExcel(item.inicio) || item.inicio;
       const finEfectivo = calcularFinEfectivo({ ...item, inicio: inicioNorm });
       const durMin = Math.max(15, aMinutos(finEfectivo) - aMinutos(inicioNorm));
+      const feriadoDia = item.fecha ? feriadosChileMap[item.fecha] : null;
 
       document.getElementById('det-id').value = id;
       document.getElementById('det-title').textContent = `${ritEtiqueta}`;
@@ -868,7 +1177,7 @@
       const filas = [
         ["Causa:", ritEtiqueta],
         ["Tipo de Audiencia:", item.tipo || "-"],
-        ["Fecha:", item.fecha ? item.fecha.split("-").reverse().join("-") : "-"],
+        ["Fecha:", `${formatearFechaCL(item.fecha)}${feriadoDia ? ` (Feriado: ${feriadoDia})` : ''}`],
         ["Horario:", `${inicioNorm || "-"} a ${finEfectivo} hrs (${durMin} min)`],
         ["Sala / Detalle:", item.sala || "No especificada"]
       ];
@@ -1000,7 +1309,7 @@
     }
 
     // =========================================================================
-    // 6. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
+    // 7. GENERACIÓN DE PDF EN TAMAÑO OFICIO 8.5 x 13" (612 x 936 pt)
     // =========================================================================
     function abrirModalPdf() {
       if (!calendar) return;
@@ -1058,8 +1367,9 @@
       if (mode === 'list') {
         const bodyRows = eventosRango.map(ev => {
           const finEf = calcularFinEfectivo(ev);
+          const feriadoTxt = feriadosChileMap[ev.fecha] ? ` [Feriado: ${feriadosChileMap[ev.fecha]}]` : '';
           return [
-            ev.fecha.split("-").reverse().join("-"),
+            formatearFechaCL(ev.fecha) + feriadoTxt,
             `${ev.inicio} - ${finEf}`,
             formatearRitVisual(ev.rit, ev.tipoCausa),
             ev.tipo,
@@ -1075,10 +1385,10 @@
           styles: { fontSize: 8, cellPadding: 4, lineColor: [203, 213, 225], lineWidth: 0.4 },
           headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
           columnStyles: {
-            0: { cellWidth: 62 },
+            0: { cellWidth: 72 },
             1: { cellWidth: 72 },
             2: { cellWidth: 85, fontStyle: 'bold' },
-            4: { cellWidth: orientation === 'landscape' ? 280 : 150 }
+            4: { cellWidth: orientation === 'landscape' ? 270 : 140 }
           },
           didParseCell: function(data) {
             if (data.section === 'body' && data.column.index === 2 && eventosRango[data.row.index]) {
@@ -1094,7 +1404,12 @@
           const iso = fechaLocalISO(cursor);
           const diaSem = cursor.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' });
           const cant = conteoPorFecha[iso] || 0;
-          diasCols.push({ iso, label: `${diaSem.toUpperCase()} (${cant} aud.)` });
+          const feriado = feriadosChileMap[iso] || null;
+          diasCols.push({
+            iso,
+            feriado,
+            label: `${diaSem.toUpperCase()} (${cant} aud.)${feriado ? ` - FERIADO` : ''}`
+          });
           cursor.setDate(cursor.getDate() + 1);
           if (diasCols.length >= 31) break;
         }
@@ -1104,7 +1419,7 @@
             const evsDia = eventosRango.filter(e => e.fecha === d.iso);
             const resumen = evsDia.length
               ? evsDia.map(e => formatearTextoBloque(e.rit, e.tipo, e.tipoCausa)).join("\n")
-              : "Sin audiencias programadas";
+              : (d.feriado ? `Feriado: ${d.feriado}` : "Sin audiencias programadas");
             return [d.label, resumen];
           });
 
@@ -1115,7 +1430,7 @@
             body: rowsMes,
             styles: { fontSize: 7.5, cellPadding: 3.5, lineColor: [203, 213, 225], lineWidth: 0.4 },
             headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
-            columnStyles: { 0: { cellWidth: 115, fontStyle: 'bold' } }
+            columnStyles: { 0: { cellWidth: 130, fontStyle: 'bold' } }
           });
         } else {
           const startMin = 8 * 60;
@@ -1132,13 +1447,22 @@
 
           diasCols.forEach((col, idx) => {
             const x = gridX + idx * colW;
-            doc.setFillColor(241, 245, 249);
+            if (col.feriado) {
+              doc.setFillColor(254, 226, 226);
+            } else {
+              doc.setFillColor(241, 245, 249);
+            }
             doc.setDrawColor(203, 213, 225);
             doc.rect(x, startY, colW, headerH, 'FD');
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(7.5);
+            doc.setTextColor(col.feriado ? 153 : 15, col.feriado ? 27 : 23, col.feriado ? 27 : 42);
+            doc.setFontSize(7.2);
             doc.setFont(undefined, 'bold');
             doc.text(col.label, x + colW / 2, startY + 14, { align: 'center' });
+
+            if (col.feriado) {
+              doc.setFillColor(254, 242, 242);
+              doc.rect(x, gridY, colW, gridH, 'F');
+            }
           });
 
           for (let s = 0; s <= totalSlots; s++) {
@@ -1225,20 +1549,8 @@
     }
 
     // =========================================================================
-    // 7. PARSEO DE EXCEL UNIJUD (SOPORTA HORARIOS CON RANGO "09:00 - 10:30" Y COLUMNA TÉRMINO)
+    // 8. PARSEO DE EXCEL UNIJUD
     // =========================================================================
-    function descargarPlantillaExcel() {
-      const datos = [
-        { "RIT/Año": "O-23-2026",   "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "09:30", "Tipo audiencia": "Control de Detención", "Sala": "PRIMERA SALA" },
-        { "RIT/Año": "O-890-2026",  "Día": "26-11-2026", "Hora inicio": "09:00", "Hora término": "10:00", "Tipo audiencia": "Preparación Juicio Oral", "Sala": "PRIMERA SALA" },
-        { "RIT/Año": "O-1102-2026", "Día": "26-11-2026", "Hora inicio": "09:15", "Hora término": "09:30", "Tipo audiencia": "Cautela de Garantías", "Sala": "PRIMERA SALA" }
-      ];
-      const ws = XLSX.utils.json_to_sheet(datos);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Audiencias");
-      XLSX.writeFile(wb, "Plantilla_Carga_Agenda.xlsx");
-    }
-
     function normalizarFechaExcel(val) {
       if (val === undefined || val === null || val === "") return null;
       if (typeof val === 'number') {
@@ -1267,7 +1579,6 @@
       return null;
     }
 
-    // Parsea celdas de horario que pueden venir como "09:00", número Excel, o rango "09:00 - 10:15" / "09:00 a 10:15"
     function parsearCeldaHorarioExcel(val) {
       if (val === undefined || val === null || val === '') return { inicio: null, fin: null };
       if (typeof val === 'number') {
@@ -1363,7 +1674,6 @@
         const finCol = colTermino !== -1 ? normalizarHoraExcel(row[colTermino]) : null;
         let finRaw = finCol || horarioParsed.fin;
 
-        // Si existe columna de duración en minutos y aún no hay hora de término explícita
         if (!finRaw && colDuracion !== -1 && inicio) {
           const durVal = parseInt(String(row[colDuracion] ?? "").replace(/\D/g, ""), 10);
           if (durVal > 0) {
@@ -1405,7 +1715,6 @@
             todosIntervinientes: new Set()
           });
         } else {
-          // Si otra fila de la misma audiencia trae un término mayor, conservar el rango más amplio
           const regExist = audienciasMap.get(clave);
           if (aMinutos(fin) > aMinutos(regExist.fin)) {
             regExist.fin = fin;
@@ -1466,7 +1775,7 @@
     }
 
     // =========================================================================
-    // 8. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
+    // 9. FLUJO A: IMPORTAR EXCEL (AGREGAR SOLO NUEVAS SIN BORRAR)
     // =========================================================================
     document.getElementById('excel-input-append').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -1509,6 +1818,8 @@
           cargadas++;
         });
 
+        registrarUltimaCargaExcel(res.fechasDetectadas, "Importar Excel");
+
         alert(
           `Importación completada (Encabezados leídos en fila ${res.headerRowNum}):\n` +
           `• Audiencias Programadas nuevas cargadas: ${cargadas}\n` +
@@ -1519,7 +1830,7 @@
     });
 
     // =========================================================================
-    // 9. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
+    // 10. FLUJO B: CONCILIACIÓN Y REPOBLACIÓN DE AGENDA
     // =========================================================================
     document.getElementById('excel-input-repopulate').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -1586,7 +1897,7 @@
 
       let html = `
         <p style="font-size:0.84rem; color:#334155; margin-top:0;">
-          <strong>Período analizado:</strong> ${res.fechasDetectadas.join(", ") || "Sin fechas"}
+          <strong>Período analizado:</strong> ${res.fechasDetectadas.map(formatearFechaCL).join(", ") || "Sin fechas"}
           (Encabezados en fila ${res.headerRowNum} | Filas no Programadas descartadas: ${res.filasNoProgramadas})
         </p>
         <div class="kpi-grid">
@@ -1613,7 +1924,7 @@
             <table class="diff-table">
               <thead><tr><th>Fecha</th><th>Horario</th><th>RIT</th><th>Audiencia</th><th>Detalle / Sala</th></tr></thead>
               <tbody>
-                ${nuevasEnExcel.map(a => `<tr><td>${a.fecha}</td><td>${a.inicio} - ${a.fin}</td><td>${formatearRitVisual(a.rit, a.tipoCausa)}</td><td>${a.tipo}</td><td>${a.sala || '-'}</td></tr>`).join('')}
+                ${nuevasEnExcel.map(a => `<tr><td>${formatearFechaCL(a.fecha)}</td><td>${a.inicio} - ${a.fin}</td><td>${formatearRitVisual(a.rit, a.tipoCausa)}</td><td>${a.tipo}</td><td>${a.sala || '-'}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>`;
@@ -1627,7 +1938,7 @@
               <tbody>
                 ${conDiferencias.map(d => `
                   <tr>
-                    <td>${d.excel.fecha} ${d.excel.inicio}</td>
+                    <td>${formatearFechaCL(d.excel.fecha)} ${d.excel.inicio}</td>
                     <td>${formatearRitVisual(d.excel.rit, d.excel.tipoCausa)}</td>
                     <td>${d.sistema.tipo} (${d.sistema.inicio}-${calcularFinEfectivo(d.sistema)})<br><small style="color:#64748b;">${d.sistema.sala || '-'}</small></td>
                     <td>${d.excel.tipo} (${d.excel.inicio}-${d.excel.fin})<br><small style="color:#64748b;">${d.excel.sala || '-'}</small></td>
@@ -1644,7 +1955,7 @@
             <table class="diff-table">
               <thead><tr><th>Fecha</th><th>Horario</th><th>RIT</th><th>Audiencia en Sistema</th><th>Detalle / Sala</th></tr></thead>
               <tbody>
-                ${sobrantesEnSistema.map(s => `<tr><td>${s.fecha}</td><td>${s.inicio} - ${calcularFinEfectivo(s)}</td><td>${formatearRitVisual(s.rit, s.tipoCausa)}</td><td>${s.tipo}</td><td>${s.sala || '-'}</td></tr>`).join('')}
+                ${sobrantesEnSistema.map(s => `<tr><td>${formatearFechaCL(s.fecha)}</td><td>${s.inicio} - ${calcularFinEfectivo(s)}</td><td>${formatearRitVisual(s.rit, s.tipoCausa)}</td><td>${s.tipo}</td><td>${s.sala || '-'}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>`;
@@ -1666,7 +1977,7 @@
 
       if (modo === 'replace') {
         const msgConfirm =
-          `¿Confirma REPOBLAR todo el período (${res.fechasDetectadas.join(", ")})?\n\n` +
+          `¿Confirma REPOBLAR todo el período (${res.fechasDetectadas.map(formatearFechaCL).join(", ")})?\n\n` +
           `Se eliminarán los ${sistemaEnFechas.length} registros actuales de esas fechas y se cargarán las ${res.audiencias.length} audiencias Programadas del Excel.`;
         if (!confirm(msgConfirm)) return;
 
@@ -1691,6 +2002,7 @@
           });
         });
 
+        registrarUltimaCargaExcel(res.fechasDetectadas, "Repoblar Excel");
         cerrarModalConciliacion();
         alert(`Repoblación completada: ${res.audiencias.length} audiencias Programadas cargadas para el período.`);
       } else {
@@ -1726,6 +2038,7 @@
           });
         });
 
+        registrarUltimaCargaExcel(res.fechasDetectadas, "Conciliar Excel");
         cerrarModalConciliacion();
         alert(`Sincronización completada: ${nuevasEnExcel.length} nuevas agregadas y ${conDiferencias.length} actualizadas.`);
       }
