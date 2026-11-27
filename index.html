@@ -760,6 +760,73 @@
       border-radius: 8px;
       animation: pulseOverload 1.8s infinite ease-in-out;
     }
+    .week-overload-alert {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(220, 38, 38, 0.24);
+      border: 1px solid #f87171;
+      color: #fecaca;
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 6px;
+      line-height: 1.25;
+      animation: pulseOverload 1.8s infinite ease-in-out;
+    }
+    .day-count-badge.is-overload-week {
+      background: #dc2626;
+      color: #ffffff;
+      border: 1px solid #fca5a5;
+      font-weight: 700;
+    }
+    .rpa-header-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(20, 184, 166, 0.2);
+      color: #5eead4;
+      border: 1px solid rgba(45, 212, 191, 0.5);
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 6px;
+      max-width: 175px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gcal-col-hdr.is-day-view .rpa-header-pill {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 8px;
+      max-width: none;
+    }
+    .fc-col-header-cell.is-rpa-col {
+      background-color: rgba(20, 184, 166, 0.09) !important;
+    }
+    .fc-timegrid-col.is-rpa-col,
+    .fc-daygrid-day.is-rpa-col {
+      background-color: rgba(20, 184, 166, 0.06) !important;
+    }
+    .month-rpa-banner {
+      margin: 2px 4px 1px 4px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(20, 184, 166, 0.18);
+      color: #5eead4;
+      border: 1px solid rgba(45, 212, 191, 0.45);
+      font-size: 0.64rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-cal-day.is-rpa-day:not(.is-today) {
+      box-shadow: inset 0 0 0 1.5px #2dd4bf;
+      color: #5eead4;
+      font-weight: 700;
+    }
     @keyframes pulseOverload {
       0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
       50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
@@ -1497,6 +1564,7 @@
             <div class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span> Formalización / Otras</div>
             <div class="legend-item"><span class="legend-dot" style="background:#eab308;"></span> Receso Institucional (Lun–Jue 10:45–11:00)</div>
             <div class="legend-item"><span class="legend-dot dashed"></span> Bloqueo Jefatura (Google — Flexible)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#14b8a6;"></span> Día Reservado causas RPA (Últ. Mié.)</div>
             <div class="legend-item"><span class="legend-dot" style="background:#f28b82;"></span> Día Feriado Legal</div>
           </div>
         </div>
@@ -2191,6 +2259,7 @@
           const esHoy = iso === hoyISO;
           const esSel = iso === fechaSeleccionadaISO;
           const esFeriado = Boolean(feriadosChileMap[iso]);
+          const esRpa = esDiaReservadoRPA(iso);
           const tieneAud = (conteoPorFecha[iso] || 0) > 0;
 
           const clases = [
@@ -2199,12 +2268,14 @@
             esHoy ? 'is-today' : '',
             esSel ? 'is-selected' : '',
             esFeriado ? 'is-holiday' : '',
+            esRpa ? 'is-rpa-day' : '',
             tieneAud ? 'has-aud' : ''
           ].filter(Boolean).join(' ');
 
           const tooltip = [
             formatearFechaCL(iso),
             esFeriado ? `Feriado: ${feriadosChileMap[iso]}` : '',
+            esRpa ? 'Día Reservado causas RPA' : '',
             tieneAud ? `${conteoPorFecha[iso]} audiencia(s)` : ''
           ].filter(Boolean).join(' • ');
 
@@ -2742,8 +2813,17 @@
     }
 
     // =========================================================================
-    // 4. DÍAS FERIADOS DE CHILE
+    // 4. DÍAS FERIADOS DE CHILE Y DÍA RESERVADO CAUSAS RPA (ÚLTIMO MIÉRCOLES)
     // =========================================================================
+    function esDiaReservadoRPA(iso) {
+      if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+      if (feriadosChileMap[iso]) return false;
+      const [y, m, d] = iso.split("-").map(Number);
+      const fechaObj = new Date(y, m - 1, d);
+      if (fechaObj.getDay() !== 3) return false; // 3 = Miércoles
+      const diasEnMes = new Date(y, m, 0).getDate();
+      return (d + 7) > diasEnMes;
+    }
     function obtenerRespaldoFeriadosChile(anio) {
       const fijos = {
         [`${anio}-01-01`]: "Año Nuevo",
@@ -2859,11 +2939,18 @@
         const iso = el.getAttribute('data-date');
         if (!iso) return;
         const nombreFeriado = feriadosChileMap[iso];
+        const esRpa = esDiaReservadoRPA(iso);
         if (nombreFeriado) {
           el.classList.add('is-holiday-col');
+          el.classList.remove('is-rpa-col');
           el.setAttribute('title', `Feriado: ${nombreFeriado}`);
+        } else if (esRpa) {
+          el.classList.remove('is-holiday-col');
+          el.classList.add('is-rpa-col');
+          el.setAttribute('title', 'Día Reservado causas RPA');
         } else {
           el.classList.remove('is-holiday-col');
+          el.classList.remove('is-rpa-col');
         }
       });
     }
@@ -3237,6 +3324,9 @@
           if (feriadosChileMap[iso]) {
             arg.el.classList.add('is-holiday-col');
             arg.el.setAttribute('title', `Feriado: ${feriadosChileMap[iso]}`);
+          } else if (esDiaReservadoRPA(iso)) {
+            arg.el.classList.add('is-rpa-col');
+            arg.el.setAttribute('title', 'Día Reservado causas RPA');
           }
         },
 
@@ -3245,6 +3335,9 @@
           if (feriadosChileMap[iso]) {
             arg.el.classList.add('is-holiday-col');
             arg.el.setAttribute('title', `Feriado: ${feriadosChileMap[iso]}`);
+          } else if (esDiaReservadoRPA(iso)) {
+            arg.el.classList.add('is-rpa-col');
+            arg.el.setAttribute('title', 'Día Reservado causas RPA');
           }
         },
 
@@ -3255,16 +3348,20 @@
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
           const feriadoNombre = feriadosChileMap[iso];
+          const esRpa = esDiaReservadoRPA(iso);
           const feriadoHtml = feriadoNombre
             ? `<span class="holiday-header-pill" title="${feriadoNombre}">Feriado: ${feriadoNombre}</span>`
             : '';
+          const rpaHtml = esRpa
+            ? `<span class="rpa-header-pill" title="Último miércoles del mes: Día Reservado causas RPA">⚖️ Día Reservado causas RPA</span>`
+            : '';
           const numDia = arg.date.getDate();
+          const excedeLimite = total > 17;
 
           if (arg.view.type === 'timeGridDay') {
             const dowCompletoRaw = arg.date.toLocaleDateString('es-CL', { weekday: 'long' });
             const dowCompleto = dowCompletoRaw.charAt(0).toUpperCase() + dowCompletoRaw.slice(1);
             const textoAudDia = total === 1 ? '1 audiencia' : `${total} audiencias`;
-            const excedeLimite = total > 17;
             const alertaHtml = excedeLimite
               ? `<span class="day-overload-alert" data-day-overload="${iso}">⚠️ Sobrecarga de agenda: supera las 17 audiencias (${total})</span>`
               : `<span class="day-overload-alert" style="display:none;" data-day-overload="${iso}"></span>`;
@@ -3274,6 +3371,7 @@
                        <span class="gcal-col-dow">${dowCompleto}</span>
                        <span class="gcal-col-num">${numDia}</span>
                        <span class="day-view-count-prominent ${excedeLimite ? 'is-overload' : ''}" data-day-count-prominent="${iso}">${textoAudDia}</span>
+                       ${rpaHtml}
                        ${feriadoHtml}
                        ${alertaHtml}
                      </div>`
@@ -3281,15 +3379,22 @@
           }
 
           const textoTotal = total === 1 ? '1 aud.' : `${total} aud.`;
-          const cls = total > 0 ? 'day-count-badge has-events' : 'day-count-badge';
+          const cls = excedeLimite
+            ? 'day-count-badge has-events is-overload-week'
+            : (total > 0 ? 'day-count-badge has-events' : 'day-count-badge');
+          const alertaSemHtml = excedeLimite
+            ? `<span class="week-overload-alert" data-week-overload="${iso}" title="Sobrecarga: supera las 17 audiencias (${total})">⚠️ >17 aud. (${total})</span>`
+            : `<span class="week-overload-alert" style="display:none;" data-week-overload="${iso}"></span>`;
           const dowCorto = arg.date.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', '').toUpperCase();
 
           return {
             html: `<div class="gcal-col-hdr">
                      <span class="gcal-col-dow">${dowCorto}</span>
                      <span class="gcal-col-num">${numDia}</span>
+                     ${rpaHtml}
                      ${feriadoHtml}
                      <span class="${cls}" data-day-count="${iso}">${textoTotal}</span>
+                     ${alertaSemHtml}
                    </div>`
           };
         },
@@ -3301,11 +3406,15 @@
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
           const feriadoNombre = feriadosChileMap[iso];
+          const esRpa = esDiaReservadoRPA(iso);
           const badgeHtml = total > 0
             ? `<span class="month-count-pill" data-month-count="${iso}">${total} aud.</span>`
             : `<span class="month-count-pill" style="display:none;" data-month-count="${iso}">0 aud.</span>`;
           const feriadoBanner = feriadoNombre
             ? `<div class="month-holiday-banner" title="${feriadoNombre}">Feriado: ${feriadoNombre}</div>`
+            : '';
+          const rpaBanner = esRpa
+            ? `<div class="month-rpa-banner" title="Último miércoles del mes: Día Reservado causas RPA">⚖️ Día Reservado causas RPA</div>`
             : '';
 
           return {
@@ -3314,6 +3423,7 @@
                        <span>${arg.dayNumberText}</span>
                        ${badgeHtml}
                      </div>
+                     ${rpaBanner}
                      ${feriadoBanner}
                    </div>`
           };
@@ -3395,6 +3505,19 @@
         el.textContent = total === 1 ? '1 aud.' : `${total} aud.`;
         if (total > 0) el.classList.add('has-events');
         else el.classList.remove('has-events');
+        el.classList.toggle('is-overload-week', total > 17);
+      });
+
+      document.querySelectorAll('[data-week-overload]').forEach((el) => {
+        const iso = el.getAttribute('data-week-overload');
+        const total = conteoPorFecha[iso] || 0;
+        if (total > 17) {
+          el.textContent = `⚠️ >17 aud. (${total})`;
+          el.title = `Sobrecarga: supera las 17 audiencias (${total})`;
+          el.style.display = 'inline-flex';
+        } else {
+          el.style.display = 'none';
+        }
       });
 
       document.querySelectorAll('[data-day-count-prominent]').forEach((el) => {
@@ -3975,10 +4098,12 @@
           const diaSem = cursor.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' });
           const cant = conteoPorFecha[iso] || 0;
           const feriado = feriadosChileMap[iso] || null;
+          const esRpa = esDiaReservadoRPA(iso);
           diasCols.push({
             iso,
             feriado,
-            label: `${diaSem.toUpperCase()} (${cant} aud.)${feriado ? ` - FERIADO` : ''}`
+            esRpa,
+            label: `${diaSem.toUpperCase()} (${cant} aud.)${feriado ? ` - FERIADO` : (esRpa ? ` - DÍA RPA` : '')}`
           });
           cursor.setDate(cursor.getDate() + 1);
           if (diasCols.length >= 31) break;
