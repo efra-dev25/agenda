@@ -774,6 +774,41 @@
     .plazos-btn:hover {
       background: rgba(19, 115, 51, 0.32);
     }
+
+    /* Botón y Visor Matriz de Programación PDF */
+    .matriz-btn {
+      border-color: rgba(138, 180, 248, 0.45);
+      background: rgba(26, 115, 232, 0.16);
+      color: #a8c7fa;
+    }
+    .matriz-btn:hover {
+      background: rgba(26, 115, 232, 0.30);
+    }
+    .matriz-btn.has-doc {
+      border-color: rgba(138, 180, 248, 0.65);
+    }
+    .matriz-admin-box {
+      display: none;
+      background: #131314;
+      border: 1px solid var(--gcal-border);
+      border-left: 4px solid #7c3aed;
+      border-radius: 10px;
+      padding: 0.72rem 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+    .matriz-viewer-box {
+      width: 100%;
+      height: 62dvh;
+      min-height: 340px;
+      background: #131314;
+      border: 1px solid var(--gcal-grid-line);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
     .plazos-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1356,6 +1391,10 @@
       </div>
 
       <div class="gcal-top-right">
+        <button type="button" class="gcal-pill-btn matriz-btn" id="btn-ver-matriz" onclick="abrirModalMatriz()" title="Visualizar o descargar Matriz de Programación vigente">
+          <span>📋</span><span class="btn-text-hide-mobile">Matriz Prog.</span>
+        </button>
+
         <button type="button" class="gcal-pill-btn plazos-btn" onclick="abrirModalPlazos()" title="Abrir Calculadora y Calendario de Plazos Procesales">
           <span>⏳</span><span class="btn-text-hide-mobile">Calendario Plazos</span>
         </button>
@@ -1687,6 +1726,45 @@
     </div>
   </div>
 
+  <!-- 7C. MODAL MATRIZ DE PROGRAMACIÓN (VISOR UNIVERSAL + CARGA ADMIN) -->
+  <div class="modal-backdrop" id="matriz-modal">
+    <div class="modal modal-xl">
+      <h3>📋 Matriz de Programación — Juzgado de Garantía de Illapel</h3>
+      <div id="matriz-meta-info" style="font-size:0.82rem; color:#9aa0a6; margin-bottom:0.7rem;"></div>
+
+      <!-- Panel de carga y reemplazo: visible únicamente si el usuario tiene rol Admin -->
+      <div class="matriz-admin-box" id="matriz-admin-upload">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem;">
+          <div style="font-size:0.82rem; color:#e3e3e3; line-height:1.35;">
+            <span class="admin-pill" style="margin-right:6px;">Admin</span>
+            <strong>Gestión del documento vigente:</strong> Suba o reemplace el PDF con los criterios de la matriz de programación (máx. 4,5 MB). Quedará disponible al instante para todos los usuarios.
+          </div>
+          <div style="display:flex; gap:0.45rem; align-items:center; flex-wrap:wrap;">
+            <label class="btn btn-primary" style="cursor:pointer;">
+              <span>📤 Subir / Actualizar PDF</span>
+              <input type="file" id="matriz-pdf-input" accept="application/pdf,.pdf" style="display:none;" onchange="subirPdfMatrizFirebase(event)" />
+            </label>
+            <button type="button" class="btn btn-danger" id="btn-matriz-delete" style="display:none;" onclick="eliminarPdfMatrizFirebase()">Eliminar PDF</button>
+          </div>
+        </div>
+        <div id="matriz-upload-status" style="display:none; font-size:0.78rem; color:#8ab4f8; margin-top:0.45rem;"></div>
+      </div>
+
+      <!-- Visor PDF embebido -->
+      <div class="matriz-viewer-box" id="matriz-viewer-container">
+        <span style="color:#9aa0a6; font-size:0.88rem; padding:1rem; text-align:center;">
+          Aún no se ha publicado el documento PDF de la Matriz de Programación.
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-info" id="btn-matriz-tab" style="display:none;" onclick="abrirMatrizNuevaPestana()">🔗 Abrir en pestaña nueva</button>
+        <button type="button" class="btn btn-success" id="btn-matriz-download" style="display:none;" onclick="descargarPdfMatriz()">⬇️ Descargar PDF</button>
+        <button type="button" class="btn btn-outline" onclick="cerrarModalMatriz()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 8. MODAL ADMINISTRATIVO: AUDITORÍA, DEPURACIÓN, PRIVILEGIOS E INTEGRACIÓN GOOGLE -->
   <div class="modal-backdrop" id="audit-modal">
     <div class="modal modal-xl">
@@ -1875,6 +1953,7 @@
     let auditLogsRef = null;
     let adminRolesRef = null;
     let gcalConfigRef = null;
+    let matrizRef = null;
 
     let calendar = null;
     let currentUser = null;
@@ -1886,6 +1965,8 @@
     let planConciliacionPendiente = null;
     let gcalConfigCache = { url: DEFAULT_GCAL_SCRIPT_URL, token: "", label: "Calendario Compartido JG Illapel" };
     let planGoogleSyncPendiente = null;
+    let matrizCache = null;
+    let matrizBlobUrlActual = null;
 
     let miniCalFechaBase = new Date();
     let fechaSeleccionadaISO = fechaLocalISO(new Date());
@@ -1925,6 +2006,7 @@
       auditLogsRef = db.ref('agenda_auditoria');
       adminRolesRef = db.ref('agenda_config/administradores');
       gcalConfigRef = db.ref('agenda_config/google_calendar');
+      matrizRef = db.ref('agenda_config/matriz_programacion');
     }
 
     // =========================================================================
@@ -2181,6 +2263,11 @@
           userBadge.textContent = currentUser.email;
           if (auditLogsRef) auditLogsRef.off();
           cerrarModalAuditoria();
+        }
+
+        const adminUploadBox = document.getElementById('matriz-admin-upload');
+        if (adminUploadBox) {
+          adminUploadBox.style.display = esUsuarioAdmin ? 'block' : 'none';
         }
 
         renderizarListaAdministradores();
@@ -3390,6 +3477,22 @@
       metaCargaRef.on('value', (snap) => {
         actualizarEtiquetaUltimaCarga(snap.val());
       });
+
+      if (matrizRef) {
+        matrizRef.on('value', (snap) => {
+          matrizCache = snap.val() || null;
+          const btnMatriz = document.getElementById('btn-ver-matriz');
+          if (btnMatriz) {
+            btnMatriz.classList.toggle('has-doc', Boolean(matrizCache && matrizCache.dataUrl));
+            btnMatriz.title = (matrizCache && matrizCache.nombre)
+              ? `Matriz de Programación vigente: ${matrizCache.nombre}`
+              : 'Visualizar o descargar Matriz de Programación vigente';
+          }
+          if (document.getElementById('matriz-modal').style.display === 'flex') {
+            renderizarVisorMatriz();
+          }
+        });
+      }
 
       agendaRef.on('value', (snapshot) => {
         eventosCache = snapshot.val() || {};
@@ -5350,6 +5453,180 @@
           )}
         </div>
       `;
+    }
+
+    // =========================================================================
+    // 15. VISOR Y GESTIÓN DE PDF MATRIZ DE PROGRAMACIÓN (ADMIN + TODOS)
+    // =========================================================================
+    function abrirModalMatriz() {
+      const adminBox = document.getElementById('matriz-admin-upload');
+      if (adminBox) {
+        adminBox.style.display = esUsuarioAdmin ? 'block' : 'none';
+      }
+      const statusEl = document.getElementById('matriz-upload-status');
+      if (statusEl) statusEl.style.display = 'none';
+
+      renderizarVisorMatriz();
+      document.getElementById('matriz-modal').style.display = 'flex';
+    }
+
+    function cerrarModalMatriz() {
+      document.getElementById('matriz-modal').style.display = 'none';
+    }
+
+    function base64DataUrlToBlobUrl(dataUrl) {
+      const parts = String(dataUrl || "").split(',');
+      if (parts.length < 2) return null;
+      const byteString = atob(parts[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: 'application/pdf' });
+      return URL.createObjectURL(blob);
+    }
+
+    function renderizarVisorMatriz() {
+      const metaEl = document.getElementById('matriz-meta-info');
+      const viewer = document.getElementById('matriz-viewer-container');
+      const btnTab = document.getElementById('btn-matriz-tab');
+      const btnDl = document.getElementById('btn-matriz-download');
+      const btnDel = document.getElementById('btn-matriz-delete');
+
+      if (matrizBlobUrlActual) {
+        URL.revokeObjectURL(matrizBlobUrlActual);
+        matrizBlobUrlActual = null;
+      }
+
+      if (!matrizCache || !matrizCache.dataUrl) {
+        metaEl.textContent = "Estado: Aún no se ha cargado el documento PDF de la Matriz de Programación.";
+        viewer.innerHTML = `<span style="color:#9aa0a6; font-size:0.88rem; padding:1rem; text-align:center;">
+          Aún no se ha publicado el documento PDF de la Matriz de Programación.${esUsuarioAdmin ? ' Utilice el botón superior «Subir / Actualizar PDF» para publicarlo.' : ''}
+        </span>`;
+        btnTab.style.display = 'none';
+        btnDl.style.display = 'none';
+        if (btnDel) btnDel.style.display = 'none';
+        return;
+      }
+
+      const fechaUpd = matrizCache.actualizadoEn
+        ? new Date(matrizCache.actualizadoEn).toLocaleString('es-CL')
+        : '-';
+      metaEl.innerHTML = `Documento vigente: <strong style="color:#e3e3e3;">${matrizCache.nombre || 'Matriz_Programacion.pdf'}</strong> (${matrizCache.tamanoKB || '?'} KB) — Publicado por <strong>${matrizCache.actualizadoPor || 'Administrador'}</strong> el ${fechaUpd}`;
+
+      try {
+        matrizBlobUrlActual = base64DataUrlToBlobUrl(matrizCache.dataUrl);
+      } catch (err) {
+        console.error("Error decodificando PDF:", err);
+        matrizBlobUrlActual = null;
+      }
+
+      if (matrizBlobUrlActual) {
+        viewer.innerHTML = `<iframe src="${matrizBlobUrlActual}#toolbar=1&navpanes=0" style="width:100%; height:100%; border:none;" title="Matriz de Programación PDF"></iframe>`;
+        btnTab.style.display = 'inline-flex';
+        btnDl.style.display = 'inline-flex';
+      } else {
+        viewer.innerHTML = `<span style="color:#f28b82; font-size:0.86rem; padding:1rem;">No se pudo renderizar la vista previa en este navegador. Intente descargar el archivo.</span>`;
+        btnTab.style.display = 'none';
+        btnDl.style.display = 'none';
+      }
+
+      if (btnDel) {
+        btnDel.style.display = esUsuarioAdmin ? 'inline-flex' : 'none';
+      }
+    }
+
+    function subirPdfMatrizFirebase(e) {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+
+      if (!esUsuarioAdmin) {
+        alert("Acceso denegado: Solo usuarios con rol de Administrador pueden subir o actualizar la Matriz de Programación.");
+        return;
+      }
+
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert("Formato inválido: Seleccione únicamente un documento PDF (.pdf).");
+        return;
+      }
+
+      if (file.size > 4.5 * 1024 * 1024) {
+        alert("El archivo PDF supera los 4,5 MB recomendados para sincronización directa en Firebase. Comprima el PDF antes de subirlo.");
+        return;
+      }
+
+      const statusEl = document.getElementById('matriz-upload-status');
+      statusEl.style.color = '#8ab4f8';
+      statusEl.textContent = `Subiendo y publicando "${file.name}" (${Math.round(file.size / 1024)} KB)...`;
+      statusEl.style.display = 'block';
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          await matrizRef.set({
+            nombre: file.name,
+            tamanoKB: Math.round(file.size / 1024),
+            dataUrl: evt.target.result,
+            actualizadoPor: currentUser.email,
+            actualizadoEn: new Date().toISOString()
+          });
+
+          registrarLogAuditoria(
+            "EDICION",
+            "MATRIZ_PDF",
+            fechaLocalISO(new Date()),
+            "-",
+            `Publicado/actualizado documento PDF Matriz de Programación: "${file.name}" (${Math.round(file.size / 1024)} KB).`
+          );
+
+          statusEl.style.color = '#81c995';
+          statusEl.textContent = `✔ Documento "${file.name}" publicado correctamente y disponible para todos los usuarios.`;
+        } catch (err) {
+          console.error("Error subiendo PDF Matriz:", err);
+          statusEl.style.color = '#f28b82';
+          statusEl.textContent = `✖ Error al guardar en Firebase: ${err && err.message ? err.message : String(err)}. Verifique las reglas de escritura del nodo agenda_config/matriz_programacion.`;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function eliminarPdfMatrizFirebase() {
+      if (!esUsuarioAdmin || !matrizRef) return;
+      if (!confirm("¿Confirma eliminar el documento PDF vigente de la Matriz de Programación?")) return;
+
+      const nombreAnt = (matrizCache && matrizCache.nombre) || "Matriz_Programacion.pdf";
+      await matrizRef.remove();
+      registrarLogAuditoria(
+        "ELIMINACION",
+        "MATRIZ_PDF",
+        fechaLocalISO(new Date()),
+        "-",
+        `Eliminado documento PDF Matriz de Programación: "${nombreAnt}".`
+      );
+      const statusEl = document.getElementById('matriz-upload-status');
+      if (statusEl) {
+        statusEl.style.color = '#fdd663';
+        statusEl.textContent = "Documento eliminado.";
+        statusEl.style.display = 'block';
+      }
+    }
+
+    function abrirMatrizNuevaPestana() {
+      if (matrizBlobUrlActual) {
+        window.open(matrizBlobUrlActual, '_blank');
+      }
+    }
+
+    function descargarPdfMatriz() {
+      if (!matrizBlobUrlActual || !matrizCache) return;
+      const a = document.createElement('a');
+      a.href = matrizBlobUrlActual;
+      a.download = matrizCache.nombre || 'Matriz_Programacion_JG_Illapel.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   </script>
 </body>
