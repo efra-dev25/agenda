@@ -709,6 +709,143 @@
       border: 1px solid rgba(138, 180, 248, 0.35);
     }
 
+    /* Vista Día: encabezado con día completo, contador rojo en negrita de tamaño similar y alerta > 17 audiencias */
+    .gcal-col-hdr.is-day-view {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px 12px;
+      padding: 2px 10px;
+    }
+    .gcal-col-hdr.is-day-view .gcal-col-dow {
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: var(--gcal-text);
+      letter-spacing: 0.2px;
+      text-transform: capitalize;
+    }
+    .gcal-col-hdr.is-day-view .gcal-col-num {
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+    }
+    .day-view-count-prominent {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: #f28b82;
+      background: rgba(234, 67, 53, 0.14);
+      border: 1px solid rgba(234, 67, 53, 0.42);
+      padding: 3px 11px;
+      border-radius: 999px;
+      line-height: 1.2;
+      letter-spacing: 0.1px;
+    }
+    .day-view-count-prominent.is-overload {
+      color: #ffffff;
+      background: #dc2626;
+      border-color: #fca5a5;
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.35);
+    }
+    .day-overload-alert {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(220, 38, 38, 0.22);
+      border: 1px solid #f87171;
+      color: #fecaca;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 8px;
+      animation: pulseOverload 1.8s infinite ease-in-out;
+    }
+    @keyframes pulseOverload {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+      50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+    }
+
+    /* Calculadora de Plazos Procesales */
+    .plazos-btn {
+      border-color: rgba(129, 201, 149, 0.45);
+      background: rgba(19, 115, 51, 0.18);
+      color: #a8dab5;
+    }
+    .plazos-btn:hover {
+      background: rgba(19, 115, 51, 0.32);
+    }
+    .plazos-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+      margin-top: 0.75rem;
+    }
+    .plazo-card {
+      background: #131314;
+      border: 1px solid var(--gcal-grid-line);
+      border-left: 4px solid #1a73e8;
+      border-radius: 10px;
+      padding: 0.72rem 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .plazo-card.criterio {
+      border-left-color: #8ab4f8;
+    }
+    .plazo-card-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--gcal-text);
+    }
+    .plazo-card-rule {
+      font-size: 0.75rem;
+      color: var(--gcal-text-muted);
+      margin-top: 2px;
+    }
+    .plazo-card-dates {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .plazo-date-pill {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #81c995;
+      background: rgba(129, 201, 149, 0.14);
+      border: 1px solid rgba(129, 201, 149, 0.35);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .plazo-sub-note {
+      font-size: 0.71rem;
+      color: #fdd663;
+    }
+    .plazo-jump-links {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .plazo-jump-btn {
+      background: #282a2c;
+      border: 1px solid var(--gcal-border);
+      color: var(--gcal-accent);
+      font-size: 0.71rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .plazo-jump-btn:hover {
+      background: #333537;
+    }
+
     .holiday-header-pill {
       display: inline-block;
       background: rgba(242, 139, 130, 0.18);
@@ -1219,6 +1356,10 @@
       </div>
 
       <div class="gcal-top-right">
+        <button type="button" class="gcal-pill-btn plazos-btn" onclick="abrirModalPlazos()" title="Abrir Calculadora y Calendario de Plazos Procesales">
+          <span>⏳</span><span class="btn-text-hide-mobile">Calendario Plazos</span>
+        </button>
+
         <button type="button" class="gcal-pill-btn" onclick="abrirModalPdf()" title="Exportar agenda actual a PDF tamaño Oficio">
           <span>🖨️</span><span class="btn-text-hide-mobile">Imprimir PDF</span>
         </button>
@@ -1512,6 +1653,36 @@
         <button type="button" class="btn btn-primary" id="btn-apply-gcal-sync" style="display:none;" onclick="aplicarConciliacionGoogle()">
           Incorporar Seleccionados a Agenda Web
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7B. MODAL CALCULADORA Y CALENDARIO DE PLAZOS PROCESALES -->
+  <div class="modal-backdrop" id="plazos-modal">
+    <div class="modal modal-lg">
+      <h3>⏳ Calendario y Calculadora de Plazos Procesales — JG Illapel</h3>
+      <div class="filter-bar" style="margin-bottom:0.65rem;">
+        <div class="fg" style="max-width:210px;">
+          <label>Fecha base de cálculo *</label>
+          <input type="date" id="plazos-fecha-base" onchange="recalcularPlazosProcesales()" />
+        </div>
+        <div class="fg" style="max-width:250px;">
+          <label>Ajuste días inhábiles (Sáb/Dom/Feriados)</label>
+          <select id="plazos-ajuste-habil" onchange="recalcularPlazosProcesales()">
+            <option value="habil_siguiente" selected>Trasladar vencimiento a día hábil siguiente</option>
+            <option value="corrido_exacto">Mostrar fecha corrida exacta (sin traslado)</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:0.4rem; align-items:flex-end;">
+          <button type="button" class="btn btn-outline" onclick="establecerFechaBasePlazosHoy()">Hoy</button>
+          <button type="button" class="btn btn-outline" onclick="establecerFechaBasePlazosVista()">Fecha vista actual</button>
+        </div>
+      </div>
+
+      <div id="plazos-resultados-container"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalPlazos()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -2996,15 +3167,35 @@
           }
           const iso = fechaLocalISO(arg.date);
           const total = conteoPorFecha[iso] || 0;
-          const textoTotal = total === 1 ? '1 aud.' : `${total} aud.`;
-          const cls = total > 0 ? 'day-count-badge has-events' : 'day-count-badge';
           const feriadoNombre = feriadosChileMap[iso];
           const feriadoHtml = feriadoNombre
             ? `<span class="holiday-header-pill" title="${feriadoNombre}">Feriado: ${feriadoNombre}</span>`
             : '';
-
-          const dowCorto = arg.date.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', '').toUpperCase();
           const numDia = arg.date.getDate();
+
+          if (arg.view.type === 'timeGridDay') {
+            const dowCompletoRaw = arg.date.toLocaleDateString('es-CL', { weekday: 'long' });
+            const dowCompleto = dowCompletoRaw.charAt(0).toUpperCase() + dowCompletoRaw.slice(1);
+            const textoAudDia = total === 1 ? '1 audiencia' : `${total} audiencias`;
+            const excedeLimite = total > 17;
+            const alertaHtml = excedeLimite
+              ? `<span class="day-overload-alert" data-day-overload="${iso}">⚠️ Sobrecarga de agenda: supera las 17 audiencias (${total})</span>`
+              : `<span class="day-overload-alert" style="display:none;" data-day-overload="${iso}"></span>`;
+
+            return {
+              html: `<div class="gcal-col-hdr is-day-view">
+                       <span class="gcal-col-dow">${dowCompleto}</span>
+                       <span class="gcal-col-num">${numDia}</span>
+                       <span class="day-view-count-prominent ${excedeLimite ? 'is-overload' : ''}" data-day-count-prominent="${iso}">${textoAudDia}</span>
+                       ${feriadoHtml}
+                       ${alertaHtml}
+                     </div>`
+            };
+          }
+
+          const textoTotal = total === 1 ? '1 aud.' : `${total} aud.`;
+          const cls = total > 0 ? 'day-count-badge has-events' : 'day-count-badge';
+          const dowCorto = arg.date.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', '').toUpperCase();
 
           return {
             html: `<div class="gcal-col-hdr">
@@ -3117,6 +3308,24 @@
         el.textContent = total === 1 ? '1 aud.' : `${total} aud.`;
         if (total > 0) el.classList.add('has-events');
         else el.classList.remove('has-events');
+      });
+
+      document.querySelectorAll('[data-day-count-prominent]').forEach((el) => {
+        const iso = el.getAttribute('data-day-count-prominent');
+        const total = conteoPorFecha[iso] || 0;
+        el.textContent = total === 1 ? '1 audiencia' : `${total} audiencias`;
+        el.classList.toggle('is-overload', total > 17);
+      });
+
+      document.querySelectorAll('[data-day-overload]').forEach((el) => {
+        const iso = el.getAttribute('data-day-overload');
+        const total = conteoPorFecha[iso] || 0;
+        if (total > 17) {
+          el.textContent = `⚠️ Sobrecarga de agenda: supera las 17 audiencias (${total})`;
+          el.style.display = 'inline-flex';
+        } else {
+          el.style.display = 'none';
+        }
       });
 
       document.querySelectorAll('[data-month-count]').forEach((el) => {
@@ -4930,6 +5139,217 @@
 ` +
         `• Bloqueos Jefatura actualizados: ${bloqActualizados}`
       );
+    }
+
+    // =========================================================================
+    // 14. CALCULADORA Y CALENDARIO DE PLAZOS PROCESALES
+    // =========================================================================
+    function abrirModalPlazos() {
+      const inputBase = document.getElementById('plazos-fecha-base');
+      if (!inputBase.value) {
+        inputBase.value = fechaSeleccionadaISO || fechaLocalISO(new Date());
+      }
+      recalcularPlazosProcesales();
+      document.getElementById('plazos-modal').style.display = 'flex';
+    }
+
+    function cerrarModalPlazos() {
+      document.getElementById('plazos-modal').style.display = 'none';
+    }
+
+    function establecerFechaBasePlazosHoy() {
+      document.getElementById('plazos-fecha-base').value = fechaLocalISO(new Date());
+      recalcularPlazosProcesales();
+    }
+
+    function establecerFechaBasePlazosVista() {
+      document.getElementById('plazos-fecha-base').value = fechaSeleccionadaISO || fechaLocalISO(new Date());
+      recalcularPlazosProcesales();
+    }
+
+    function esDiaInhabilJudicial(dateObj) {
+      const dow = dateObj.getDay(); // 0 = Dom, 6 = Sáb
+      if (dow === 0 || dow === 6) return { inhabil: true, motivo: dow === 0 ? "Domingo" : "Sábado" };
+      const iso = fechaLocalISO(dateObj);
+      if (feriadosChileMap[iso]) return { inhabil: true, motivo: `Feriado: ${feriadosChileMap[iso]}` };
+      return { inhabil: false, motivo: "" };
+    }
+
+    function calcularFechaPlazo(baseISO, diasCorridos, trasladarAHabil) {
+      const [y, m, d] = baseISO.split("-").map(Number);
+      const fechaCorrida = new Date(y, m - 1, d + diasCorridos);
+      cargarFeriadosChile(fechaCorrida.getFullYear());
+
+      const corridaISO = fechaLocalISO(fechaCorrida);
+      const checkCorrida = esDiaInhabilJudicial(fechaCorrida);
+
+      if (!trasladarAHabil || !checkCorrida.inhabil) {
+        return {
+          iso: corridaISO,
+          corridaISO,
+          trasladada: false,
+          motivoInhabil: checkCorrida.inhabil ? checkCorrida.motivo : "",
+          diaSemana: fechaCorrida.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', ''),
+          audienciasDia: conteoPorFecha[corridaISO] || 0
+        };
+      }
+
+      const fechaHabil = new Date(fechaCorrida.getTime());
+      let guard = 0;
+      while (esDiaInhabilJudicial(fechaHabil).inhabil && guard < 15) {
+        fechaHabil.setDate(fechaHabil.getDate() + 1);
+        cargarFeriadosChile(fechaHabil.getFullYear());
+        guard++;
+      }
+      const habilISO = fechaLocalISO(fechaHabil);
+      return {
+        iso: habilISO,
+        corridaISO,
+        trasladada: habilISO !== corridaISO,
+        motivoInhabil: checkCorrida.motivo,
+        diaSemana: fechaHabil.toLocaleDateString('es-CL', { weekday: 'short' }).replace('.', ''),
+        audienciasDia: conteoPorFecha[habilISO] || 0
+      };
+    }
+
+    function irAFechaDesdePlazos(iso) {
+      cerrarModalPlazos();
+      seleccionarDiaDesdeMiniCal(iso);
+    }
+
+    function renderizarTarjetaPlazoRango(titulo, reglaDesc, resMin, resMax, esCriterio = false) {
+      const notaTraslado = [];
+      if (resMin.trasladada) notaTraslado.push(`Mín. corrido ${formatearFechaCL(resMin.corridaISO)} (${resMin.motivoInhabil}) → hábil`);
+      if (resMax.trasladada) notaTraslado.push(`Máx. corrido ${formatearFechaCL(resMax.corridaISO)} (${resMax.motivoInhabil}) → hábil`);
+      if (!resMin.trasladada && resMin.motivoInhabil) notaTraslado.push(`Mín. cae en ${resMin.motivoInhabil}`);
+      if (!resMax.trasladada && resMax.motivoInhabil) notaTraslado.push(`Máx. cae en ${resMax.motivoInhabil}`);
+
+      return `
+        <div class="plazo-card ${esCriterio ? 'criterio' : ''}">
+          <div>
+            <div class="plazo-card-title">${titulo}</div>
+            <div class="plazo-card-rule">${reglaDesc}</div>
+          </div>
+          <div class="plazo-card-dates">
+            <div class="plazo-date-pill">
+              ${formatearFechaCL(resMin.iso)} (${resMin.diaSemana}) &nbsp;al&nbsp; ${formatearFechaCL(resMax.iso)} (${resMax.diaSemana})
+            </div>
+            ${notaTraslado.length ? `<div class="plazo-sub-note">${notaTraslado.join(" | ")}</div>` : ""}
+            <div class="plazo-jump-links">
+              <button type="button" class="plazo-jump-btn" onclick="irAFechaDesdePlazos('${resMin.iso}')">
+                Ir a Mín. (${resMin.audienciasDia} aud.)
+              </button>
+              <button type="button" class="plazo-jump-btn" onclick="irAFechaDesdePlazos('${resMax.iso}')">
+                Ir a Máx. (${resMax.audienciasDia} aud.)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderizarTarjetaPlazoUnico(titulo, reglaDesc, resDia, esCriterio = true) {
+      const nota = resDia.trasladada
+        ? `Corrido ${formatearFechaCL(resDia.corridaISO)} (${resDia.motivoInhabil}) → trasladado a hábil`
+        : (resDia.motivoInhabil ? `Cae en ${resDia.motivoInhabil}` : "");
+
+      return `
+        <div class="plazo-card ${esCriterio ? 'criterio' : ''}">
+          <div>
+            <div class="plazo-card-title">${titulo}</div>
+            <div class="plazo-card-rule">${reglaDesc}</div>
+          </div>
+          <div class="plazo-card-dates">
+            <div class="plazo-date-pill">
+              ${formatearFechaCL(resDia.iso)} (${resDia.diaSemana})
+            </div>
+            ${nota ? `<div class="plazo-sub-note">${nota}</div>` : ""}
+            <div class="plazo-jump-links">
+              <button type="button" class="plazo-jump-btn" onclick="irAFechaDesdePlazos('${resDia.iso}')">
+                Ver en Agenda (${resDia.audienciasDia} aud.)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function recalcularPlazosProcesales() {
+      const baseISO = document.getElementById('plazos-fecha-base').value || fechaLocalISO(new Date());
+      const trasladar = document.getElementById('plazos-ajuste-habil').value === 'habil_siguiente';
+      const container = document.getElementById('plazos-resultados-container');
+
+      const [yBase, mBase, dBase] = baseISO.split("-").map(Number);
+      const fechaBaseObj = new Date(yBase, mBase - 1, dBase);
+      const nombreDiaBase = fechaBaseObj.toLocaleDateString('es-CL', { weekday: 'long' });
+
+      // Plazos legales de programación
+      const simpMin = calcularFechaPlazo(baseISO, 20, trasladar);
+      const simpMax = calcularFechaPlazo(baseISO, 40, trasladar);
+
+      const pjoMin = calcularFechaPlazo(baseISO, 25, trasladar);
+      const pjoMax = calcularFechaPlazo(baseISO, 35, trasladar);
+
+      // Criterios de agendamiento
+      const sup90 = calcularFechaPlazo(baseISO, 90, trasladar);
+      const sup100 = calcularFechaPlazo(baseISO, 100, trasladar);
+
+      const lectura5 = calcularFechaPlazo(baseISO, 5, trasladar);
+
+      const ley45 = calcularFechaPlazo(baseISO, 45, trasladar);
+      const ley50 = calcularFechaPlazo(baseISO, 50, trasladar);
+
+      container.innerHTML = `
+        <p style="font-size:0.82rem; color:#9aa0a6; margin:0.2rem 0 0.6rem 0;">
+          Calculando desde: <strong style="color:#e3e3e3; text-transform:capitalize;">${nombreDiaBase} ${formatearFechaCL(baseISO)}</strong>
+        </p>
+
+        <div style="font-size:0.78rem; font-weight:700; color:#81c995; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:0.35rem;">
+          Plazos Legales de Programación
+        </div>
+        <div class="plazos-grid" style="margin-top:0; margin-bottom:0.95rem;">
+          ${renderizarTarjetaPlazoRango(
+            "Procedimiento Simplificado",
+            "Ventana legal: Entre 20 y 40 días desde la fecha base",
+            simpMin,
+            simpMax,
+            false
+          )}
+          ${renderizarTarjetaPlazoRango(
+            "Preparación de Juicio Oral (PJO)",
+            "Ventana legal: Entre 25 y 35 días desde la fecha base",
+            pjoMin,
+            pjoMax,
+            false
+          )}
+        </div>
+
+        <div style="font-size:0.78rem; font-weight:700; color:#8ab4f8; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:0.35rem;">
+          Criterios de Agendamiento
+        </div>
+        <div class="plazos-grid" style="margin-top:0;">
+          ${renderizarTarjetaPlazoRango(
+            "Supervisión Judicial",
+            "Plazo estándar: 90 días — Plazo máximo: 100 días",
+            sup90,
+            sup100,
+            true
+          )}
+          ${renderizarTarjetaPlazoUnico(
+            "Lectura de Sentencia",
+            "Plazo: 5 días desde la audiencia / veredicto",
+            lectura5,
+            true
+          )}
+          ${renderizarTarjetaPlazoRango(
+            "Seguimiento Ley 18.216",
+            "Ventana de seguimiento: Entre 45 y 50 días",
+            ley45,
+            ley50,
+            true
+          )}
+        </div>
+      `;
     }
   </script>
 </body>
