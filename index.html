@@ -1097,6 +1097,90 @@
       text-overflow: ellipsis;
     }
 
+    /* Vista tipo Agenda Vertical (listDay / listWeek) */
+    .fc-list {
+      border-color: var(--gcal-grid-line) !important;
+      background: var(--gcal-surface) !important;
+      font-size: 0.86rem;
+    }
+    .fc-list-sticky .fc-list-day > * {
+      background: #25272a !important;
+      border-color: var(--gcal-grid-line) !important;
+      padding: 8px 12px !important;
+    }
+    .fc-list-day-text,
+    .fc-list-day-side-text {
+      color: var(--gcal-text) !important;
+      font-weight: 600 !important;
+      text-transform: capitalize;
+      text-decoration: none !important;
+    }
+    .fc-list-day-side-text {
+      color: var(--gcal-text-muted) !important;
+      font-size: 0.78rem !important;
+    }
+    .fc-list-event {
+      cursor: pointer;
+      transition: background 0.14s ease;
+    }
+    .fc-list-event:hover td {
+      background: #282a2c !important;
+    }
+    .fc-list-event td {
+      border-color: var(--gcal-grid-line) !important;
+      padding: 9px 10px !important;
+      vertical-align: middle !important;
+    }
+    .fc-list-event-time {
+      color: var(--gcal-accent) !important;
+      font-weight: 600 !important;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      width: 105px;
+    }
+    .fc-list-event-graphic {
+      width: 22px;
+      padding-left: 6px !important;
+      padding-right: 4px !important;
+    }
+    .fc-list-event-dot {
+      border-width: 6px !important;
+      border-radius: 4px !important;
+    }
+    .fc-list-event-title {
+      color: var(--gcal-text) !important;
+      font-weight: 500 !important;
+      line-height: 1.35 !important;
+    }
+    .fc-list-event.is-receso-block td {
+      background: rgba(234, 179, 8, 0.14) !important;
+    }
+    .fc-list-event.is-receso-block .fc-list-event-title,
+    .fc-list-event.is-receso-block .fc-list-event-time {
+      color: #fde047 !important;
+      font-weight: 700 !important;
+    }
+    .fc-list-event.is-jefatura-block td {
+      background: rgba(148, 163, 184, 0.08) !important;
+    }
+    .fc-list-empty {
+      background: var(--gcal-surface) !important;
+      color: var(--gcal-text-muted) !important;
+      font-size: 0.9rem;
+    }
+    .agenda-day-status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .agenda-list-submeta {
+      font-size: 0.75rem;
+      color: var(--gcal-text-muted);
+      margin-top: 2px;
+    }
+
     /* Botón flotante (+) exclusivo en móvil cuando el sidebar está cerrado */
     .mobile-fab-create {
       display: none;
@@ -1480,8 +1564,14 @@
             <span style="font-size:0.75rem; color:#9aa0a6;">▼</span>
           </button>
           <div class="view-dropdown-menu" id="view-dropdown-menu">
+            <button type="button" class="view-option" data-view="listDay" onclick="seleccionarVista('listDay')">
+              <span>Agenda (Día)</span><span class="view-shortcut">A</span>
+            </button>
+            <button type="button" class="view-option" data-view="listWeek" onclick="seleccionarVista('listWeek')">
+              <span>Agenda (Semana)</span><span class="view-shortcut">S</span>
+            </button>
             <button type="button" class="view-option" data-view="timeGridDay" onclick="seleccionarVista('timeGridDay')">
-              <span>Día</span><span class="view-shortcut">D</span>
+              <span>Día (Grilla horaria)</span><span class="view-shortcut">D</span>
             </button>
             <button type="button" class="view-option active" data-view="timeGridWorkWeek" onclick="seleccionarVista('timeGridWorkWeek')">
               <span>Semana laboral (Lun–Vie)</span><span class="view-shortcut">L</span>
@@ -2081,6 +2171,8 @@
     // 2. NAVEGACIÓN GOOGLE CALENDAR, DRAWER RESPONSIVO Y MINI CALENDARIO
     // =========================================================================
     const NOMBRES_VISTA = {
+      listDay: "Agenda (Día)",
+      listWeek: "Agenda (Semana)",
       timeGridDay: "Día",
       timeGridWorkWeek: "Semana laboral",
       timeGridWeek: "Semana",
@@ -2149,7 +2241,9 @@
       const tag = (e.target && e.target.tagName || '').toLowerCase();
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.ctrlKey || e.metaKey || e.altKey) return;
       const k = e.key.toLowerCase();
-      if (k === 'd') seleccionarVista('timeGridDay');
+      if (k === 'a') seleccionarVista('listDay');
+      else if (k === 's') seleccionarVista('listWeek');
+      else if (k === 'd') seleccionarVista('timeGridDay');
       else if (k === 'l') seleccionarVista('timeGridWorkWeek');
       else if (k === 'w') seleccionarVista('timeGridWeek');
       else if (k === 'm') seleccionarVista('dayGridMonth');
@@ -2196,7 +2290,7 @@
       const titleEl = document.getElementById('gcal-header-title');
       const weekEl = document.getElementById('gcal-header-week');
 
-      if (view.type === 'timeGridDay') {
+      if (view.type === 'timeGridDay' || view.type === 'listDay') {
         titleEl.textContent = refDate.toLocaleDateString('es-CL', {
           day: 'numeric', month: 'long', year: 'numeric'
         });
@@ -3140,6 +3234,7 @@
             inicioHora: inicioNorm,
             finHora: finEv,
             duracionMin: durMin,
+            salaDetalle: item.sala || '',
             esBloqueo: esBloqueoJefatura(item),
             esReceso: false
           }
@@ -3268,7 +3363,7 @@
       if (calendar) return;
       const calendarEl = document.getElementById('calendar');
 
-      const vistaInicial = esPantallaMovil() ? 'timeGridDay' : 'timeGridWorkWeek';
+      const vistaInicial = esPantallaMovil() ? 'listDay' : 'timeGridWorkWeek';
       document.getElementById('current-view-label').textContent = NOMBRES_VISTA[vistaInicial] || vistaInicial;
       document.querySelectorAll('.view-option').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-view') === vistaInicial);
@@ -3277,7 +3372,16 @@
       calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
         initialView: vistaInicial,
+        noEventsText: 'Sin audiencias ni reservas programadas para este día (deslice hacia los lados para cambiar de día)',
         views: {
+          listDay: {
+            type: 'listDay',
+            buttonText: 'Agenda (Día)'
+          },
+          listWeek: {
+            type: 'listWeek',
+            buttonText: 'Agenda (Semana)'
+          },
           timeGridWorkWeek: {
             type: 'timeGridWeek',
             weekends: false,
@@ -3357,6 +3461,24 @@
             : '';
           const numDia = arg.date.getDate();
           const excedeLimite = total > 17;
+
+          if (arg.view.type.startsWith('list')) {
+            const dowCompletoRaw = arg.date.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+            const dowCompleto = dowCompletoRaw.charAt(0).toUpperCase() + dowCompletoRaw.slice(1);
+            const textoAudDia = total === 1 ? '1 audiencia' : `${total} audiencias`;
+            const alertaHtml = excedeLimite
+              ? `<span class="day-overload-alert" data-day-overload="${iso}">⚠️ Sobrecarga de agenda: supera las 17 audiencias (${total})</span>`
+              : `<span class="day-overload-alert" style="display:none;" data-day-overload="${iso}"></span>`;
+            return {
+              html: `<div style="width:100%;">
+                       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                         <span class="fc-list-day-text">${dowCompleto}</span>
+                         <span class="day-view-count-prominent ${excedeLimite ? 'is-overload' : ''}" style="font-size:0.82rem; padding:2px 9px;" data-day-count-prominent="${iso}">${textoAudDia}</span>
+                       </div>
+                       ${(rpaHtml || feriadoHtml || excedeLimite) ? `<div class="agenda-day-status-bar">${rpaHtml}${feriadoHtml}${alertaHtml}</div>` : ''}
+                     </div>`
+            };
+          }
 
           if (arg.view.type === 'timeGridDay') {
             const dowCompletoRaw = arg.date.toLocaleDateString('es-CL', { weekday: 'long' });
@@ -3459,6 +3581,17 @@
         eventContent: function(arg) {
           const props = arg.event.extendedProps || {};
           const isTimeGrid = arg.view.type.startsWith('timeGrid');
+          const isList = arg.view.type.startsWith('list');
+
+          if (isList) {
+            const subDetalle = props.salaDetalle
+              ? `<div class="agenda-list-submeta">${props.salaDetalle} (${props.inicioHora} – ${props.finHora})</div>`
+              : `<div class="agenda-list-submeta">${props.inicioHora} – ${props.finHora} (${props.duracionMin || 15} min)</div>`;
+            return {
+              html: `<div class="fc-event-title">${arg.event.title}</div>${subDetalle}`
+            };
+          }
+
           if (isTimeGrid && props.duracionMin > 15) {
             return {
               html: `<div class="fc-event-title">${arg.event.title}</div>
@@ -3496,6 +3629,45 @@
       });
 
       calendar.render();
+      habilitarNavegacionTactilHorizontal();
+    }
+
+    let swipeTactilInicializado = false;
+    function habilitarNavegacionTactilHorizontal() {
+      if (swipeTactilInicializado) return;
+      const container = document.getElementById('calendar-container');
+      if (!container) return;
+      swipeTactilInicializado = true;
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+
+      container.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }, { passive: true });
+
+      container.addEventListener('touchend', (e) => {
+        if (!calendar || !e.changedTouches || e.changedTouches.length !== 1) return;
+        // Activar deslizamiento horizontal en dispositivos táctiles / pantallas compactas
+        if (!esPantallaCompacta() && navigator.maxTouchPoints === 0) return;
+
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        const deltaY = e.changedTouches[0].clientY - touchStartY;
+        const elapsed = Date.now() - touchStartTime;
+
+        // Evitar conflicto con desplazamiento vertical de la lista: exigir movimiento horizontal claro y rápido
+        if (elapsed < 750 && Math.abs(deltaX) >= 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.45) {
+          if (deltaX < 0) {
+            navegarCalendario('next');
+          } else {
+            navegarCalendario('prev');
+          }
+        }
+      }, { passive: true });
     }
 
     function actualizarContadoresVisuales() {
